@@ -1,0 +1,13 @@
+%script{ :type => "text/x-jsrender",:id => "note-tmpl"}
+  .note
+    %span.meta
+      .date {{:created_at}}
+      .tags
+        %span.tags
+          {{for tags}}
+          %span.tag{ :style => "background-color: {{:color}};" }
+            {{:name}}          
+          {{/for}}
+    %span.text
+      %p {{:text}}
+

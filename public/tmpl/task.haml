@@ -1,0 +1,23 @@
+%script{ :type => "text/x-jsrender",:id => "task-tmpl"}
+  .task
+
+    .summary
+      %span.check
+        %input{ :type => "checkbox" }
+      %span.imp     {{:importance}}
+      %span.summary {{:summary}}
+      %span.tags
+        {{for tags}}
+        %span.tag{ :style => "background-color: {{:color}};" }
+          {{:name}}          
+        {{/for}}
+        
+      %span.duedate {{:due_date}}
+    
+    .body
+      .info
+        %span.deps
+        %span.blocked
+      .text
+        %p {{:text}}
+

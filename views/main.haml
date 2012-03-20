@@ -1,0 +1,68 @@
+!!!
+
+%html
+  %head
+    %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet"}
+    %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet"}
+    %script{ :src => "/js/require.js" }
+    %script{ :src => 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' }
+    %script{ :src => "http://cdn.jquerytools.org/1.2.6/full/jquery.tools.min.js" }
+    %script{ :src => "/js/jsrender.js" }
+    %script{ :src => "/js/jquery.observable.raw.js" }
+    %script{ :src => "/js/jquery.views.raw.js" }
+    %script{ :src => "/js/require.config.js" }
+    :javascript
+      require(["/js/require.text.js"]);
+      require(["/js/require.order.js"]);
+      require(['main']);
+
+  %body
+    .container_16
+      .grid_16#logo
+        %h1.logo Don’t Lose Track!
+
+    .container_16#header
+      .container_16.clearfix#navbar
+        .grid_16
+          %ul.menu.tabs
+            %li
+              %a{ :href => "#tab1" } Timeline
+            %li
+              %a{ :href => "#tab2" } Notes
+            %li
+              %a{ :href => "#tab3" } Tasks
+            %li
+              %a{ :href => "#tab4" } Wikis
+            %li
+              %a{ :href => "#tab5" } Emails
+
+    .container_16.spacer.clearfix
+
+    .container_16.clearfix#content
+      .grid_12
+        .panes
+          #timeline
+          #notes
+            #newnote
+              %form
+                %span.tarea
+                  %textarea#newnotetext
+                %span.btn
+                  %input{ :type => "submit" }
+            #notelist
+
+          #tasks
+            #tasklist
+
+          #wikis
+          #emails
+
+      .grid_4.clearfix
+        .clearfix#sidebar
+          %h3 Sidebar
+
+    .container_16.spacer.clearfix
+
+    .container_16.clearfix#footer
+      .grid_16
+        Copyright (C) 2012, Alex Hornung
