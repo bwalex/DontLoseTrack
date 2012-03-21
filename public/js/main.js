@@ -4,11 +4,12 @@ require([
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl"
   ], function() {
+  //XXX: hardcoded project ID :(
   projectId = 1;
 
   // Insert all templates
   // XXX: adjust >= according to number of non-templates in
-  // 	  dependencies.
+  //      dependencies.
   for (l = arguments.length-1 ; l >= 0; l--)
     $("body").append(arguments[l]);
 
@@ -42,10 +43,10 @@ require([
       if (data.errors) {
         $.each(data.errors, function(k, v) {
           alert(v);
-	});
+        });
       } else {
-      	$.observable(n).insert(0, data);
-	$("#newnotetext").val("");
+        $.observable(n).insert(0, data);
+        $("#newnotetext").val("");
       }
     }, "json");
   });
