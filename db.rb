@@ -18,6 +18,8 @@ class Project
 
   property :github_repo,  String,   :required => false
 
+  has n, :tags
+
   has n, :notes
   has n, :tasks
   has n, :emails
@@ -75,6 +77,16 @@ class Note
 end
 
 
+class TaskDep
+  include DataMapper::Resource
+
+  property :id,           Serial
+
+  belongs_to :task,       'Task'
+  belongs_to :dependency, 'Task'
+end
+
+
 class Task
   include DataMapper::Resource
   
@@ -87,12 +99,21 @@ class Task
   property :importance,   Integer,  :default => 1
   property :status,       Integer,  :default => 0
 
+
   property :created_at,   DateTime
   property :updated_at,   DateTime
 
   property :due_date,     DateTime
 
   has n, :tags, :through => :task_tags
+
+  has n, :task_deps, :child_key => [ :task_id ]
+  has n, :deps, self, :through => :task_deps, :via => :dependency
+
+  NORMAL = 0
+  BLOCKED = 1
+  COMPLETED = 2
+  DEPENDS = 3
 end
 
 
@@ -150,28 +171,26 @@ end
 #class Bug
 #end
 
-#class TaskDeps
-#  include DataMapper::Resource
-#  has n, :tasks
-#  has n, :tasks
-#end
 
 class Tag
   include DataMapper::Resource
   
   property :id,           Serial
   property :name,         String,   :length => 1..32,
-                                    :unique => true,
+                                    :unique => false,
                                     :required => true
 
   property :color,        String,   :length => 2..7,
-                                    :required => false
+                                    :required => true
+
+  belongs_to :project
 
   has n, :notes, :through => :note_tags
   has n, :tasks, :through => :task_tags
   has n, :wikis, :through => :wiki_tags
   has n, :files, :through => :file_tags
 end
+
 
 DataMapper.finalize
 DataMapper.auto_upgrade!

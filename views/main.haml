@@ -7,9 +7,9 @@
     %script{ :src => "/js/require.js" }
     %script{ :src => 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' }
     -#%script{ :src => "http://cdn.jquerytools.org/1.2.6/all/jquery.tools.min.js" }
-    -#%script{ :src => "/js/jsrender.js" }
-    -#%script{ :src => "/js/jquery.observable.raw.js" }
-    -#%script{ :src => "/js/jquery.views.raw.js" }
+    %script{ :src => "/js/jsrender.js" }
+    %script{ :src => "/js/jquery.observable.raw.js" }
+    %script{ :src => "/js/jquery.views.raw.js" }
     %script{ :src => "/js/require.config.js" }
     :javascript
       require(["/js/require.text.js"]);
@@ -52,6 +52,12 @@
             #notelist
 
           #tasks
+            #newtask
+              %form
+                %span.tarea
+                  %input#newtasksummary{ :type => "text" , :value => "Add new task..." }
+                %span.btn
+                  %input{ :type => "submit" }
             #tasklist
 
           #wikis
@@ -59,7 +65,15 @@
 
       .grid_4.clearfix
         .clearfix#sidebar
-          %h3 Sidebar
+          %h3 Filter by Tag
+          #newtag
+            %form
+              %span.sidein
+                %input#newtagname{ :type => "text" , :value => "Add new tag..." }
+              %span.btn
+                %input{ :type => "submit" }
+          #tagfilterlist
+            .tags
 
     .container_16.spacer.clearfix
 

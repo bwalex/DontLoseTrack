@@ -2,6 +2,7 @@
   .task
 
     .summary
+      %a{ :name => "#task{{:id}}" }
       %span.check
         %input{ :type => "checkbox" }
       %span.imp     {{:importance}}
@@ -16,8 +17,13 @@
     
     .body
       .info
-        %span.deps
-        %span.blocked
+        .deps
+          {{for task_deps}}
+          .dep
+            %a{ :href => "#task{{:dependency.id}}" }
+              {{:dependency.id}}: {{: dependency.summary.trunc(20, true) }}
+          {{/for}}
+        .blocked
       .text
         %p {{:text}}
 

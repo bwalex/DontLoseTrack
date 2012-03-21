@@ -1,9 +1,11 @@
 require([
   "jquery.tools",
-  "jquery.views",
+  "jquery.magicedit",
+  //"jquery.views",
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
-  "require.text!/tmpl/task.tmpl"
+  "require.text!/tmpl/task.tmpl",
+  "require.text!/tmpl/tag.tmpl"
   ], function() {
   //XXX: hardcoded project ID :(
   projectId = 1;
@@ -14,8 +16,35 @@ require([
   for (l = arguments.length-1 ; l >= 2; l--)
     $("body").append(arguments[l]);
 
+
   // Set up tabs
   $(".tabs:first").tabs(".panes:first > div", { history: true });
+
+
+  String.prototype.trunc = function(n,useWordBoundary) {
+    var toLong = this.length>n,
+      s_ = toLong ? this.substr(0,n-1) : this;
+      s_ = useWordBoundary && toLong ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
+      return  toLong ? s_ +'...' : s_;
+  };
+
+ 
+  ////////////////////////////////////////////////////////
+  // SIDEBAR TAG FILTER
+  tags = [];
+
+  $.templates({
+    tagFilterTemplate: "#tag-tmpl"
+  });
+ 
+  $.link.tagFilterTemplate("#tagfilterlist > .tags", tags);
+
+  $.getJSON('/tags?project_id=' + projectId, function(j) {
+     $.each(j, function(k, v) {
+      $.observable(tags).insert(0, v);
+    });
+  });
+
 
 
   ////////////////////////////////////////////////////////
@@ -54,8 +83,15 @@ require([
 
   $("#notelist").on('dblclick', ".tags > .tag", function(ev) {
     var view = $.view(this);
-    alert(JSON.stringify(view.data));
+    console.log(this);
+    console.log(view);
+    console.log(view.parent.parent);
+    
+    //alert(JSON.stringify(view.data));
+    //alert(JSON.stringify(view.parent.parent.data));
   });
+
+
 
   ///////////////////////////////////////////////////////
   // TASKS
@@ -72,7 +108,35 @@ require([
       $.observable(tasks).insert(0, v);
     });
   });
+
+  $('#newtask > form').submit(function() {
+    newtask = {
+      project_id: projectId,
+      task_summary:  $("#newtasksummary").val()
+    };
+
+    $.post('/task_add', newtask, function(data) {
+      if (data.errors) {
+        $.each(data.errors, function(k, v) {
+          alert(v);
+        });
+      } else {
+        $.observable(tasks).insert(0, data);
+        $("#newtasksummary").val("");
+      }
+    }, "json");
+  });
+
+  $("#tasklist").magicedit('dblclick', ".task > .summary", "summary", 'text', {}, function(d) {
+    return {
+      observable: tasks,
+      url: '/task_changesummary',
+      data: {
+        project_id: projectId,
+        task_id: d.data.id,
+        task_summary: d.newtext
+      }
+    };
+  });
 });
-
-
 
