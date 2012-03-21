@@ -1,3 +1,3 @@
-define(["jquery", "jsrender", "jquery.observable"], function() {
+define(["jsrender", "jquery.observable"], function() {
   require(["jquery.views.raw"]);
 });

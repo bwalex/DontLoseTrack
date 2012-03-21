@@ -1,5 +1,6 @@
 require([
-  //"jquery.tools",
+  "jquery.tools",
+  "jquery.views",
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl"
@@ -10,7 +11,7 @@ require([
   // Insert all templates
   // XXX: adjust >= according to number of non-templates in
   //      dependencies.
-  for (l = arguments.length-1 ; l >= 0; l--)
+  for (l = arguments.length-1 ; l >= 2; l--)
     $("body").append(arguments[l]);
 
   // Set up tabs
@@ -51,6 +52,10 @@ require([
     }, "json");
   });
 
+  $("#notelist").on('dblclick', ".tags > .tag", function(ev) {
+    var view = $.view(this);
+    alert(JSON.stringify(view.data));
+  });
 
   ///////////////////////////////////////////////////////
   // TASKS

@@ -52,7 +52,8 @@ get '/db_populate' do
   p = Project.create(:name => 'mrf24j40-driver', :github_repo => 'bwalex/mrf24j40-driver')
 
   p.notes.create(:text => 'Last time I tried to debug some SPI issue with some italian guy')
-  p.notes.create(:text => 'Next time I need to revise the initial PCB layout')
+  n = p.notes.create(:text => 'Next time I need to revise the initial PCB layout')
+  n.tags.create(:color => '#0000ff', :name => 'Tag2')
 
   t = p.tasks.create(:summary => 'Take garbage out')
   t.tags.create(:color => '#ff0000', :name => 'Rubbish')
@@ -64,7 +65,7 @@ get '/db_populate' do
 
   p = Project.create(:name => 'sniff802154')
   if p.valid?
-    redirect '/projects_all'
+    redirect '/'
   else
     j = dm_errors_to_array(p)
     j.to_json

@@ -1,2 +1,2 @@
-define(["jquery", "jsrender", "jquery.observable.raw"], function() {
+define(["jsrender", "jquery.observable.raw"], function() {
 });
