@@ -109,7 +109,7 @@ class Task
   property :text,         Text,     :default => ''
 
   property :importance,   Text,     :default => 'medium'
-  property :status,       Text,     :default => 'normal'
+  property :status,       Text,     :default => 'active'
 
 
   property :created_at,   DateTime
@@ -267,6 +267,7 @@ class Tag
 end
 
 
+DataMapper::Model.raise_on_save_failure = true 
 DataMapper.finalize
 DataMapper.auto_upgrade!
 

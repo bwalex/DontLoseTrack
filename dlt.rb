@@ -155,78 +155,48 @@ end
 
 
 post '/task_add' do
-  p = Project.get(params[:project_id])
-  t = p.tasks.create(:summary => params[:task_summary] ,
-                     :text => params[:task_text] ,
-                     :importance => params[:task_importance] ,
-                     :due_date => params[:task_due_date]
-  )
-  if t.valid?
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  begin
+    p = Project.get(params[:project_id])
+    t = p.tasks.create(:summary => params[:task_summary])
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/task_delete' do
-  t = Task.get(params[:task_id])
-
-  j = {}
-  if not t.destroy
-    j = { "errors" => dm_errors_to_array(t) }
+  begin
+    t = Task.get(params[:task_id])
+    t.destroy
+    {}.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
-  j.to_json
 end
 
 
 post '/task_block' do
-  t = Task.get(params[:task_id])
-  t.update(:status => "blocked");
-  if t.valid?
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  begin
+    t = Task.get(params[:task_id])
+    if t.status == "completed"
+    elsif (params[:task_block] == "yes")
+      t.update(:status => "blocked")
+    elsif (params[:task_block] == "no")
+      if not t.deps.empty?
+        t.update(:status => "depends")
+      else
+        t.update(:status => "active")
+      end
+    end
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/task_adddep' do
-
   begin
     t = Task.get(params[:task_id])
     tdep = Task.get(params[:task_dep_id])
@@ -234,141 +204,58 @@ post '/task_adddep' do
     dep = TaskDep.create(:task => t, :dependency => tdep)
 
     t.task_deps << dep
-    t.status = (t.status == "normal") ? "depends" : t.status;
+    t.status = (t.status == "active") ? "depends" : t.status;
 
     t.save
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(e.resource.errors) }.to_json
-  end
-  if t.valid?
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/task_deletedep' do
-  dep = t.task_deps.get(params[:task_dep_id])
-  dep.destroy
+  begin
+    dep = t.task_deps.get(params[:task_dep_id])
+    dep.destroy
 
-  t = Task.get(params[:task_id])
-  t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
+    t = Task.get(params[:task_id])
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
 end
 
 
 post '/task_complete' do
-  t = Task.get(params[:task_id])
-  t.update(:status => "completed");
-  if t.valid?
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  begin
+    t = Task.get(params[:task_id])
+    t.update(:status => "completed");
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/task_changesummary' do
-  t = Task.get(params[:task_id])
-  if t.update(:summary => params[:task_summary])
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  begin
+    t = Task.get(params[:task_id])
+    t.update(:summary => params[:task_summary])
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/task_changetext' do
-  t = Task.get(params[:task_id])
-  t.update(:text => params[:task_text])
-  if t.valid?
-    t.to_json(
-    :methods => [
-      :html_text  
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
-
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  begin
+    t = Task.get(params[:task_id])
+    t.update(:text => params[:task_text])
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
@@ -398,10 +285,11 @@ get '/db_populate' do
   n.tags << tag3
   n.save
 
-  t1 = p.tasks.create(:summary => 'Take garbage out')
-  t1.tags << tag2
-  t1.tags << tag4
-  t1.save
+    t1 = p.tasks.create(:summary => 'Take garbage out')
+    t1.tags << tag2
+    t1.tags << tag4
+    t1.save
+
 
   t2 = p.tasks.create(:summary => 'Finish this web app', :importance => 'high')
   t2.tags << tag1

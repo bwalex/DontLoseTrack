@@ -118,31 +118,58 @@ require([
     }, "json");
   });
 
-  $("#tasklist").magicedit('dblclick', ".task > .summary", "summary", 'text', {}, {}, function(d) {
-    return {
-      observable: tasks,
-      url: '/task_changesummary',
-      data: {
-        project_id: projectId,
-        task_id: d.data.id,
-        task_summary: d.newContent
-      }
-    };
+  $("#tasklist").magicedit('dblclick', ".task > .summary", {
+    subclass: "summary",
+    type: 'text', 
+    getPostData: function(d) {
+      return {
+        observable: tasks,
+        url: '/task_changesummary',
+        data: {
+          project_id: projectId,
+          task_id: d.data.id,
+          task_summary: d.newContent
+        }
+      };
+    }
   });
+
+
+  $("#tasklist").magicedit('dblclick', ".task > .body > .info > .blocked", {
+    subclass: "value",
+    type: 'select',
+    getOptions: function(d) {
+      return [{option: "yes"}, {option: "no"}];
+    },
+    getPostData: function(d) {
+      return {
+        observable: tasks,
+        url: '/task_block',
+        data: {
+          project_id: projectId,
+          task_id: d.data.id,
+          task_block: d.newContent
+        }
+      };
+    }
+  });
+
  
-  $("#tasklist").magicedit('dblclick', ".task > .body", "text", 'text-area', {}, function(d) {
-    /* getter function */
-    return d.data.text;
-  }, function(d) {
-    return {
-      observable: tasks,
-      url: '/task_changetext',
-      data: {
-        project_id: projectId,
-        task_id: d.data.id,
-        task_text: d.newContent
-      }
-    };
+  $("#tasklist").magicedit('dblclick', ".task > .body", {
+    subclass: "text",
+    type: 'text-area', 
+    getContent: function(d) { return d.data.text; },
+    getPostData: function(d) {
+      return {
+        observable: tasks,
+        url: '/task_changetext',
+        data: {
+          project_id: projectId,
+          task_id: d.data.id,
+          task_text: d.newContent
+        }
+      };
+    }
   });
 });
 

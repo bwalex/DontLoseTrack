@@ -11,19 +11,24 @@
         });
       },
       appendEdit: function(d, fnSubmit, fnCancel) {
-        return $(d.editTmpl.render(d)).appendTo($(this)).data('d', d).keypress(function(ev) {
+        var i = $(d.editTmpl.render(d)).appendTo($(this)).data('d', d).keypress(function(ev) {
           if (ev.keyCode === 13 /* ENTER */) {
             var d = $(this).data('d');
             d.newContent = $(this).val();
             $(this).parent().empty().append(d.restoreTmpl.render(d));
             fnSubmit(d);
-          } else if (ev.keyCode === 27 /* ESC */) {
-            var d = $(this).data('d');
-            var p = $(this).parent();
+          }
+        });
+
+        $(document).keypress(function(ev) {
+          if (ev.keyCode === 27 /* ESC */) {
+            var d = i.data('d');
+            var p = i.parent();
             p.empty().append(d.restoreTmpl.render(d));
             fnCancel.call(p, d);
           }
         });
+        return i;
       }
     },
     'select': {
@@ -34,10 +39,27 @@
                 restoreContent: $(this).html(),
                 newContent: null,
                 restoreTmpl: $.templates(null, "{{:restoreContent}}"),
-                editTmpl: $.templates(null, "")
+                editTmpl: $.templates(null, "<select class='magic-select'>{{for options}}<option value='{{>option.toLowerCase() }}'>{{:option}}</option>{{/for}}</select>")
               });
             },
       appendEdit: function(d, fnSubmit, fnCancel) {
+                    var s = $(d.editTmpl.render(d)).appendTo($(this)).data('d', d);
+                    $(this).find('option[value="'+$.trim(d.origContent).toLowerCase() +'"]').attr("selected",true);
+                    $(this).find('select').change(d, function(ev) {
+                      // this -> select element
+                      var d = ev.data;
+                      d.newContent = $(this).val();
+                      $(this).parent().empty().append(d.restoreTmpl.render(d));
+                      fnSubmit(d);
+                    });
+                    $(document).keypress(function(ev) {
+                      if (ev.keyCode === 27 /* ESC */) {
+                        var p = s.parent();
+                        var d = s.data('d');
+                        p.empty().append(d.restoreTmpl.render(d));
+                        fnCancel.call(p, d);
+                      }
+                    });
                   }
     },
     'text-area': {
@@ -60,7 +82,8 @@
                       $(this).parent().empty().append(d.restoreTmpl.render(d));
                       fnSubmit(d);
                     });
-                    c.find("textarea").keypress(function(ev) {
+                    // was: c.find("textarea")
+                    $(document).keypress(function(ev) {
                       if (ev.keyCode === 27 /* ESC */) {
                         var p = c.parent();
                         var d = c.data('d');
@@ -78,21 +101,16 @@
         $(this);
   };
 
-  $.fn.magicedit = function(ev, sel, subclass, type, pdarg, content, postdata) {
-    $(this).on(ev, sel + ' > .' + subclass, function(ev) {
-      var view = $.view(this);
-      var d = {
-        subclass: subclass,
-        data: view.data,
-        getPostData: postdata,
-        getContent: content,
-        pdarg: pdarg,
-        view: view
-      };
-      d = inputTypes[type].init.call(this, d);
-      $(this).subsClass(subclass, subclass + '-edit').empty();
+  $.fn.magicedit = function(ev, sel, d) {
+    $(this).on(ev, sel + ' > .' + d.subclass, function(ev) {
+      d = $.extend(d, {
+        data: $.view(this).data,
+        view: $.view(this)
+      });
+      d = inputTypes[d.type].init.call(this, d);
+      $(this).subsClass(d.subclass, d.subclass + '-edit').empty();
       var par = this;
-      inputTypes[type].appendEdit.call(this, d, function(d) {
+      inputTypes[d.type].appendEdit.call(this, d, function(d) {
         var pd = d.getPostData(d);
         var ctx = {d: d, pd: pd, par: par};
         
@@ -116,7 +134,7 @@
            });
        },
        function(d) {
-         $(this).subsClass(subclass + '-edit', subclass);
+         $(this).subsClass(d.subclass + '-edit', d.subclass);
        }
       );
     });

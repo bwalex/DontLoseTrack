@@ -2,7 +2,7 @@
   .task{ :class => '{{:"status-"+status}}' }
 
     .summary
-      %a{ :name => "#task{{:id}}" }
+      %a{ :name => "task{{:id}}" }
       %span.check
         %input{ :type => "checkbox" }
       %span.imp     {{:importance}}
@@ -19,7 +19,7 @@
       .info
         .deps
           {{for task_deps}}
-          .dep
+          .dep{ :class => '{{:"status-"+dependency.status}}' }
             %a{ :href => "#task{{:dependency.id}}" }
               {{:dependency.id}}: {{: dependency.summary.trunc(20, true) }}
           {{/for}}
