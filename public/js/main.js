@@ -81,15 +81,6 @@ require([
     }, "json");
   });
 
-  $("#notelist").on('dblclick', ".tags > .tag", function(ev) {
-    var view = $.view(this);
-    console.log(this);
-    console.log(view);
-    console.log(view.parent.parent);
-    
-    //alert(JSON.stringify(view.data));
-    //alert(JSON.stringify(view.parent.parent.data));
-  });
 
 
 

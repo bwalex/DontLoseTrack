@@ -1,5 +1,5 @@
 %script{ :type => "text/x-jsrender",:id => "task-tmpl"}
-  .task
+  .task{ :class => '{{:"status-"+status}}' }
 
     .summary
       %a{ :name => "#task{{:id}}" }
@@ -24,6 +24,11 @@
               {{:dependency.id}}: {{: dependency.summary.trunc(20, true) }}
           {{/for}}
         .blocked
+          %span.label
+            Blocked:
+          %span.value
+            {{: (status === "blocked") ? "Yes" : "No"}}
+
       .text
         {{: (text != null && text != "") ? html_text : "No comments..."}}
 

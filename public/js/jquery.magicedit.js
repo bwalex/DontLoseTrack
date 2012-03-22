@@ -3,11 +3,11 @@
     'text': {
       init: function(d) {
         return $.extend(d, {
-          origContent: (typeof(d.getContent) === 'function') ? d.getContent(d) : $(this).text(),
+          origContent: (typeof(d.getContent) === 'function') ? d.getContent.call(this, d) : $(this).text(),
           restoreContent: $(this).html(),
           newContent:  null,
           restoreTmpl: $.templates(null, "{{:restoreContent}}"),
-          editTmpl: $.templates(null, "<input type='text' value='{{:origContent}}'>")
+          editTmpl: $.templates(null, "<input type='text' value='{{>origContent}}'>")
         });
       },
       appendEdit: function(d, fnSubmit, fnCancel) {
@@ -26,10 +26,24 @@
         });
       }
     },
+    'select': {
+      init: function(d) {
+              return $.extend(d, {
+                options: (typeof(d.getOptions) === 'function') ? d.getOptions.call(this, d) : [],
+                origContent: (typeof(d.getContent) === 'function') ? d.getContent.call(this, d) : $(this).text(),
+                restoreContent: $(this).html(),
+                newContent: null,
+                restoreTmpl: $.templates(null, "{{:restoreContent}}"),
+                editTmpl: $.templates(null, "")
+              });
+            },
+      appendEdit: function(d, fnSubmit, fnCancel) {
+                  }
+    },
     'text-area': {
       init: function(d) {
               return $.extend(d, {
-                origContent: d.getContent ? d.getContent(d) : $(this).text(),
+                origContent: (typeof(d.getContent) === 'function') ? d.getContent.call(this, d) : $(this).text(),
                 restoreContent: $(this).html(),
                 newContent: null,
                 restoreTmpl: $.templates(null, "{{:restoreContent}}"),

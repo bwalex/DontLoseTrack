@@ -10,6 +10,16 @@ DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, 'sqlite:test.db')
 #DataMapper.setup(:default, 'sqlite::memory:')
 
+class DBObj
+  def to_json_ex
+  end
+
+  def json_err(err)
+    j = { "errors" => [err] }
+    return j.to_json
+  end
+end
+
 class Project
   include DataMapper::Resource
 
@@ -98,8 +108,8 @@ class Task
 
   property :text,         Text,     :default => ''
 
-  property :importance,   Integer,  :default => 1
-  property :status,       Integer,  :default => 0
+  property :importance,   Text,     :default => 'medium'
+  property :status,       Text,     :default => 'normal'
 
 
   property :created_at,   DateTime
@@ -112,10 +122,30 @@ class Task
   has n, :task_deps, :child_key => [ :task_id ]
   has n, :deps, self, :through => :task_deps, :via => :dependency
 
-  NORMAL = 0
-  BLOCKED = 1
-  COMPLETED = 2
-  DEPENDS = 3
+
+  validates_with_method :importance,  :method => :valid_importance?
+  validates_with_method :status,      :method => :valid_status?
+
+  def valid_importance?
+    if @importance == "low" or
+       @importance == "medium" or
+       @importance == "high"
+       return true
+    else
+      return [false, "Importance must be either low, medium or high"]
+    end
+  end
+
+  def valid_status?
+    if @status == "active" or
+       @status == "blocked" or
+       @status == "depends" or
+       @status == "completed"
+       return true
+    else
+      return [false, "Status must be one of: active, blocked, depends, completed"]
+    end
+  end
 
   def html_text()
     if (text == nil)
@@ -123,6 +153,30 @@ class Task
     else
       return $markdown.render(text)
     end
+  end
+
+  def to_json_ex
+    if not self.valid?
+      return { "errors" => self.errors }.to_json
+    end
+
+    return self.to_json(
+      :methods => [
+        :html_text  
+      ], 
+      :relationships => {
+        :tags => {
+          :include => [:color, :name]
+        },
+        :task_deps => {
+          :relationships => {
+            :dependency => {
+              :include => [:id, :summary]
+            }
+          }
+        }
+      }
+    )
   end
 end
 
@@ -199,6 +253,17 @@ class Tag
   has n, :tasks, :through => :task_tags
   has n, :wikis, :through => :wiki_tags
   has n, :files, :through => :file_tags
+
+
+  validates_with_method :color,     :method => :valid_color?
+
+  def valid_color?
+    if @color.match(/#[abcdefABCDEF0123456789]{6}/)
+      return true
+    else
+      return [false, "Color must be an HTML color string like #abcdef"]
+    end
+  end
 end
 
 

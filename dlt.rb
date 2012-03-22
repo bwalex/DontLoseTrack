@@ -162,7 +162,23 @@ post '/task_add' do
                      :due_date => params[:task_due_date]
   )
   if t.valid?
-    t.to_json
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -183,9 +199,25 @@ end
 
 post '/task_block' do
   t = Task.get(params[:task_id])
-  t.update(:status => Task::BLOCKED);
+  t.update(:status => "blocked");
   if t.valid?
-    t.to_json
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -194,17 +226,39 @@ end
 
 
 post '/task_adddep' do
-  t = Task.get(params[:task_id])
-  tdep = Task.get(params[:task_dep_id])
 
-  dep = TaskDep.create(:task => t, :dependency => tdep)
+  begin
+    t = Task.get(params[:task_id])
+    tdep = Task.get(params[:task_dep_id])
 
-  t.task_deps << dep
-  t.status = (t.status == Task::NORMAL) ? Task::BLOCKED : t.status;
+    dep = TaskDep.create(:task => t, :dependency => tdep)
 
-  t.save
+    t.task_deps << dep
+    t.status = (t.status == "normal") ? "depends" : t.status;
+
+    t.save
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(e.resource.errors) }.to_json
+  end
   if t.valid?
-    t.to_json
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -217,15 +271,47 @@ post '/task_deletedep' do
   dep.destroy
 
   t = Task.get(params[:task_id])
-  t.to_json
+  t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
 end
 
 
 post '/task_complete' do
   t = Task.get(params[:task_id])
-  t.update(:status => Task::COMPLETED);
+  t.update(:status => "completed");
   if t.valid?
-    t.to_json
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -236,7 +322,22 @@ end
 post '/task_changesummary' do
   t = Task.get(params[:task_id])
   if t.update(:summary => params[:task_summary])
-    t.to_json(:methods => [:html_text])
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -248,7 +349,23 @@ post '/task_changetext' do
   t = Task.get(params[:task_id])
   t.update(:text => params[:task_text])
   if t.valid?
-    t.to_json(:methods => [:html_text])
+    t.to_json(
+    :methods => [
+      :html_text  
+    ], 
+    :relationships => {
+      :tags => {
+        :include => [:color, :name]
+      },
+      :task_deps => {
+        :relationships => {
+          :dependency => {
+            :include => [:id, :summary]
+          }
+        }
+      }
+  })
+
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json
@@ -286,14 +403,14 @@ get '/db_populate' do
   t1.tags << tag4
   t1.save
 
-  t2 = p.tasks.create(:summary => 'Finish this web app', :importance => 2)
+  t2 = p.tasks.create(:summary => 'Finish this web app', :importance => 'high')
   t2.tags << tag1
   t2.tags << tag3
   t2.tags << tag4
   t2.tags << tag5
   t2.save
 
-  t = p.tasks.create(:summary => 'Pick up parcels', :importance => 3)
+  t = p.tasks.create(:summary => 'Pick up parcels', :importance => 'low')
   t.tags << tag3
   dep = TaskDep.create(:task => t, :dependency => t1)
   t.task_deps << dep
