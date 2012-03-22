@@ -1,4 +1,6 @@
 require 'rubygems'
+require 'redcarpet'
+require 'pygments'
 require 'data_mapper'
 require 'dm-validations'
 require 'dm-timestamps'
@@ -114,6 +116,14 @@ class Task
   BLOCKED = 1
   COMPLETED = 2
   DEPENDS = 3
+
+  def html_text()
+    if (text == nil)
+      return ''
+    else
+      return $markdown.render(text)
+    end
+  end
 end
 
 
@@ -195,6 +205,24 @@ end
 DataMapper.finalize
 DataMapper.auto_upgrade!
 
+
+class HTMLwithPygments < Redcarpet::Render::HTML
+  def block_code(code, language)
+    Pygments.highlight(code, :lexer => language)
+  end
+end
+
+
+$markdown = Redcarpet::Markdown.new(
+  HTMLwithPygments.new(:hard_wrap => true), {
+    :autolink => true,
+    :tables => true,
+    :no_intra_empahsis => true,
+    :strikethrough => true,
+    :lax_html_blocks => true,
+    :fenced_code_blocks => true,
+    :space_after_headers => true
+  })
 
 def dm_errors_to_array(p)
   a = []

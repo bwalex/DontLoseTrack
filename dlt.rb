@@ -28,6 +28,9 @@ end
 get '/tasks' do
 #  Task.all(:project_id => params[:project_id]).to_json(:relationships => {:tags => {:include => [:color, :name] }, :task_deps => {:include => [:task, :dependency]}})
   Task.all(:project_id => params[:project_id]).to_json(
+    :methods => [
+      :html_text  
+    ], 
     :relationships => {
       :tags => {
         :include => [:color, :name]
@@ -232,9 +235,20 @@ end
 
 post '/task_changesummary' do
   t = Task.get(params[:task_id])
-  t.update(:summary => params[:task_summary])
+  if t.update(:summary => params[:task_summary])
+    t.to_json(:methods => [:html_text])
+  else
+    j = { "errors" => dm_errors_to_array(t) }
+    j.to_json
+  end
+end
+
+
+post '/task_changetext' do
+  t = Task.get(params[:task_id])
+  t.update(:text => params[:task_text])
   if t.valid?
-    t.to_json
+    t.to_json(:methods => [:html_text])
   else
     j = { "errors" => dm_errors_to_array(t) }
     j.to_json

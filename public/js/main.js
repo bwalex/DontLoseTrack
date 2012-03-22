@@ -127,14 +127,29 @@ require([
     }, "json");
   });
 
-  $("#tasklist").magicedit('dblclick', ".task > .summary", "summary", 'text', {}, function(d) {
+  $("#tasklist").magicedit('dblclick', ".task > .summary", "summary", 'text', {}, {}, function(d) {
     return {
       observable: tasks,
       url: '/task_changesummary',
       data: {
         project_id: projectId,
         task_id: d.data.id,
-        task_summary: d.newtext
+        task_summary: d.newContent
+      }
+    };
+  });
+ 
+  $("#tasklist").magicedit('dblclick', ".task > .body", "text", 'text-area', {}, function(d) {
+    /* getter function */
+    return d.data.text;
+  }, function(d) {
+    return {
+      observable: tasks,
+      url: '/task_changetext',
+      data: {
+        project_id: projectId,
+        task_id: d.data.id,
+        task_text: d.newContent
       }
     };
   });

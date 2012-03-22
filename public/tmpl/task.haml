@@ -25,5 +25,5 @@
           {{/for}}
         .blocked
       .text
-        %p {{:text}}
+        {{: (text != null && text != "") ? html_text : "No comments..."}}
 
