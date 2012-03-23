@@ -33,7 +33,7 @@ get '/tasks' do
     ], 
     :relationships => {
       :tags => {
-        :include => [:color, :name]
+        :include => [:id, :color, :name]
       },
       :task_deps => {
         :relationships => {
@@ -53,103 +53,108 @@ end
 
 
 post '/note_add' do
-  p = Project.get(params[:project_id])
-  n = p.notes.create(:text => params[:note_text])
-  if n.valid?
-    n.to_json
-  else
-    j = { "errors" => dm_errors_to_array(n) }
-    j.to_json
+  begin
+    p = Project.get(params[:project_id])
+    n = p.notes.create(:text => params[:note_text])
+    n.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/note_addtag' do
-  n = Note.get(params[:note_id])
-  t = Tag.get(params[:tag_id])
+  begin
+    n = Note.get(params[:note_id])
+    t = Tag.get(params[:tag_id])
 
-  n.tags << t
-  n.save
-  if n.valid?
-    n.to_json
-  else
-    j = { "errors" => dm_errors_to_array(n) }
-    j.to_json
+    n.tags << t
+    n.save
+    n.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
+end
+
+
+post '/note_deletetag' do
+  begin
+    nt = NoteTag.get(params[:note_id], params[:tag_id])
+    nt.delete
+
+    n = Note.get(params[:note_id])
+    n.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/note_delete' do
-  n = Note.get(params[:note_id])
-
-  j = {}
-  if not n.destroy
-    j = { "errors" => dm_errors_to_array(n) }
+  begin
+    n = Note.get(params[:note_id])
+    n.destroy
+    {}.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
-  j.to_json
 end
 
 
 post '/tag_add' do
-  p = Project.get(params[:project_id])
-  t = p.tags.create(:name => params[:tag_name],
-                    :color => params[:tag_color]
-  )
-  if t.valid?
+  begin
+    p = Project.get(params[:project_id])
+    t = p.tags.create(:name => params[:tag_name],
+                      :color => params[:tag_color])
     t.to_json
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/tag_update' do
-  t = Tag.get(params[:tag_id])
-  t.update(:name => params[:tag_name],
-           :color => params[:tag_color]
-  )
-  if t.valid?
+  begin
+    t = Tag.get(params[:tag_id])
+    t.update(:name => params[:tag_name],
+             :color => params[:tag_color])
     t.to_json
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/tag_changecolor' do
-  t = Tag.get(params[:tag_id])
-  t.update(:color => params[:tag_color])
-  if t.valid?
+  begin
+    t = Tag.get(params[:tag_id])
+    t.update(:color => params[:tag_color])
     t.to_json
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/tag_changename' do
-  t = Tag.get(params[:tag_id])
-  t.update(:name => params[:tag_name])
-  if t.valid?
+  begin
+    t = Tag.get(params[:tag_id])
+    t.update(:name => params[:tag_name])
     t.to_json
-  else
-    j = { "errors" => dm_errors_to_array(t) }
-    j.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
 end
 
 
 post '/tag_delete' do
-  t = Tag.get(params[:tag_id])
-
-  j = {}
-  if not t.destroy
-    j = { "errors" => dm_errors_to_array(t) }
+  begin
+    t = Tag.get(params[:tag_id])
+    t.destroy
+    {}.to_json
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
   end
-  j.to_json
 end
 
 
@@ -216,8 +221,35 @@ end
 
 post '/task_deletedep' do
   begin
-    dep = t.task_deps.get(params[:task_dep_id])
+    dep = TaskDep.get(params[:task_id], params[:task_dep_id])
     dep.destroy
+
+    t = Task.get(params[:task_id])
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
+end
+
+
+post '/task_addtag' do
+  begin
+    task = Task.get(params[:task_id])
+    t = Tag.get(params[:tag_id])
+
+    task.tags << t
+    task.save
+    task.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
+end
+
+
+post '/task_deletetag' do
+  begin
+    tt = TagTask.get(params[:task_id], params[:tag_id])
+    tt.delete
 
     t = Task.get(params[:task_id])
     t.to_json_ex
@@ -230,7 +262,33 @@ end
 post '/task_complete' do
   begin
     t = Task.get(params[:task_id])
-    t.update(:status => "completed");
+    t.update(:status => "completed")
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
+end
+
+
+post '/task_uncomplete' do
+  begin
+    t = Task.get(params[:task_id])
+    if t.deps.empty?
+      t.update(:status => "active")
+    else
+      t.update(:status => "depends")
+    end
+    t.to_json_ex
+  rescue DataMapper::SaveFailureError => e
+    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  end
+end
+
+
+post '/task_changeimportance' do
+  begin
+    t = Task.get(params[:task_id])
+    t.update(:importance => params[:task_importance])
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
     { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json

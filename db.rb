@@ -43,37 +43,29 @@ end
 
 class NoteTag
   include DataMapper::Resource
-  property :id,           Serial
-
-  belongs_to :tag
-  belongs_to :note
+  belongs_to :note,                 :key => true
+  belongs_to :tag,                  :key => true
 end
 
 
 class TagTask
   include DataMapper::Resource
-  property :id,           Serial
-
-  belongs_to :tag
-  belongs_to :task
+  belongs_to :task,                 :key => true
+  belongs_to :tag,                  :key => true
 end
 
 
 class TagWiki
   include DataMapper::Resource
-  property :id,           Serial
-
-  belongs_to :tag
-  belongs_to :wiki
+  belongs_to :wiki,                 :key => true
+  belongs_to :tag,                  :key => true
 end
 
 
 class FileTag
   include DataMapper::Resource
-  property :id,           Serial
-
-  belongs_to :tag
-  belongs_to :file
+  belongs_to :file,                 :key => true
+  belongs_to :tag,                  :key => true
 end
 
 
@@ -86,16 +78,39 @@ class Note
   property :created_at,   DateTime
 
   has n, :tags, :through => :note_tags
+
+  def html_text
+    if (text == nil)
+      return ''
+    else
+      return $markdown.render(text)
+    end
+  end
+ 
+  def to_json_ex
+    if not self.valid?
+      return { "errors" => self.errors }.to_json
+    end
+
+    return self.to_json(
+      :methods => [
+        :html_text
+      ], 
+      :relationships => {
+        :tags => {
+          :include => [:color, :name]
+        }
+      }
+    )
+  end
 end
 
 
 class TaskDep
   include DataMapper::Resource
 
-  property :id,           Serial
-
-  belongs_to :task,       'Task'
-  belongs_to :dependency, 'Task'
+  belongs_to :task,       'Task',   :key => true
+  belongs_to :dependency, 'Task',   :key => true
 end
 
 
@@ -147,7 +162,7 @@ class Task
     end
   end
 
-  def html_text()
+  def html_text
     if (text == nil)
       return ''
     else
@@ -206,6 +221,41 @@ class Wiki
 
   has n, :tags, :through => :wiki_tags
   has n, :wikiContents
+
+  def html_text
+    text = ''
+
+    newestContent = self.wikiContents.first(:order => [ :created_at.desc ])
+    if newestContent != nil
+      text = newestContent.text
+    end
+
+    if (newestContent == nil or text == nil)
+      return ''
+    else
+      return $markdown.render(text)
+    end
+  end
+ 
+  def to_json_ex
+    if not self.valid?
+      return { "errors" => self.errors }.to_json
+    end
+
+    return self.to_json(
+      :methods => [
+        :html_text
+      ], 
+      :relationships => {
+        :tags => {
+          :include => [:id, :color, :name]
+        },
+        :wikiContents => {
+          :include => [:id, :text, :created_at]
+        }
+      }
+    )
+  end
 end
 
 
@@ -217,7 +267,28 @@ class WikiContent
   property :text,         Text
   
   property :created_at,   DateTime
-  property :update_at,    DateTime
+
+
+ def html_text
+    if (text == nil)
+      return ''
+    else
+      return $markdown.render(text)
+    end
+  end
+
+  def to_json_ex
+    if not self.valid?
+      return { "errors" => self.errors }.to_json
+    end
+
+    return self.to_json(
+      :methods => [
+        :html_text  
+      ]
+    )
+  end
+
 end
 
 

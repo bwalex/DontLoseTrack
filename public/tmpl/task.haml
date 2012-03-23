@@ -5,7 +5,8 @@
       %a{ :name => "task{{:id}}" }
       %span.check
         %input{ :type => "checkbox" }
-      %span.imp     {{:importance}}
+      %span.imp{ :class => '{{:"importance-"+importance}}' }
+        {{:importance}}
       %span.summary {{:summary}}
       %span.tags
         {{for tags}}

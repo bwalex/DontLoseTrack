@@ -154,6 +154,31 @@ require([
     }
   });
 
+
+  $("#tasklist").magicedit('dblclick', ".task > .summary", {
+    subclass: "imp",
+    type: 'select',
+    getContent: function(d) { return d.data.importance; },
+    getOptions: function(d) {
+      return [
+        {option: "low"},
+        {option: "medium"},
+        {option: "high"}
+      ];
+    },
+    getPostData: function(d) {
+      return {
+        observable: tasks,
+        url: '/task_changeimportance',
+        data: {
+          project_id: projectId,
+          task_id: d.data.id,
+          task_importance: d.newContent
+        }
+      };
+    }
+  });
+
  
   $("#tasklist").magicedit('dblclick', ".task > .body", {
     subclass: "text",
