@@ -387,6 +387,8 @@ input {
     background-color: white;
     margin: 2px 0;
     border: 1px solid #8496BA;
+    border-radius: 2px;
+
 }
 
 .editsection {
@@ -410,3 +412,97 @@ img.boring {
 }
 
 
+
+.task .summary .tags {
+  position: relative;
+  display: inline;
+}
+
+.task .summary .tags .tag {
+    padding: 0px 5px 0px 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    //margin-top: 5px;
+    //margin-bottom: 2px;
+    font-size: 11px;
+    font-family:	"lucida grande",tahoma,verdana,arial,sans-serif;
+    font-weight: 400;
+    border-radius: 5px;
+    line-height: 1.3em;
+    display: inline-block;
+
+    //float: left;
+    //border: 1px solid darkgrey;
+}
+
+.task .body {
+}
+
+.hide {
+  display: none;
+}
+
+.tag .rm-icon {
+//  margin-top: 5px;
+  float: right;
+  height: 15px;
+  width: 15px;
+}
+
+.tag p {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  display: inline;
+}
+
+.tag .rm-icon .rm-button {
+    float: right;
+    background-image: url("http://static.ak.fbcdn.net/rsrc.php/v1/yA/r/4WSewcWboV8.png");
+    background-color: transparent;
+    background-repeat: no-repeat;
+    height: 15px;
+    width: 15px;
+    opacity: 0;
+}
+
+.tag:hover .rm-icon .rm-button {
+    opacity: 1;
+}
+
+.task .summary .imp {
+  //width: 10px;
+  //height: 1em;
+  min-height: 28px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 5px;
+
+}
+
+.task .summary .importance-medium {
+  background-color: #0060BF;
+}
+
+.task .summary .importance-high {
+  background-color: #EA5200;
+}
+
+.task .summary .importance-low {
+  background-color: #359AFF;
+}
+
+.task {
+  background-color: #FCFCFC;
+  padding-left: 5px;
+  padding-right: 5px;
+  //padding-bottom: 2px;
+  //padding-top: 2px;
+  margin-top: -1px;
+  min-height: 28px;
+  border: 1px solid #AAAAAA;
+}
+
+.status-blocked .summary .summary {
+  font-style: italic;
+  color: $light_grey;
+}

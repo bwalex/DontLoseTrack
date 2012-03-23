@@ -80,7 +80,7 @@ end
 post '/note_deletetag' do
   begin
     nt = NoteTag.get(params[:note_id], params[:tag_id])
-    nt.delete
+    nt.destroy
 
     n = Note.get(params[:note_id])
     n.to_json_ex
@@ -249,7 +249,7 @@ end
 post '/task_deletetag' do
   begin
     tt = TagTask.get(params[:task_id], params[:tag_id])
-    tt.delete
+    tt.destroy
 
     t = Task.get(params[:task_id])
     t.to_json_ex

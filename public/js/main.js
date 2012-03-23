@@ -118,6 +118,27 @@ require([
     }, "json");
   });
 
+  // XXX: Collapse all button
+
+  /*
+  $("#tasklist").on('click', ".task > .summary > .summary", function(ev) {
+    $(this).parent().parent().children('.body').toggleClass("hide");
+  });
+
+  $("#tasklist").on('dblclick', ".task > .summary > .summary", function(ev) {
+    $(this).parent().parent().children('.body').removeClass("hide");
+  });
+  */
+
+  $("#tasklist").on('click', ".task > .summary", function(ev) {
+    if ($(this).children(".summary-edit").length == 0)
+      $(this).parent().children('.body').toggleClass("hide");
+  });
+
+  $("#tasklist").on('dblclick', ".task > .summary", function(ev) {
+    $(this).parent().children('.body').removeClass("hide");
+  });
+
   $("#tasklist").magicedit('dblclick', ".task > .summary", {
     subclass: "summary",
     type: 'text', 
@@ -132,6 +153,37 @@ require([
         }
       };
     }
+  });
+
+
+  $("#tasklist").on("click", ".task .summary .tags .tag .rm-icon .rm-button", function(ev) {
+    view = $.view(this);
+    console.log(view);
+    console.log(view.data);
+    parview = $.view(this).parent.parent;
+    console.log(parview);
+    var ctx = { view: view, data: view.data, idx: parview.index };
+    $.ajax({
+      type: 'POST',
+      url: '/task_deletetag',
+      data: {
+        project_id: projectId,
+        task_id: parview.data.id,
+        tag_id: view.data.id
+      },
+      dataType: "json",
+      context: ctx,
+      success: function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tasks).remove(this.idx);
+          $.observable(tasks).insert(this.idx, data);
+        }
+      }
+    });
   });
 
 
@@ -161,9 +213,10 @@ require([
     getContent: function(d) { return d.data.importance; },
     getOptions: function(d) {
       return [
+        {option: "none"},
         {option: "low"},
         {option: "medium"},
-        {option: "high"}
+        {option: "high"},
       ];
     },
     getPostData: function(d) {

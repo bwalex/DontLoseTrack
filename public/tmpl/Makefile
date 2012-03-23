@@ -1,5 +1,8 @@
+FORMAT?= html5
+STYLE?= ugly
+
 all:
-	haml -f html5 foo.haml  test.tmpl
-	haml -f html5 note.haml note.tmpl
-	haml -f html5 task.haml task.tmpl
-	haml -f html5 tag.haml  tag.tmpl
+	haml -f $(FORMAT) -t $(STYLE) foo.haml  | tr -d '\n' > test.tmpl
+	haml -f $(FORMAT) -t $(STYLE) note.haml | tr -d '\n' > note.tmpl
+	haml -f $(FORMAT) -t $(STYLE) task.haml | tr -d '\n' > task.tmpl
+	haml -f $(FORMAT) -t $(STYLE) tag.haml  | tr -d '\n' > tag.tmpl

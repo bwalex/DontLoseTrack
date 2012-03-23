@@ -41,6 +41,18 @@ end
 
 
 
+class TimelineEvent
+  include DataMapper::Resource
+
+  property :id,           Serial
+
+
+
+  property :created_at,   DateTime
+end
+
+
+
 class NoteTag
   include DataMapper::Resource
   belongs_to :note,                 :key => true
@@ -144,7 +156,8 @@ class Task
   def valid_importance?
     if @importance == "low" or
        @importance == "medium" or
-       @importance == "high"
+       @importance == "high" or
+       @importance == "none"
        return true
     else
       return [false, "Importance must be either low, medium or high"]

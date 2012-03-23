@@ -6,17 +6,18 @@
       %span.check
         %input{ :type => "checkbox" }
       %span.imp{ :class => '{{:"importance-"+importance}}' }
-        {{:importance}}
+        &nbsp;&nbsp;
       %span.summary {{:summary}}
-      %span.tags
+      %div.tags
         {{for tags}}
-        %span.tag{ :style => "background-color: {{:color}};" }
-          {{:name}}          
+        %div.tag{ :style => "border: 2px solid {{:color}};" }
+          {{:name}}
+          %span.rm-icon
+            %a.rm-button{ :href => "javascript:void(0);" }
         {{/for}}
-        
       %span.duedate {{:due_date}}
     
-    .body
+    .body.hide
       .info
         .deps
           {{for task_deps}}
