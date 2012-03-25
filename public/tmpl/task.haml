@@ -8,28 +8,43 @@
       %span.imp{ :class => '{{:"importance-"+importance}}' }
         &nbsp;&nbsp;
       %span.summary {{:summary}}
-      %div.tags
+      .tags
         {{for tags}}
-        %div.tag{ :style => "border: 2px solid {{:color}};" }
+        .tag{ :style => "border: 2px solid {{:color}};" }
           {{:name}}
           %span.rm-icon
             %a.rm-button{ :href => "javascript:void(0);" }
         {{/for}}
+        .tag.placeholder-tag
+          &nbsp;
       %span.duedate {{:due_date}}
     
-    .body.hide
+    .body.contracted
       .info
         .deps
+          .dep-top-line
+            .label.fl
+              Dependencies:
+            .icon-adddep
+              %a.adddep-button
+              .clearer
+            .clearer
           {{for task_deps}}
           .dep{ :class => '{{:"status-"+dependency.status}}' }
-            %a{ :href => "#task{{:dependency.id}}" }
-              {{:dependency.id}}: {{: dependency.summary.trunc(20, true) }}
+            .dep-sum
+              %a{ :href => "#task{{:dependency.id}}" }
+                {{:dependency.id}}: {{: dependency.summary.trunc(30, true) }}
+            %span.rm-icon-2
+              %a.rm-button-2{ :href => "javascript:void(0);" }
+              .clearer
+            .clearer
           {{/for}}
         .blocked
           %span.label
-            Blocked:
+            Blocked:&nbsp;
           %span.value
             {{: (status === "blocked") ? "Yes" : "No"}}
+        .clearer
 
       .text
         {{: (text != null && text != "") ? html_text : "No comments..."}}

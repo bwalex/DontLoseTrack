@@ -29,7 +29,8 @@ get '/tasks' do
 #  Task.all(:project_id => params[:project_id]).to_json(:relationships => {:tags => {:include => [:color, :name] }, :task_deps => {:include => [:task, :dependency]}})
   Task.all(:project_id => params[:project_id]).to_json(
     :methods => [
-      :html_text  
+      :html_text,
+      :status
     ], 
     :relationships => {
       :tags => {
@@ -184,15 +185,10 @@ end
 post '/task_block' do
   begin
     t = Task.get(params[:task_id])
-    if t.status == "completed"
-    elsif (params[:task_block] == "yes")
-      t.update(:status => "blocked")
-    elsif (params[:task_block] == "no")
-      if not t.deps.empty?
-        t.update(:status => "depends")
-      else
-        t.update(:status => "active")
-      end
+    if params[:task_block] == "no"
+      t.update(:blocked => false)
+    elsif params[:task_block] == "yes"
+      t.update(:blocked => true)
     end
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
@@ -204,14 +200,17 @@ end
 post '/task_adddep' do
   begin
     t = Task.get(params[:task_id])
-    tdep = Task.get(params[:task_dep_id])
 
-    dep = TaskDep.create(:task => t, :dependency => tdep)
+    if TaskDep.get(params[:task_id], params[:task_dep_id]) == nil
+      tdep = Task.get(params[:task_dep_id])
 
-    t.task_deps << dep
-    t.status = (t.status == "active") ? "depends" : t.status;
+      dep = TaskDep.create(:task => t, :dependency => tdep)
 
-    t.save
+      t.task_deps << dep
+
+      t.save
+    end
+
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
     { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
@@ -262,7 +261,7 @@ end
 post '/task_complete' do
   begin
     t = Task.get(params[:task_id])
-    t.update(:status => "completed")
+    t.update(:completed => true)
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
     { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
@@ -273,11 +272,7 @@ end
 post '/task_uncomplete' do
   begin
     t = Task.get(params[:task_id])
-    if t.deps.empty?
-      t.update(:status => "active")
-    else
-      t.update(:status => "depends")
-    end
+    t.update(:completed => false)
     t.to_json_ex
   rescue DataMapper::SaveFailureError => e
     { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
@@ -331,6 +326,14 @@ get '/db_populate' do
   tag3 = p.tags.create(:color => '#00ffff', :name => 'Tag3')
   tag4 = p.tags.create(:color => '#ffff00', :name => 'Tag4')
   tag5 = p.tags.create(:color => '#ff00ff', :name => 'Tag5')
+  p.tags.create(:color => '#eebbcc', :name => 'Tag Master 6')
+  p.tags.create(:color => '#F3918F', :name => 'Long Tag Number 7')
+  p.tags.create(:color => '#391AAA', :name => 'Another long tag 8')
+  p.tags.create(:color => '#13dfa9', :name => 'taggi tag')
+  p.tags.create(:color => '#316131', :name => 'moo tag')
+  p.tags.create(:color => '#986301', :name => 'meh tag')
+  p.tags.create(:color => '#750931', :name => 'foo tag')
+  p.tags.create(:color => '#865dfa', :name => 'Very, very, extremely long, tag')
 
   n = p.notes.create(:text => 'Next time I need to revise the initial PCB layout')
   n.tags << tag1

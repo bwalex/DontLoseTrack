@@ -1,11 +1,14 @@
 require([
   "jquery.tools",
+  "jquery-ui-1.8.18.custom.min",
   "jquery.magicedit",
+  "jquery.jdropdown",
   //"jquery.views",
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl",
-  "require.text!/tmpl/tag.tmpl"
+  "require.text!/tmpl/tag.tmpl",
+  "require.text!/tmpl/tag-norm.tmpl"
   ], function() {
   //XXX: hardcoded project ID :(
   projectId = 1;
@@ -13,7 +16,7 @@ require([
   // Insert all templates
   // XXX: adjust >= according to number of non-templates in
   //      dependencies.
-  for (l = arguments.length-1 ; l >= 2; l--)
+  for (l = arguments.length-1 ; l >= 4; l--)
     $("body").append(arguments[l]);
 
 
@@ -22,7 +25,7 @@ require([
 
 
   String.prototype.trunc = function(n,useWordBoundary) {
-    var toLong = this.length>n,
+    var toLong = this.ength>n,
       s_ = toLong ? this.substr(0,n-1) : this;
       s_ = useWordBoundary && toLong ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
       return  toLong ? s_ +'...' : s_;
@@ -30,14 +33,16 @@ require([
 
  
   ////////////////////////////////////////////////////////
-  // SIDEBAR TAG FILTER
+  // SIDEBAR TAG FILTER, TAG DRAG
   tags = [];
 
   $.templates({
-    tagFilterTemplate: "#tag-tmpl"
+    tagFilterTemplate: "#tag-tmpl",
+    tagNoRmTemplate: "#tag-norm-tmpl"
   });
  
   $.link.tagFilterTemplate("#tagfilterlist > .tags", tags);
+  $.link.tagNoRmTemplate("#tagdrag > .tags", tags);
 
   $.getJSON('/tags?project_id=' + projectId, function(j) {
      $.each(j, function(k, v) {
@@ -45,6 +50,180 @@ require([
     });
   });
 
+  $('.btn_addtag').on('click', function(ev) {
+    $('#tagdrag').toggleClass('hide');
+    $('.btn_addtag').toggleClass('btn-selected');
+  });
+
+  $('#tasklist').on('click', '.dep .rm-icon-2 .rm-button-2', function(ev) {
+    var view = $.view(this);
+    var parview = $.view(this).parent.parent;
+    console.log(view);
+    console.log(parview);
+    $.ajax({
+      type: 'POST',
+      url: '/task_deletedep',
+      data: {
+        project_id: projectId,
+        task_id: view.data.task_id,
+        task_dep_id: view.data.dependency_id
+      },
+      dataType: "json",
+      success: function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tasks).remove(parview.index);
+          $.observable(tasks).insert(parview.index, data);
+        }
+      }
+    });
+  });
+
+  $('#tasklist').on('click', '.adddep-button', function(ev) {
+    var depc = $(this).closest('.deps');
+
+    $(this).toggleClass('btn-selected');
+    if (!$(this).hasClass('btn-selected')) {
+      depc.find('.input-dep').remove();
+      return;
+    }
+    var ibd = $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>');
+
+    ibd.find('input')
+      .on('focus', function() {
+        if ($(this).val() == 'Add Dependency...')
+          $(this).val('');
+      })
+      .on('focusout', function() {
+        if ($(this).val() == '')
+          $(this).val('Add Dependency...');
+      })
+      .autocomplete({
+        source: function(req, cb) {
+          var options = [];
+          $.each(tasks, function(k, v) {
+            if (v.summary.toLowerCase().indexOf(req.term.toLowerCase()) !== -1)
+              options.push({label: v.summary, value: v.id});
+          });
+          cb(options);
+        },
+        focus: function(ev, ui) {
+                 return false;
+        },
+        select: function(ev, ui) {
+          var view = $.view(this);
+          //view.data.expanded = !$(this).closest('.task').children('.body').hasClass('hide');
+          
+          ev.stopImmediatePropagation();
+          $.ajax({
+            type: 'POST',
+            url: '/task_adddep',
+            data: {
+              project_id: projectId,
+              task_id: view.data.id,
+              task_dep_id: ui.item.value
+            },
+            dataType: "json",
+            success: function(data) {
+              var depc = $(this).closest('.deps');
+
+              if (data.errors) {
+                $.each(data.errors, function(k, v) {
+                  alert(v);
+                });
+              } else {
+                depc.find('.adddep-button').removeClass('btn-selected');
+                depc.find('.input-dep').remove();
+                $.observable(tasks).update(view.index, data);
+              }
+            }
+          });
+        }
+      });
+ 
+    $(document).keydown(function(ev) {
+      if (ev.keyCode === 27 /* ESC */) {
+        depc.find('.input-dep').remove();
+        depc.find('.adddep-button').removeClass('btn-selected');
+      }
+    });
+
+    ibd.appendTo(depc);
+    
+  });
+
+  console.log($('#tagdrag > .tags > .tag'));
+  $.views.helpers({
+    afterUpdate: function(oldItem, newItem) {
+                    var view = this,
+                        oldItem = oldItem[0],
+                        newItem = newItem[0];
+
+                    console.log("After Update");
+                    console.log(view);
+                    console.log(oldItem);
+                    console.log(newItem);
+                    newItem.expanded = oldItem.expanded;
+                    if (newItem.expanded) {
+                      console.log(view.nodes[0]);
+                      console.log($(view.nodes[0]));
+                      $(view.nodes[0]).children('.contracted').removeClass('contracted');
+                    }
+    },
+    afterChange: function(ev) {
+                   $('#tagdrag > .tags > .tag').draggable({
+                     helper: 'clone',
+                     cursor: 'move',
+                     snap: false
+                   });
+
+                   $('.task > .summary'/*'.tags > .placeholder-tag' */).droppable({
+                     accept: '#tagdrag > .tags > .tag',
+                     //activeClass: 'show',
+                     //hoverClass: 'placeholder-tag-highlight',
+                     activate: function(ev, ui) {
+                       $(this).find('.placeholder-tag').width(ui.draggable.width());
+                       $(this).find('.placeholder-tag').addClass('show');
+                     },
+                     deactivate: function(ev, ui) {
+                       $(this).find('.placeholder-tag').removeClass('show');
+                     },
+                     over: function(ev, ui) {
+                       $(this).find('.placeholder-tag').addClass('placeholder-tag-highlight');
+                     },
+                     out: function(ev, ui) {
+                       $(this).find('.placeholder-tag').removeClass('placeholder-tag-highlight');
+                     },
+                     drop: function(ev, ui) {
+                       var view = $.view(this);
+                       var view_tag = $.view(ui.draggable.context);
+                       $.ajax({
+                         type: 'POST',
+                         url: '/task_addtag',
+                         data: {
+                           project_id: projectId,
+                           task_id: view.data.id,
+                           tag_id: view_tag.data.id
+                         },
+                         dataType: "json",
+                         success: function(data) {
+                           if (data.errors) {
+                             $.each(data.errors, function(k, v) {
+                               alert(v);
+                             });
+                           } else {
+                             $.observable(tasks).remove(view.index);
+                             $.observable(tasks).insert(view.index, data);
+                           }
+                         }
+                       });
+                     }
+                   });
+                 }
+  });
 
 
   ////////////////////////////////////////////////////////
@@ -75,7 +254,7 @@ require([
           alert(v);
         });
       } else {
-        $.observable(n).insert(0, data);
+        $.observable(n).insert(n.length, data);
         $("#newnotetext").val("");
       }
     }, "json");
@@ -96,26 +275,44 @@ require([
 
   $.getJSON('/tasks?project_id=' + projectId, function(j) {
     $.each(j, function(k, v) {
-      $.observable(tasks).insert(0, v);
+      $.observable(tasks).insert(tasks.length, v);
     });
   });
 
-  $('#newtask > form').submit(function() {
-    newtask = {
-      project_id: projectId,
-      task_summary:  $("#newtasksummary").val()
-    };
 
-    $.post('/task_add', newtask, function(data) {
-      if (data.errors) {
-        $.each(data.errors, function(k, v) {
-          alert(v);
-        });
-      } else {
-        $.observable(tasks).insert(0, data);
-        $("#newtasksummary").val("");
+  $('#newtasksummary').on('focus', function() {
+    if ($(this).val() == 'Add Task...')
+      $(this).val('');
+  });
+
+  $('#newtasksummary').on('focusout', function() {
+    if ($(this).val() == '')
+      $(this).val('Add Task...');
+  });
+
+  $('#newtasksummary').keypress(function(ev) {
+    if (ev.keyCode === 13 /* ENTER */) {
+      newtask = {
+        project_id: projectId,
+        task_summary: $("#newtasksummary").val()
       }
-    }, "json");
+      $.post('/task_add', newtask, function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tasks).insert(0, data);
+          $("#newtasksummary").val("");
+          $("#newtasksummary").blur();
+        }
+      }, "json");
+    }
+  });
+
+  $(document).keydown(function(ev) {
+    if (ev.keyCode === 27 /* ESC */)
+      $('#newtasksummary').blur();
   });
 
   // XXX: Collapse all button
@@ -131,12 +328,14 @@ require([
   */
 
   $("#tasklist").on('click', ".task > .summary", function(ev) {
-    if ($(this).children(".summary-edit").length == 0)
-      $(this).parent().children('.body').toggleClass("hide");
+    if ($(this).children(".summary-edit").length == 0) {
+      $(this).parent().children('.body').toggleClass("contracted");
+      $.view(this).data.expanded = !$(this).parent().children('.body').hasClass("contracted");
+    }
   });
 
   $("#tasklist").on('dblclick', ".task > .summary", function(ev) {
-    $(this).parent().children('.body').removeClass("hide");
+    $(this).parent().children('.body').removeClass("contracted");
   });
 
   $("#tasklist").magicedit('dblclick', ".task > .summary", {
@@ -184,6 +383,7 @@ require([
         }
       }
     });
+    ev.stopImmediatePropagation();
   });
 
 
@@ -249,5 +449,7 @@ require([
       };
     }
   });
+
+  $('#task_sorter').jdropdown({ 'container': '#fb_menu', 'orientation': 'right' });
 });
 

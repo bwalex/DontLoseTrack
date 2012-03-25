@@ -20,7 +20,7 @@
           }
         });
 
-        $(document).keypress(function(ev) {
+        $(document).keydown(function(ev) {
           if (ev.keyCode === 27 /* ESC */) {
             var d = i.data('d');
             var p = i.parent();
@@ -52,7 +52,7 @@
                       $(this).parent().empty().append(d.restoreTmpl.render(d));
                       fnSubmit(d);
                     });
-                    $(document).keypress(function(ev) {
+                    $(document).keydown(function(ev) {
                       if (ev.keyCode === 27 /* ESC */) {
                         var p = s.parent();
                         var d = s.data('d');
@@ -83,7 +83,7 @@
                       fnSubmit(d);
                     });
                     // was: c.find("textarea")
-                    $(document).keypress(function(ev) {
+                    $(document).keydown(function(ev) {
                       if (ev.keyCode === 27 /* ESC */) {
                         var p = c.parent();
                         var d = c.data('d');

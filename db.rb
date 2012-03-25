@@ -135,8 +135,10 @@ class Task
 
   property :text,         Text,     :default => ''
 
-  property :importance,   Text,     :default => 'medium'
-  property :status,       Text,     :default => 'active'
+  property :importance,   Text,     :default => 'none'
+
+  property :completed,    Boolean,  :default => false
+  property :blocked,      Boolean,  :default => false
 
 
   property :created_at,   DateTime
@@ -151,7 +153,6 @@ class Task
 
 
   validates_with_method :importance,  :method => :valid_importance?
-  validates_with_method :status,      :method => :valid_status?
 
   def valid_importance?
     if @importance == "low" or
@@ -164,14 +165,15 @@ class Task
     end
   end
 
-  def valid_status?
-    if @status == "active" or
-       @status == "blocked" or
-       @status == "depends" or
-       @status == "completed"
-       return true
+  def status
+    if @completed
+      return "completed"
+    elsif @blocked
+      return "blocked"
+    elsif not deps.empty?
+      return "depends"
     else
-      return [false, "Status must be one of: active, blocked, depends, completed"]
+      return "active"
     end
   end
 
@@ -190,7 +192,8 @@ class Task
 
     return self.to_json(
       :methods => [
-        :html_text  
+        :html_text,
+        :status
       ], 
       :relationships => {
         :tags => {

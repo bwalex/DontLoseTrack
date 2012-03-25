@@ -2,6 +2,7 @@
 
 %html
   %head
+    -#%link{ :type => "text/css", :href => "/css/smoothness/jquery-ui-1.8.18.custom.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/pyg_github.css", :rel => "stylesheet" }
@@ -9,8 +10,8 @@
     %script{ :src => 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' }
     -#%script{ :src => "http://cdn.jquerytools.org/1.2.6/all/jquery.tools.min.js" }
     %script{ :src => "/js/jsrender.js" }
-    %script{ :src => "/js/jquery.observable.raw.js" }
-    %script{ :src => "/js/jquery.views.raw.js" }
+    %script{ :src => "/js/jquery.observable.myraw.js" }
+    %script{ :src => "/js/jquery.views.myraw.js" }
     %script{ :src => "/js/require.config.js" }
     :javascript
       require(["/js/require.text.js"]);
@@ -53,19 +54,22 @@
             #notelist
 
           #tasks
+            .tabmenu
+              .ico
+                %a.fb_dropdown#task_sorter(data-items = '[{"label": "IntelliSort"}, {"label": "due date"}, {"label": "priority"}]' )
+              .ico
+                %a.btn_addtag
+              .clearer
+
             #newtask
-              %form
-                %span.tarea
-                  %input#newtasksummary{ :type => "text" , :value => "Add new task..." }
-                %span.btn
-                  %input{ :type => "submit" }
+              %input#newtasksummary{ :type => "text" , :value => "Add Task..." }
             #tasklist
 
           #wikis
           #emails
 
       .grid_4.clearfix
-        .clearfix#sidebar
+        #sidebar
           %h3 Filter by Tag
           #newtag
             %form
@@ -81,3 +85,13 @@
     .container_16.clearfix#footer
       .grid_16
         Copyright (C) 2012, Alex Hornung
+
+    #tagdrag.hide
+      .tags
+      -#%span.rm-icon-2
+        %a.rm-button-2{ :href => "javascript:void(0);" }
+        .clearer
+      .clearer
+
+
+    .fb_menu#fb_menu{ :style => "display:none;" }
