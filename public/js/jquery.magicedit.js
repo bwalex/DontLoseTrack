@@ -127,8 +127,7 @@
                   });
                   $(this.par).subsClass(this.d.subclass + '-edit', this.d.subclass);
                 } else {
-                  $.observable(this.pd.observable).remove(this.d.view.index);
-                  $.observable(this.pd.observable).insert(this.d.view.index, data);
+                  $.observable(this.pd.observable).update(this.d.view.index, data);
                 }
               }
            });

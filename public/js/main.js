@@ -75,8 +75,7 @@ require([
             alert(v);
           });
         } else {
-          $.observable(tasks).remove(parview.index);
-          $.observable(tasks).insert(parview.index, data);
+          $.observable(tasks).update(parview.index, data);
         }
       }
     });
@@ -215,8 +214,7 @@ require([
                                alert(v);
                              });
                            } else {
-                             $.observable(tasks).remove(view.index);
-                             $.observable(tasks).insert(view.index, data);
+                             $.observable(tasks).update(view.index, data);
                            }
                          }
                        });
@@ -336,6 +334,7 @@ require([
 
   $("#tasklist").on('dblclick', ".task > .summary", function(ev) {
     $(this).parent().children('.body').removeClass("contracted");
+    $.view(this).data.expanded = true;
   });
 
   $("#tasklist").magicedit('dblclick', ".task > .summary", {
@@ -378,8 +377,7 @@ require([
             alert(v);
           });
         } else {
-          $.observable(tasks).remove(this.idx);
-          $.observable(tasks).insert(this.idx, data);
+          $.observable(tasks).update(this.idx, data);
         }
       }
     });
