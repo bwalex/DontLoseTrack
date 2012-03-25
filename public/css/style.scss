@@ -396,7 +396,17 @@ input {
     margin: 2px 0;
     border: 1px solid $light_grey;
     border-radius: 2px;
+    font-family: Helvetica,Verdana,Arial,Clean,sans-serif;
+    font-size: 100%;
+    color: $light_grey;
+}
 
+input:focus {
+    color: #000000;
+}
+
+input:hover {
+    background-color: #FFFFD5;
 }
 
 .editsection {
@@ -470,7 +480,7 @@ img.boring {
 
 /*.tag*/ .rm-icon .rm-button {
     float: right;
-    background-image: url("http://static.ak.fbcdn.net/rsrc.php/v1/yA/r/4WSewcWboV8.png");
+    background-image: url("/img/close_button.png");
     background-color: transparent;
     background-repeat: no-repeat;
     height: 15px;
@@ -493,7 +503,7 @@ img.boring {
     top: 50%;
     right: 4px;
     margin-top: -7px;
-    background-image: url("http://static.ak.fbcdn.net/rsrc.php/v1/yA/r/4WSewcWboV8.png");
+    background-image: url("/img/close_button.png");
     background-color: transparent;
     background-repeat: no-repeat;
     height: 15px;
@@ -571,6 +581,10 @@ $task_summary_height: 28px;
 .status-blocked .summary .summary {
   font-style: italic;
   color: $light_grey;
+}
+
+.status-completed .summary .summary {
+  text-decoration: line-through;
 }
 
 .task .body {
@@ -700,6 +714,16 @@ $task_summary_height: 28px;
   //background-position: 0 0;
 }
 
+.btn_showcompleted {
+  width: 40px;
+  height: 22px;
+  text-decoration: none;
+  float: left;
+  display: block;
+  background: url('/img/anchor_viewcompleted.png') 0 -22px;
+}
+
+
 .btn-selected {
   background-position: 0 0;
 }
@@ -750,12 +774,10 @@ $task_summary_height: 28px;
 }
 
 #newtasksummary {
-  font-family: Helvetica,Verdana,Arial,Clean,sans-serif;
-  font-size: 100%;
   width: 50%;
-  color: $light_grey;
 }
 
+/*
 #newtasksummary:focus {
   color: #000000;
 }
@@ -763,6 +785,7 @@ $task_summary_height: 28px;
 #newtasksummary:hover {
   background-color: #FFFFD5;
 }
+*/
 
 
 #tagdrag {

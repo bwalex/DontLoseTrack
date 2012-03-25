@@ -103,6 +103,11 @@
 
   $.fn.magicedit = function(ev, sel, d) {
     $(this).on(ev, sel + ' > .' + d.subclass, function(ev) {
+      if ($.view(this).data.magic_editing === true) {
+        return;
+      }
+      $.view(this).data.magic_editing = true;
+
       d = $.extend(d, {
         data: $.view(this).data,
         view: $.view(this)
@@ -133,6 +138,7 @@
            });
        },
        function(d) {
+         $.view(this).data.magic_editing = false;
          $(this).subsClass(d.subclass + '-edit', d.subclass);
        }
       );

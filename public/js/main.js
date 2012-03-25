@@ -58,6 +58,8 @@ require([
   $('#tasklist').on('click', '.dep .rm-icon-2 .rm-button-2', function(ev) {
     var view = $.view(this);
     var parview = $.view(this).parent.parent;
+    if (parview.data.magic_editing === true)
+      return;
     console.log(view);
     console.log(parview);
     $.ajax({
@@ -83,12 +85,20 @@ require([
 
   $('#tasklist').on('click', '.adddep-button', function(ev) {
     var depc = $(this).closest('.deps');
+    var self = this;
+
+    if ($(this).hasClass('btn-selected')) {
+      depc.find('.input-dep').remove();
+      $.view(this).data.magic_editing = false;
+      return;
+    } else {
+      if ($.view(this).data.magic_editing === true)
+        return;
+      $.view(this).data.magic_editing = true;
+    }
 
     $(this).toggleClass('btn-selected');
-    if (!$(this).hasClass('btn-selected')) {
-      depc.find('.input-dep').remove();
-      return;
-    }
+    
     var ibd = $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>');
 
     ibd.find('input')
@@ -135,6 +145,7 @@ require([
                 });
               } else {
                 depc.find('.adddep-button').removeClass('btn-selected');
+                view.data.magic_editing = false;
                 depc.find('.input-dep').remove();
                 $.observable(tasks).update(view.index, data);
               }
@@ -145,6 +156,7 @@ require([
  
     $(document).keydown(function(ev) {
       if (ev.keyCode === 27 /* ESC */) {
+        $.view(self).data.magic_editing = false; 
         depc.find('.input-dep').remove();
         depc.find('.adddep-button').removeClass('btn-selected');
       }
@@ -198,6 +210,8 @@ require([
                      },
                      drop: function(ev, ui) {
                        var view = $.view(this);
+                       if (view.data.magic_editing === true)
+                        return;
                        var view_tag = $.view(ui.draggable.context);
                        $.ajax({
                          type: 'POST',
@@ -315,15 +329,6 @@ require([
 
   // XXX: Collapse all button
 
-  /*
-  $("#tasklist").on('click', ".task > .summary > .summary", function(ev) {
-    $(this).parent().parent().children('.body').toggleClass("hide");
-  });
-
-  $("#tasklist").on('dblclick', ".task > .summary > .summary", function(ev) {
-    $(this).parent().parent().children('.body').removeClass("hide");
-  });
-  */
 
   $("#tasklist").on('click', ".task > .summary", function(ev) {
     if ($(this).children(".summary-edit").length == 0) {
@@ -359,6 +364,8 @@ require([
     console.log(view);
     console.log(view.data);
     parview = $.view(this).parent.parent;
+    if (parview.data.magic_editing === true)
+      return;
     console.log(parview);
     var ctx = { view: view, data: view.data, idx: parview.index };
     $.ajax({
@@ -384,6 +391,31 @@ require([
     ev.stopImmediatePropagation();
   });
 
+  $("#tasklist").on("change", ".task .summary .check input:checkbox", function(ev) {
+    var view = $.view(this);
+    var complete = $(this).prop('checked');
+    $.ajax({
+      type: 'POST',
+      url: '/task_' + (complete?'':'un') + 'complete',
+      data: {
+        project_id: projectId,
+        task_id: view.data.id
+      },
+      dataType: "json",
+      success: function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tasks).update(view.index, data);
+        }
+      }
+    });
+  });
+  $("#tasklist").on("click", ".task .summary .check input:checkbox", function(ev) {
+    ev.stopImmediatePropagation();
+  });
 
   $("#tasklist").magicedit('dblclick', ".task > .body > .info > .blocked", {
     subclass: "value",

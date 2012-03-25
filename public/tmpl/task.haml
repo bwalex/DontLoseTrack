@@ -3,8 +3,10 @@
 
     .summary
       %a{ :name => "task{{:id}}" }
-      %span.check
-        %input{ :type => "checkbox" }
+        %span.check
+          :plain
+            <input type="checkbox" {{: completed ? "checked" : "" }}/>
+          -#%input{ :type => "checkbox", :checked => "{{: (completed) ? 'checked' : ''}}" }
       %span.imp{ :class => '{{:"importance-"+importance}}' }
         &nbsp;&nbsp;
       %span.summary {{:summary}}

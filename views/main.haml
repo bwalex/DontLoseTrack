@@ -45,6 +45,10 @@
         .panes
           #timeline
           #notes
+            .tabmenu
+              .ico
+                %a.btn_addtag
+              .clearer
             #newnote
               %form
                 %span.tarea
@@ -56,9 +60,11 @@
           #tasks
             .tabmenu
               .ico
+                %a.btn_addtag
+              .ico
                 %a.fb_dropdown#task_sorter(data-items = '[{"label": "IntelliSort"}, {"label": "due date"}, {"label": "priority"}]' )
               .ico
-                %a.btn_addtag
+                %a.btn_showcompleted
               .clearer
 
             #newtask
