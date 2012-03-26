@@ -1,7 +1,6 @@
-require 'rubygems'
-require 'active_record'
-require 'composite_primary_keys'
-require 'foreigner'
+#require 'rubygems'
+#require 'active_record'
+#require 'foreigner'
 
 
 class Project < ActiveRecord::Base
@@ -88,7 +87,8 @@ end
 
 
 class NoteTag < ActiveRecord::Base
-  self.primary_keys :note_id, :tag_id
+#  self.primary_keys = :note_id, :tag_id
+  
 
   belongs_to :note
   belongs_to :tag
@@ -96,7 +96,7 @@ end
 
 
 class TaskTag < ActiveRecord::Base
-  self.primary_keys :task_id, :tag_id
+#  self.primary_keys = :task_id, :tag_id
 
   belongs_to :task
   belongs_to :tag
@@ -117,7 +117,7 @@ end
 
 
 class TaskDep < ActiveRecord::Base
-  self.primary_keys :task_id, :dependency_id
+#  self.primary_keys :task_id, :dependency_id
 
   belongs_to :task
   belongs_to :dependency, :class_name => "Task",

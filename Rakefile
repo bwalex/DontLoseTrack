@@ -35,4 +35,13 @@ namespace :db do
       EOS
     end
   end
+
+  desc 'Output the schema to db/schema.rb'
+  task :schema do
+    File.open('db/schema.rb', 'w') do |f|
+      ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, f)
+    end
+  end
+
+
 end

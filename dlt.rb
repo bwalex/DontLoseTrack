@@ -1,15 +1,18 @@
 require 'rubygems'
-require 'sinatra'
+require 'bundler/setup'
 
-require 'logger'
-require 'active_record'
-require 'redcarpet'
-require 'pygments'
+Bundler.require
+#require 'sinatra'
+
+#require 'logger'
+#require 'active_record'
+#require 'redcarpet'
+#require 'pygments'
 #require 'active_support'
 #require 'active_support/json'
-require 'json'
-require 'haml'
-require 'yaml'
+#require 'json'
+#require 'haml'
+#require 'yaml'
 #require 'db.rb'
 
 
