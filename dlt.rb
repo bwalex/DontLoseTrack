@@ -256,7 +256,7 @@ end
 
 post '/task_deletetag' do
   begin
-    tt = TagTask.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
+    tt = TaskTag.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
     tt.destroy
 
     t = Task.find(params[:task_id])
