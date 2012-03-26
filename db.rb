@@ -108,9 +108,10 @@ class Tag < ActiveRecord::Base
   has_many :wikis,        :through => :wiki_tags
 
   validates :name,        :length => { :in => 1..32 }
-  validates_uniqueness_of :name, :scope => :project_id
-  validates :color,       :format => { :with => /#[abcdefABCDEF0123456789]{6}/,
-                                       :message => "Color must be an HTML color like #abcdef" }
+  validates_uniqueness_of :name,  :scope => :project_id
+  validates_format_of     :color, :with => /#[abcdefABCDEF0123456789]{6}/,
+                                  :message => "Color must be an HTML color like #abcdef",
+                                  :allow_nil => true
 end
 
 

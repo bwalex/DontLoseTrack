@@ -12,18 +12,19 @@ class Setup < ActiveRecord::Migration
     create_table :tags, :force => true do |t|
       t.references    :project
       t.string        :name
-      t.string        :color
+      t.string        :color,         :default => "#359AFF"
     end
 
+    add_foreign_key(:tags, :projects, :dependent => :delete)
 
-    add_foreign_key(:tags, :projects)
+
     create_table :notes, :force => true do |t|
       t.references    :project
       t.text          :text
       t.timestamps
     end
 
-    add_foreign_key(:notes, :projects)
+    add_foreign_key(:notes, :projects, :dependent => :delete)
 
 
     create_table :tasks, :force => true do |t|
@@ -37,7 +38,7 @@ class Setup < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_foreign_key(:tasks, :projects)
+    add_foreign_key(:tasks, :projects, :dependent => :delete)
 
 
     create_table :wikis, :force => true do |t|
@@ -46,7 +47,7 @@ class Setup < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_foreign_key(:wikis, :projects)
+    add_foreign_key(:wikis, :projects, :dependent => :delete)
 
 
     create_table :wiki_contents, :force => true do |t|
@@ -55,7 +56,7 @@ class Setup < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_foreign_key(:wiki_contents, :wikis)
+    add_foreign_key(:wiki_contents, :wikis, :dependent => :delete)
 
 
 #    #CPK:
@@ -67,8 +68,8 @@ class Setup < ActiveRecord::Migration
       t.integer       :dependency_id
     end
 
-    add_foreign_key(:task_deps, :tasks, :column => 'task_id')
-    add_foreign_key(:task_deps, :tasks, :column => 'dependency_id')
+    add_foreign_key(:task_deps, :tasks, :column => 'task_id', :dependent => :delete)
+    add_foreign_key(:task_deps, :tasks, :column => 'dependency_id', :dependent => :delete)
     add_index :task_deps, [:task_id, :dependency_id], :unique => true
 
 
@@ -77,8 +78,8 @@ class Setup < ActiveRecord::Migration
       t.references    :tag
     end
 
-    add_foreign_key(:task_tags, :tasks)
-    add_foreign_key(:task_tags, :tags)
+    add_foreign_key(:task_tags, :tasks, :dependent => :delete)
+    add_foreign_key(:task_tags, :tags, :dependent => :delete)
     add_index :task_tags, [:task_id, :tag_id], :unique => true
 
 
@@ -87,8 +88,8 @@ class Setup < ActiveRecord::Migration
       t.references    :tag
     end
 
-    add_foreign_key(:note_tags, :notes)
-    add_foreign_key(:note_tags, :tags)
+    add_foreign_key(:note_tags, :notes, :dependent => :delete)
+    add_foreign_key(:note_tags, :tags, :dependent => :delete)
     add_index :note_tags, [:note_id, :tag_id], :unique => true
 
 
@@ -97,8 +98,8 @@ class Setup < ActiveRecord::Migration
       t.references    :tag
     end
 
-    add_foreign_key(:wiki_tags, :wikis)
-    add_foreign_key(:wiki_tags, :tags)
+    add_foreign_key(:wiki_tags, :wikis, :dependent => :delete)
+    add_foreign_key(:wiki_tags, :tags, :dependent => :delete)
     add_index :wiki_tags, [:wiki_id, :tag_id], :unique => true
 
 

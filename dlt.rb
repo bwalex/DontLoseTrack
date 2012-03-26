@@ -89,7 +89,7 @@ post '/note_deletetag' do
   begin
     nt = NoteTag.where("note_id = ? AND tag_id = ?", params[:note_id], params[:tag_id]).limit(1)
     #nt = NoteTag.get(params[:note_id], params[:tag_id])
-    nt.destroy
+    NoteTag.destroy(nt)
 
     n = Note.find(params[:note_id])
     n.to_json
@@ -102,7 +102,7 @@ end
 post '/note_delete' do
   begin
     n = Note.find(params[:note_id])
-    n.destroy
+    Note.destroy(n)
     {}.to_json
   rescue ActiveRecord::RecordInvalid => e
     e.errors_to_json
@@ -161,7 +161,7 @@ end
 post '/tag_delete' do
   begin
     t = Tag.find(params[:tag_id])
-    t.destroy
+    Tag.destroy(t)
     {}.to_json
   rescue ActiveRecord::RecordInvalid => e
     e.errors_to_json
@@ -184,7 +184,7 @@ end
 post '/task_delete' do
   begin
     t = Task.find(params[:task_id])
-    t.destroy
+    Task.destroy(t)
     {}.to_json
   rescue ActiveRecord::RecordInvalid => e
     e.errors_to_json
@@ -230,7 +230,7 @@ end
 post '/task_deletedep' do
   begin
     dep = TaskDep.where("task_id = ? AND dependency_id = ?", params[:task_id], params[:task_dep_id])
-    dep.destroy
+    TaskDep.destroy(dep)
 
     t = Task.find(params[:task_id])
     t.to_json
@@ -257,7 +257,7 @@ end
 post '/task_deletetag' do
   begin
     tt = TaskTag.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
-    tt.destroy
+    TaskTag.destroy(tt)
 
     t = Task.find(params[:task_id])
     t.to_json
@@ -389,3 +389,8 @@ not_found do
   "This is not the web page you are looking for."
 end
 
+
+
+
+#error do
+#end
