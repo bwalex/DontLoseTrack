@@ -1,0 +1,7 @@
+*~
+*.swp
+Gemfile.lock
+public/tmpl/*.tmpl
+public/css/style.css
+.sass-cache
+.scss-cache

@@ -1,6 +1,9 @@
 require 'active_record'
 require 'fileutils'
 require 'dlt'
+require 'foreigner'
+
+Foreigner.load
 
 namespace :db do
   desc "migrate your database"
