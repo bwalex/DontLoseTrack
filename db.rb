@@ -1,177 +1,180 @@
 require 'rubygems'
-require 'redcarpet'
-require 'pygments'
-require 'data_mapper'
-require 'dm-constraints'
-require 'dm-validations'
-require 'dm-timestamps'
-require 'dm-serializer'
+require 'active_record'
+require 'composite_primary_keys'
+require 'foreigner'
 
-DataMapper::Logger.new($stdout, :debug)
-#DataMapper.setup(:default, 'sqlite:test.db')
-DataMapper.setup(:default, 'mysql://root:root@localhost/dlt')
 
-#DataMapper.setup(:default, 'sqlite::memory:')
+class Project < ActiveRecord::Base
+  has_many :tags,     :dependent => :delete_all
 
-class DBObj
-  def to_json_ex
-  end
+  has_many :notes,    :dependent => :delete_all
+  has_many :tasks,    :dependent => :delete_all
+  has_many :emails,   :dependent => :delete_all
+  has_many :wikis,    :dependent => :delete_all
+  has_many :files,    :dependent => :delete_all
 
-  def json_err(err)
-    j = { "errors" => [err] }
-    return j.to_json
-  end
-end
-
-class Project
-  include DataMapper::Resource
-
-  property :id,           Serial
-  property :name,         String,   :length => 1..32,
-                                    :unique => true,
-                                    :required => true
-
-  property :github_repo,  String,   :required => false
-
-  has n, :tags
-
-  has n, :notes
-  has n, :tasks
-  has n, :emails
-  has n, :wikis
-  has n, :files
+  validates :name, :length => { :in => 1..50 }
+  validates :name, :uniqueness => true
 end
 
 
+class Note < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :notes
 
-class TimelineEvent
-  include DataMapper::Resource
+  has_many :tags,       :through => :note_tags,
+                        :uniq => true
 
-  property :id,           Serial
-
-
-
-  property :created_at,   DateTime
-end
-
-
-
-class NoteTag
-  include DataMapper::Resource
-  belongs_to :note,                 :key => true
-  belongs_to :tag,                  :key => true
-end
-
-
-class TagTask
-  include DataMapper::Resource
-  belongs_to :task,                 :key => true, :constraint => :destroy
-  belongs_to :tag,                  :key => true, :constraint => :destroy
-end
-
-
-class TagWiki
-  include DataMapper::Resource
-  belongs_to :wiki,                 :key => true
-  belongs_to :tag,                  :key => true
-end
-
-
-class FileTag
-  include DataMapper::Resource
-  belongs_to :file,                 :key => true
-  belongs_to :tag,                  :key => true
-end
-
-
-class Note
-  include DataMapper::Resource
-
-  property :id,           Serial
-  property :text,         Text,     :required => true
-
-  property :created_at,   DateTime
-
-  has n, :tags, :through => :note_tags
+  validates :text, :length => { :minimum => 1 }
 
   def html_text
-    if (text == nil)
+    if text == nil
       return ''
     else
       return $markdown.render(text)
     end
   end
- 
-  def to_json_ex
-    if not self.valid?
-      return { "errors" => self.errors }.to_json
-    end
 
-    return self.to_json(
-      :methods => [
-        :html_text
-      ], 
-      :relationships => {
-        :tags => {
-          :include => [:color, :name]
-        }
-      }
+  def as_json_ex
+    return self.as_json(
+      :methods => :html_text,
+      :include => :tags
     )
   end
 end
 
 
-class TaskDep
-  include DataMapper::Resource
+class WikiContent < ActiveRecord::Base
+  belongs_to :wiki,     :inverse_of => :wiki_contents
 
-  belongs_to :task,       'Task',   :key => true
-  belongs_to :dependency, 'Task',   :key => true
+  def html_text
+    if text == nil
+      return ''
+    else
+      return $markdown.render(text)
+    end
+  end
+
+  def as_json_ex
+    return
+  end
 end
 
 
-class Task
-  include DataMapper::Resource
-  
-  property :id,           Serial
-  property :summary,      String,   :length => 1..140,
-                                    :required => true
+class Wiki < ActiveRecord::Base
+  has_many :tags,       :through => :wiki_tags,
+                        :uniq => true
 
-  property :text,         Text,     :default => ''
+  has_many :wiki_contents
 
-  property :importance,   Text,     :default => 'none'
+  validates :title, :length => { :in => 1..200 }
 
-  property :completed,    Boolean,  :default => false
-  property :blocked,      Boolean,  :default => false
+  def html_text
+    text = ''
+
+    newestContent = wiki_contents.order('created_at DESC').first
+    if newestContent != nil
+      text = newestContent.text
+
+    return $markdown.render(text)
+  end
+
+  def as_json_ex
+    return self.as_json(
+      :methods => :html_text,
+      :include => :tags
+    )
+  end
+end
 
 
-  property :created_at,   DateTime
-  property :updated_at,   DateTime
+class NoteTag < ActiveRecord::Base
+  self.primary_keys :note_id, :tag_id
 
-  property :due_date,     DateTime
-
-  has n, :tags, :through => :task_tags, :constraint => :destroy
-
-  has n, :task_deps, :child_key => [ :task_id ]
-  has n, :deps, self, :through => :task_deps, :via => :dependency
+  belongs_to :note
+  belongs_to :tag
+end
 
 
-  validates_with_method :importance,  :method => :valid_importance?
+class TaskTag < ActiveRecord::Base
+  self.primary_keys :task_id, :tag_id
 
-  def valid_importance?
-    if @importance == "low" or
-       @importance == "medium" or
-       @importance == "high" or
-       @importance == "none"
-       return true
+  belongs_to :task
+  belongs_to :tag
+end
+
+
+class Tag < ActiveRecord::Base
+  belongs_to :project,    :inverse_of => :tags
+  has_many :notes,        :through => :note_tags
+  has_many :tasks,        :through => :task_tags
+  has_many :wikis,        :through => :wiki_tags
+
+  validates :name,        :length => { :in => 1..32 }
+  validates_uniqueness_of :name, :scope => :project_id
+  validates :color        :format => { :with => /#[abcdefABCDEF0123456789]{6}/,
+                                       :message => "Color must be an HTML color like #abcdef" }
+end
+
+
+class TaskDep < ActiveRecord::Base
+  self.primary_keys :task_id, :dependency_id
+
+  belongs_to :task
+  belongs_to :dependency, :class_name => "Task",
+                          :foreign_key => "dependency_id"
+end
+
+
+class Task < ActiveRecord::Base
+  IMPORTANCE_NONE   = 0
+  IMPORTANCE_LOW    = 1
+  IMPORTANCE_MEDIUM = 2
+  IMPORTANCE_HIGH   = 3
+
+  belongs_to :project,  :inverse_of => :tasks
+
+  has_many :tags,       :through => :task_tags,
+                        :uniq => true
+
+  has_many :task_deps
+                        
+  has_many :deps,       :through => :task_deps,
+                        :source => :dependency
+
+  validates :summary,   :length => { :in => 1..140 }
+
+  def importance=(imp)
+    case imp
+    when "high"
+      self[:importance] = IMPORTANCE_HIGH
+    when "medium"
+      self[:importance] = IMPORTANCE_MEDIUM
+    when "low"
+      self[:importance] = IMPORTANCE_LOW
     else
-      return [false, "Importance must be either low, medium or high"]
+      self[:importance] = IMPORTANCE_NONE
+    end
+  end
+
+  def importance
+    case self[:importance]
+    when IMPORTANCE_NONE
+      return "none"
+    when IMPORTANCE_LOW
+      return "low"
+    when IMPORTANCE_MEDIUM
+      return "medium"
+    when IMPORTANCE_HIGH
+      return "high"
+    else
+      return "none"
     end
   end
 
   def status
-    if @completed
+    if    completed
       return "completed"
-    elsif @blocked
+    elsif blocked
       return "blocked"
     elsif not deps.empty?
       return "depends"
@@ -188,191 +191,17 @@ class Task
     end
   end
 
-  def to_json_ex
-    if not self.valid?
-      return { "errors" => self.errors }.to_json
-    end
-
-    return self.to_json(
+  def as_json_ex
+    self.as_json(
       :methods => [
-        :html_text,
-        :status
-      ], 
-      :relationships => {
-        :tags => {
-          :include => [:color, :name]
-        },
-        :task_deps => {
-          :relationships => {
-            :dependency => {
-              :include => [:id, :summary]
-            }
-          }
-        }
-      }
+                    :html_text,
+                    :status
+                  ],
+      :include => [
+                    {:deps => { :methods => [:status], :only => [:id, :summary] }},
+                    :tags
+                  ]
     )
   end
 end
 
-
-class Email
-  include DataMapper::Resource
-  
-  property :id,           Serial
-  property :subject,      String,   :length => 1..256,
-                                    :required => true
-
-  property :text,         Text
-  property :created_at,   DateTime
-
-end
-
-
-class Wiki
-  include DataMapper::Resource
-  
-  property :id,           Serial
-  property :title,        String,   :length => 1..140,
-                                    :required => true
-
-  property :created_at,   DateTime
-  property :updated_at,   DateTime
-
-  has n, :tags, :through => :wiki_tags
-  has n, :wikiContents
-
-  def html_text
-    text = ''
-
-    newestContent = self.wikiContents.first(:order => [ :created_at.desc ])
-    if newestContent != nil
-      text = newestContent.text
-    end
-
-    if (newestContent == nil or text == nil)
-      return ''
-    else
-      return $markdown.render(text)
-    end
-  end
- 
-  def to_json_ex
-    if not self.valid?
-      return { "errors" => self.errors }.to_json
-    end
-
-    return self.to_json(
-      :methods => [
-        :html_text
-      ], 
-      :relationships => {
-        :tags => {
-          :include => [:id, :color, :name]
-        },
-        :wikiContents => {
-          :include => [:id, :text, :created_at]
-        }
-      }
-    )
-  end
-end
-
-
-class WikiContent
-  include DataMapper::Resource
-
-  property :id,           Serial
-
-  property :text,         Text
-  
-  property :created_at,   DateTime
-
-
- def html_text
-    if (text == nil)
-      return ''
-    else
-      return $markdown.render(text)
-    end
-  end
-
-  def to_json_ex
-    if not self.valid?
-      return { "errors" => self.errors }.to_json
-    end
-
-    return self.to_json(
-      :methods => [
-        :html_text  
-      ]
-    )
-  end
-
-end
-
-
-class File
-  include DataMapper::Resource
-  property :id,           Serial
-  property :file,         String, :length => 1..140,
-                                  :required => true
-
-  property :path,         String, :length => 1..1024,
-                                  :required => true
-
-  has n, :tags, :through => :file_tags
-end
-#class Bug
-#end
-
-
-class Tag
-  include DataMapper::Resource
-  
-  property :id,           Serial
-  property :name,         String,   :length => 1..32,
-                                    :unique_index => true,
-                                    :required => true
-
-  property :color,        String,   :length => 2..7,
-                                    :default => '#359AFF'
-
-  belongs_to :project,              :unique_index => true
-
-  has n, :notes, :through => :note_tags, :constraint => :destroy
-  has n, :tasks, :through => :task_tags, :constraint => :destroy
-  has n, :wikis, :through => :wiki_tags, :constraint => :destroy
-  has n, :files, :through => :file_tags, :constraint => :destroy
-
-
-  validates_is_unique :name, :scope => :project
-  validates_with_method :color,     :method => :valid_color?
-
-  def valid_color?
-    if @color == nil
-      return true
-    elsif @color.match(/#[abcdefABCDEF0123456789]{6}/)
-      return true
-    else
-      return [false, "Color must be an HTML color string like #abcdef"]
-    end
-  end
-end
-
-
-DataMapper::Model.raise_on_save_failure = true 
-DataMapper.finalize
-DataMapper.auto_upgrade!
-
-
-def dm_errors_to_array(p)
-  a = []
-  if p.valid?
-  else
-    p.errors.each do |e|
-      a = a << e[0]
-    end
-  end
-
-  return a
-end

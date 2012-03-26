@@ -36,6 +36,8 @@ configure do
 
   ActiveRecord::Base.logger = Logger.new(STDOUT)
   ActiveRecord::Base.establish_connection(dbconfig)
+
+  ActiveRecord::Base.include_root_in_json = false
 end
 
 
