@@ -125,15 +125,17 @@
               data: pd.data,
               dataType: "json",
               context: ctx,
-              success: function(data) {
-                if (data.errors) {
+              error: function(r, s, e) {
+                var data = $.parseJSON(r.responseText);
+                if (data != null) {
                   $.each(data.errors, function(k, v) {
                     alert(v);
                   });
-                  $(this.par).subsClass(this.d.subclass + '-edit', this.d.subclass);
-                } else {
-                  $.observable(this.pd.observable).update(this.d.view.index, data);
                 }
+                $(this.par).subsClass(this.d.subclass + '-edit', this.d.subclass);
+              },
+              success: function(data) {
+                $.observable(this.pd.observable).update(this.d.view.index, data);
               }
            });
        },

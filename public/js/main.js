@@ -62,14 +62,16 @@ require([
         tag_id: view.data.id
       },
       dataType: "json",
-      success: function(data) {
-        if (data.errors) {
+      error: function(r, s, e) {
+        var data = $.parseJSON(r.responseText);
+        if (data != null) {
           $.each(data.errors, function(k, v) {
             alert(v);
           });
-        } else {
-          $.observable(tags).remove(view.index);
         }
+      },
+      success: function(data) {
+        $.observable(tags).remove(view.index);
       }
     });
   });
@@ -87,21 +89,28 @@ require([
 
   $('#newtagname').keypress(function(ev) {
     if (ev.keyCode === 13 /* ENTER */) {
-      newtag = {
-        project_id: projectId,
-        tag_name: $("#newtagname").val()
-      }
-      $.post('/tag_add', newtag, function(data) {
-        if (data.errors) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        } else {
+      $.ajax({
+        type: 'POST',
+        url: '/tag_add',
+        data: {
+          project_id: projectId,
+          tag_name: $("#newtagname").val()
+        },
+        dataType: "json",
+        error: function(r, s, e) {
+          var data = $.parseJSON(r.responseText);
+          if (data != null) {
+            $.each(data.errors, function(k, v) {
+              alert(v);
+            });
+          }
+        },
+        success: function(data) {
           $.observable(tags).insert(0, data);
           $("#newtagname").val("");
           $("#newtagname").blur();
         }
-      }, "json");
+      });
     }
   });
 
@@ -128,14 +137,16 @@ require([
         task_dep_id: view.data.dependency_id
       },
       dataType: "json",
-      success: function(data) {
-        if (data.errors) {
+      error: function(r, s, e) {
+        var data = $.parseJSON(r.responseText);
+        if (data != null) {
           $.each(data.errors, function(k, v) {
             alert(v);
           });
-        } else {
-          $.observable(tasks).update(parview.index, data);
         }
+      },
+      success: function(data) {
+        $.observable(tasks).update(parview.index, data);
       }
     });
   });
@@ -194,19 +205,20 @@ require([
               task_dep_id: ui.item.value
             },
             dataType: "json",
-            success: function(data) {
-              var depc = $(this).closest('.deps');
-
-              if (data.errors) {
+            error: function(r, s, e) {
+              var data = $.parseJSON(r.responseText);
+              if (data != null) {
                 $.each(data.errors, function(k, v) {
                   alert(v);
                 });
-              } else {
-                depc.find('.adddep-button').removeClass('btn-selected');
-                view.data.magic_editing = false;
-                depc.find('.input-dep').remove();
-                $.observable(tasks).update(view.index, data);
               }
+            },
+            success: function(data) {
+              var depc = $(this).closest('.deps');
+              depc.find('.adddep-button').removeClass('btn-selected');
+              view.data.magic_editing = false;
+              depc.find('.input-dep').remove();
+              $.observable(tasks).update(view.index, data);
             }
           });
         }
@@ -224,7 +236,6 @@ require([
     
   });
 
-  console.log($('#tagdrag > .tags > .tag'));
   $.views.helpers({
     afterUpdate: function(oldItem, newItem) {
                     var view = this,
@@ -280,14 +291,16 @@ require([
                            tag_id: view_tag.data.id
                          },
                          dataType: "json",
-                         success: function(data) {
-                           if (data.errors) {
+                         error: function(r, s, e) {
+                           var data = $.parseJSON(r.responseText);
+                           if (data != null) {
                              $.each(data.errors, function(k, v) {
                                alert(v);
                              });
-                           } else {
-                             $.observable(tasks).update(view.index, data);
                            }
+                         }, 
+                         success: function(data) {
+                           $.observable(tasks).update(view.index, data);
                          }
                        });
                      }
@@ -313,21 +326,27 @@ require([
   });
 
   $('#newnote > form').submit(function() {
-    newnote = {
-      project_id: projectId,
-      note_text:  $("#newnotetext").val()
-    };
-
-    $.post('/note_add', newnote, function(data) {
-      if (data.errors) {
-        $.each(data.errors, function(k, v) {
-          alert(v);
-        });
-      } else {
+    $.ajax({
+      type: 'POST',
+      url: '/note_add',
+      data: {
+        project_id: projectId,
+        note_text: $("#newnotetext").val()
+      },
+      dataType: "json",
+      error: function(r, s, e) {
+        var data = $.parseJSON(r.responseText);
+        if (data != null) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        }
+      },
+      success: function(data) {
         $.observable(n).insert(n.length, data);
         $("#newnotetext").val("");
       }
-    }, "json");
+    });
   });
 
 
@@ -362,21 +381,28 @@ require([
 
   $('#newtasksummary').keypress(function(ev) {
     if (ev.keyCode === 13 /* ENTER */) {
-      newtask = {
-        project_id: projectId,
-        task_summary: $("#newtasksummary").val()
-      }
-      $.post('/task_add', newtask, function(data) {
-        if (data.errors) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        } else {
+      $.ajax({
+        type: 'POST',
+        url: '/task_add',
+        data: {
+          project_id: projectId,
+          task_summary: $("#newtasksummary").val()
+        },
+        dataType: "json",
+        error: function(r, s, e) {
+          var data = $.parseJSON(r.responseText);
+          if (data != null) {
+            $.each(data.errors, function(k, v) {
+              alert(v);
+            });
+          }
+        },
+        success: function(data) {
           $.observable(tasks).insert(0, data);
           $("#newtasksummary").val("");
           $("#newtasksummary").blur();
         }
-      }, "json");
+      });
     }
   });
 
@@ -436,14 +462,16 @@ require([
       },
       dataType: "json",
       context: ctx,
-      success: function(data) {
-        if (data.errors) {
+      error: function(r, s, e) {
+        var data = $.parseJSON(r.responseText);
+        if (data != null) {
           $.each(data.errors, function(k, v) {
             alert(v);
           });
-        } else {
-          $.observable(tasks).update(this.idx, data);
         }
+      },
+      success: function(data) {
+        $.observable(tasks).update(this.idx, data);
       }
     });
     ev.stopImmediatePropagation();
@@ -460,14 +488,16 @@ require([
         task_id: view.data.id
       },
       dataType: "json",
-      success: function(data) {
-        if (data.errors) {
+      error: function(r, s, e) {
+        var data = $.parseJSON(r.responseText);
+        if (data != null) {
           $.each(data.errors, function(k, v) {
             alert(v);
           });
-        } else {
-          $.observable(tasks).update(view.index, data);
         }
+      },
+      success: function(data) {
+        $.observable(tasks).update(view.index, data);
       }
     });
   });
