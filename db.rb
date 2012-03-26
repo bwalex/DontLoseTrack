@@ -2,12 +2,15 @@ require 'rubygems'
 require 'redcarpet'
 require 'pygments'
 require 'data_mapper'
+require 'dm-constraints'
 require 'dm-validations'
 require 'dm-timestamps'
 require 'dm-serializer'
 
 DataMapper::Logger.new($stdout, :debug)
-DataMapper.setup(:default, 'sqlite:test.db')
+#DataMapper.setup(:default, 'sqlite:test.db')
+DataMapper.setup(:default, 'mysql://root:root@localhost/dlt')
+
 #DataMapper.setup(:default, 'sqlite::memory:')
 
 class DBObj
@@ -62,8 +65,8 @@ end
 
 class TagTask
   include DataMapper::Resource
-  belongs_to :task,                 :key => true
-  belongs_to :tag,                  :key => true
+  belongs_to :task,                 :key => true, :constraint => :destroy
+  belongs_to :tag,                  :key => true, :constraint => :destroy
 end
 
 
@@ -146,7 +149,7 @@ class Task
 
   property :due_date,     DateTime
 
-  has n, :tags, :through => :task_tags
+  has n, :tags, :through => :task_tags, :constraint => :destroy
 
   has n, :task_deps, :child_key => [ :task_id ]
   has n, :deps, self, :through => :task_deps, :via => :dependency
@@ -328,24 +331,27 @@ class Tag
   
   property :id,           Serial
   property :name,         String,   :length => 1..32,
-                                    :unique => false,
+                                    :unique_index => true,
                                     :required => true
 
   property :color,        String,   :length => 2..7,
-                                    :required => true
+                                    :default => '#359AFF'
 
-  belongs_to :project
+  belongs_to :project,              :unique_index => true
 
-  has n, :notes, :through => :note_tags
-  has n, :tasks, :through => :task_tags
-  has n, :wikis, :through => :wiki_tags
-  has n, :files, :through => :file_tags
+  has n, :notes, :through => :note_tags, :constraint => :destroy
+  has n, :tasks, :through => :task_tags, :constraint => :destroy
+  has n, :wikis, :through => :wiki_tags, :constraint => :destroy
+  has n, :files, :through => :file_tags, :constraint => :destroy
 
 
+  validates_is_unique :name, :scope => :project
   validates_with_method :color,     :method => :valid_color?
 
   def valid_color?
-    if @color.match(/#[abcdefABCDEF0123456789]{6}/)
+    if @color == nil
+      return true
+    elsif @color.match(/#[abcdefABCDEF0123456789]{6}/)
       return true
     else
       return [false, "Color must be an HTML color string like #abcdef"]
@@ -358,24 +364,6 @@ DataMapper::Model.raise_on_save_failure = true
 DataMapper.finalize
 DataMapper.auto_upgrade!
 
-
-class HTMLwithPygments < Redcarpet::Render::HTML
-  def block_code(code, language)
-    Pygments.highlight(code, :lexer => language)
-  end
-end
-
-
-$markdown = Redcarpet::Markdown.new(
-  HTMLwithPygments.new(:hard_wrap => true), {
-    :autolink => true,
-    :tables => true,
-    :no_intra_empahsis => true,
-    :strikethrough => true,
-    :lax_html_blocks => true,
-    :fenced_code_blocks => true,
-    :space_after_headers => true
-  })
 
 def dm_errors_to_array(p)
   a = []

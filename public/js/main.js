@@ -50,6 +50,63 @@ require([
     });
   });
 
+
+
+  $('#tagfilterlist').on('click', '.tags .tag .rm-icon .rm-button', function(ev) {
+    var view = $.view(this);
+    $.ajax({
+      type: 'POST',
+      url: '/tag_delete',
+      data: {
+        project_id: projectId,
+        tag_id: view.data.id
+      },
+      dataType: "json",
+      success: function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tags).remove(view.index);
+        }
+      }
+    });
+  });
+
+
+  $('#newtagname').on('focus', function() {
+    if ($(this).val() == 'Add Tag...')
+      $(this).val('');
+  });
+
+  $('#newtagname').on('focusout', function() {
+    if ($(this).val() == '')
+      $(this).val('Add Tag...');
+  });
+
+  $('#newtagname').keypress(function(ev) {
+    if (ev.keyCode === 13 /* ENTER */) {
+      newtag = {
+        project_id: projectId,
+        tag_name: $("#newtagname").val()
+      }
+      $.post('/tag_add', newtag, function(data) {
+        if (data.errors) {
+          $.each(data.errors, function(k, v) {
+            alert(v);
+          });
+        } else {
+          $.observable(tags).insert(0, data);
+          $("#newtagname").val("");
+          $("#newtagname").blur();
+        }
+      }, "json");
+    }
+  });
+
+
+
   $('.btn_addtag').on('click', function(ev) {
     $('#tagdrag').toggleClass('hide');
     $('.btn_addtag').toggleClass('btn-selected');
@@ -85,10 +142,11 @@ require([
 
   $('#tasklist').on('click', '.adddep-button', function(ev) {
     var depc = $(this).closest('.deps');
-    var self = this;
+    var s = this;
 
     if ($(this).hasClass('btn-selected')) {
       depc.find('.input-dep').remove();
+      $(this).removeClass('btn-selected');
       $.view(this).data.magic_editing = false;
       return;
     } else {
@@ -156,7 +214,7 @@ require([
  
     $(document).keydown(function(ev) {
       if (ev.keyCode === 27 /* ESC */) {
-        $.view(self).data.magic_editing = false; 
+        $.view(s).data.magic_editing = false; 
         depc.find('.input-dep').remove();
         depc.find('.adddep-button').removeClass('btn-selected');
       }

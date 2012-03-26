@@ -1,12 +1,42 @@
 require 'rubygems'
 require 'sinatra'
 
+require 'logger'
+require 'active_record'
+require 'redcarpet'
+require 'pygments'
 #require 'active_support'
 #require 'active_support/json'
 require 'json'
 require 'haml'
-require 'db.rb'
+require 'yaml'
+#require 'db.rb'
 
+
+class HTMLwithPygments < Redcarpet::Render::HTML
+  def block_code(code, language)
+    Pygments.highlight(code, :lexer => language)
+  end
+end
+
+
+configure do
+  $markdown = Redcarpet::Markdown.new(
+    HTMLwithPygments.new(:hard_wrap => true), {
+      :autolink => true,
+      :tables => true,
+      :no_intra_empahsis => true,
+      :strikethrough => true,
+      :lax_html_blocks => true,
+      :fenced_code_blocks => true,
+      :space_after_headers => true
+    })
+
+  dbconfig = YAML::load(File.open('config/database.yml'))
+
+  ActiveRecord::Base.logger = Logger.new(STDOUT)
+  ActiveRecord::Base.establish_connection(dbconfig)
+end
 
 
 get '/' do
@@ -27,6 +57,8 @@ end
 
 get '/tasks' do
 #  Task.all(:project_id => params[:project_id]).to_json(:relationships => {:tags => {:include => [:color, :name] }, :task_deps => {:include => [:task, :dependency]}})
+
+
   Task.all(:project_id => params[:project_id]).to_json(
     :methods => [
       :html_text,
@@ -104,9 +136,10 @@ end
 
 post '/tag_add' do
   begin
+    puts "Project: " << params[:project_id] << " / tag name: " << params[:tag_name]
     p = Project.get(params[:project_id])
-    t = p.tags.create(:name => params[:tag_name],
-                      :color => params[:tag_color])
+    t = p.tags.create(:name => params[:tag_name])
+    puts t.to_json
     t.to_json
   rescue DataMapper::SaveFailureError => e
     { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
