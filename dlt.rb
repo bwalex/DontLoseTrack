@@ -2,7 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 Bundler.require
-require 'Active_record'
+require 'active_record'
 require 'db'
 
 
@@ -86,13 +86,13 @@ end
 
 
 post '/note_deletetag' do
-  #XXX
   begin
-    nt = NoteTag.get(params[:note_id], params[:tag_id])
+    nt = NoteTag.where("note_id = ? AND tag_id = ?", params[:note_id], params[:tag_id]).limit(1)
+    #nt = NoteTag.get(params[:note_id], params[:tag_id])
     nt.destroy
 
-    n = Note.get(params[:note_id])
-    n.to_json_ex
+    n = Note.find(params[:note_id])
+    n.to_json
   rescue ActiveRecord::RecordInvalid => e
     e.errors_to_json
   end
@@ -212,16 +212,13 @@ post '/task_adddep' do
   begin
     t = Task.find(params[:task_id])
 
-    #XXX
-    if TaskDep.get(params[:task_id], params[:task_dep_id]) == nil
-      tdep = Task.find(params[:task_dep_id])
+    #if TaskDep.get(params[:task_id], params[:task_dep_id]) == nil
+    tdep = Task.find(params[:task_dep_id])
+    dep = TaskDep.create!(:task => t, :dependency => tdep)
 
-      dep = TaskDep.create!(:task => t, :dependency => tdep)
+    t.deps << dep
 
-      t.task_deps << dep
-
-      t.save!
-    end
+    t.save!
 
     t.to_json
   rescue ActiveRecord::RecordInvalid => e
@@ -232,8 +229,7 @@ end
 
 post '/task_deletedep' do
   begin
-    #XXX
-    dep = TaskDep.get(params[:task_id], params[:task_dep_id])
+    dep = TaskDep.where("task_id = ? AND dependency_id = ?", params[:task_id], params[:task_dep_id])
     dep.destroy
 
     t = Task.find(params[:task_id])
@@ -260,8 +256,7 @@ end
 
 post '/task_deletetag' do
   begin
-    #XXX
-    tt = TagTask.get(params[:task_id], params[:tag_id])
+    tt = TagTask.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
     tt.destroy
 
     t = Task.find(params[:task_id])
