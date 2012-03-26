@@ -205,7 +205,7 @@ post '/task_complete' do
   t = Task.find(params[:task_id])
   t.completed = true
   t.save!
-  t.to_json_ex
+  t.to_json
 end
 
 
@@ -249,13 +249,17 @@ set :raise_errors, false
 set :show_exceptions, false
 
 error do
-  env['sinatra.error'].name
+  "Unknown Exception: " + env['sinatra.error'].to_s
 end
 
 
 error ActiveRecord::RecordInvalid do
-  #status 200
   env['sinatra.error'].errors_to_json
+end
+
+
+error ActiveRecord::RecordNotUnique do
+  { "errors" => [env['sinatra.error'].to_s] }.to_json
 end
 
 

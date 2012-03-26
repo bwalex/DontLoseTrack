@@ -85,6 +85,9 @@ class NoteTag < ActiveRecord::Base
 
   belongs_to :note
   belongs_to :tag
+
+  validates_uniqueness_of  :tag_id, :scope => :note_id,
+                                    :message => "already applied to that Note"
 end
 
 
@@ -93,6 +96,20 @@ class TaskTag < ActiveRecord::Base
 
   belongs_to :task
   belongs_to :tag
+
+  validates_uniqueness_of  :tag_id, :scope => :task_id,
+                                    :message => "already applied to that Task"
+end
+
+
+class WikiTag < ActiveRecord::Base
+#  self.primary_keys = :wiki_id, :tag_id
+
+  belongs_to :wiki
+  belongs_to :tag
+
+  validates_uniqueness_of  :tag_id, :scope => :wiki_id,
+                                    :message => "already applied to that Wiki"
 end
 
 
@@ -108,7 +125,8 @@ class Tag < ActiveRecord::Base
   has_many :wikis,        :through => :wiki_tags
 
   validates :name,        :length => { :in => 1..32 }
-  validates_uniqueness_of :name,  :scope => :project_id
+  validates_uniqueness_of :name,  :scope => :project_id,
+                                  :case_sensitive => false
   validates_format_of     :color, :with => /#[abcdefABCDEF0123456789]{6}/,
                                   :message => "Color must be an HTML color like #abcdef",
                                   :allow_nil => true
@@ -121,6 +139,9 @@ class TaskDep < ActiveRecord::Base
   belongs_to :task
   belongs_to :dependency, :class_name => "Task",
                           :foreign_key => "dependency_id"
+
+  validates_uniqueness_of  :dependency_id, :scope => :task_id,
+                                           :message => "already a dependency for this Task"
 end
 
 
