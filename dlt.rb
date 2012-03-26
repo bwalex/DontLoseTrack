@@ -61,274 +61,201 @@ end
 
 
 post '/note_add' do
-  begin
-    p = Project.find(params[:project_id])
-    n = p.notes.create!(:text => params[:note_text])
-    n.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  p = Project.find(params[:project_id])
+  n = p.notes.create!(:text => params[:note_text])
+  n.to_json
 end
 
 
 post '/note_addtag' do
-  begin
-    n = Note.find(params[:note_id])
-    t = Tag.find(params[:tag_id])
+  n = Note.find(params[:note_id])
+  t = Tag.find(params[:tag_id])
 
-    n.tags << t
-    n.save!
-    n.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  n.tags << t
+  n.save!
+  n.to_json
 end
 
 
 post '/note_deletetag' do
-  begin
-    nt = NoteTag.where("note_id = ? AND tag_id = ?", params[:note_id], params[:tag_id]).limit(1)
-    #nt = NoteTag.get(params[:note_id], params[:tag_id])
-    NoteTag.destroy(nt)
+  nt = NoteTag.where("note_id = ? AND tag_id = ?", params[:note_id], params[:tag_id]).limit(1)
+  NoteTag.destroy(nt)
 
-    n = Note.find(params[:note_id])
-    n.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  n = Note.find(params[:note_id])
+  n.to_json
 end
 
 
 post '/note_delete' do
-  begin
-    n = Note.find(params[:note_id])
-    Note.destroy(n)
-    {}.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  n = Note.find(params[:note_id])
+  Note.destroy(n)
+  {}.to_json
 end
 
 
 post '/tag_add' do
-  begin
-    p = Project.find(params[:project_id])
-    t = p.tags.create!(:name => params[:tag_name])
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  p = Project.find(params[:project_id])
+  t = p.tags.create!(:name => params[:tag_name])
+  t.to_json
 end
 
 
 post '/tag_update' do
-  begin
-    t = Tag.find(params[:tag_id])
-    t.name = params[:tag_name]
-    t.color = params[:tag_color]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Tag.find(params[:tag_id])
+  t.name = params[:tag_name]
+  t.color = params[:tag_color]
+  t.save!
+  t.to_json
 end
 
 
 post '/tag_changecolor' do
-  begin
-    t = Tag.find(params[:tag_id])
-    t.color = params[:tag_color]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Tag.find(params[:tag_id])
+  t.color = params[:tag_color]
+  t.save!
+  t.to_json
 end
 
 
 post '/tag_changename' do
-  begin
-    t = Tag.find(params[:tag_id])
-    t.name = params[:tag_name]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Tag.find(params[:tag_id])
+  t.name = params[:tag_name]
+  t.save!
+  t.to_json
 end
 
 
 post '/tag_delete' do
-  begin
-    t = Tag.find(params[:tag_id])
-    Tag.destroy(t)
-    {}.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Tag.find(params[:tag_id])
+  Tag.destroy(t)
+  {}.to_json
 end
 
 
 
 post '/task_add' do
-  begin
-    p = Project.find(params[:project_id])
-    t = p.tasks.create!(:summary => params[:task_summary])
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  p = Project.find(params[:project_id])
+  t = p.tasks.create!(:summary => params[:task_summary])
+  t.to_json
 end
 
 
 post '/task_delete' do
-  begin
-    t = Task.find(params[:task_id])
-    Task.destroy(t)
-    {}.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  Task.destroy(t)
+  {}.to_json
 end
 
 
 post '/task_block' do
-  begin
-    t = Task.find(params[:task_id])
-    if params[:task_block] == "no"
-      t.blocked = false
-    elsif params[:task_block] == "yes"
-      t.blocked = true
-    end
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
+  t = Task.find(params[:task_id])
+  if params[:task_block] == "no"
+    t.blocked = false
+  elsif params[:task_block] == "yes"
+    t.blocked = true
   end
+  t.save!
+  t.to_json
 end
 
 
 post '/task_adddep' do
-  begin
-    t = Task.find(params[:task_id])
+  t = Task.find(params[:task_id])
 
-    #if TaskDep.get(params[:task_id], params[:task_dep_id]) == nil
-    tdep = Task.find(params[:task_dep_id])
-    dep = TaskDep.create!(:task => t, :dependency => tdep)
+  tdep = Task.find(params[:task_dep_id])
+  dep = TaskDep.create!(:task => t, :dependency => tdep)
 
-    t.deps << dep
+  t.deps << dep
 
-    t.save!
+  t.save!
 
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t.to_json
 end
 
 
 post '/task_deletedep' do
-  begin
-    dep = TaskDep.where("task_id = ? AND dependency_id = ?", params[:task_id], params[:task_dep_id])
-    TaskDep.destroy(dep)
+  dep = TaskDep.where("task_id = ? AND dependency_id = ?", params[:task_id], params[:task_dep_id])
+  TaskDep.destroy(dep)
 
-    t = Task.find(params[:task_id])
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.to_json
 end
 
 
 post '/task_addtag' do
-  begin
-    task = Task.find(params[:task_id])
-    t = Tag.find(params[:tag_id])
+  task = Task.find(params[:task_id])
+  t = Tag.find(params[:tag_id])
 
-    task.tags << t
-    task.save!
-    task.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  task.tags << t
+  task.save!
+  task.to_json
 end
 
 
 post '/task_deletetag' do
-  begin
-    tt = TaskTag.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
-    TaskTag.destroy(tt)
+  tt = TaskTag.where("task_id = ? AND tag_id = ?", params[:task_id], params[:tag_id])
+  TaskTag.destroy(tt)
 
-    t = Task.find(params[:task_id])
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.to_json
 end
 
 
 post '/task_complete' do
-  begin
-    t = Task.find(params[:task_id])
-    t.completed = true
-    t.save!
-    t.to_json_ex
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.completed = true
+  t.save!
+  t.to_json_ex
 end
 
 
 post '/task_uncomplete' do
-  begin
-    t = Task.find(params[:task_id])
-    t.completed = false
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.completed = false
+  t.save!
+  t.to_json
 end
 
 
 post '/task_changeimportance' do
-  begin
-    t = Task.find(params[:task_id])
-    t.importance = params[:task_importance]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.importance = params[:task_importance]
+  t.save!
+  t.to_json
 end
 
 
 post '/task_changesummary' do
-  begin
-    t = Task.find(params[:task_id])
-    t.summary = params[:task_summary]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.summary = params[:task_summary]
+  t.save!
+  t.to_json
 end
 
 
 post '/task_changetext' do
-  begin
-    t = Task.find(params[:task_id])
-    t.text = params[:task_text]
-    t.save!
-    t.to_json
-  rescue ActiveRecord::RecordInvalid => e
-    e.errors_to_json
-  end
+  t = Task.find(params[:task_id])
+  t.text = params[:task_text]
+  t.save!
+  t.to_json
 end
 
 
 get '/projects' do
   Project.all.to_json
+end
+
+set :raise_errors, false
+set :show_exceptions, false
+
+error do
+  env['sinatra.error'].name
+end
+
+
+error ActiveRecord::RecordInvalid do
+  #status 200
+  env['sinatra.error'].errors_to_json
 end
 
 
