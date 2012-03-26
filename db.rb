@@ -1,8 +1,3 @@
-#require 'rubygems'
-#require 'active_record'
-#require 'foreigner'
-
-
 class Project < ActiveRecord::Base
   has_many :tags,     :dependent => :delete_all
 
@@ -205,6 +200,22 @@ class Task < ActiveRecord::Base
                     :tags
                   ]
     )
+  end
+end
+
+class ActiveRecord::RecordInvalid
+  def errors_to_a
+    a = []
+
+    record.errors.each do |k, v|
+      a.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
+    end
+
+    return a
+  end
+
+  def errors_to_json
+    { "errors" => errors_to_a }.to_json
   end
 end
 

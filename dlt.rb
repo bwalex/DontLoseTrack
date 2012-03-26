@@ -2,20 +2,8 @@ require 'rubygems'
 require 'bundler/setup'
 
 Bundler.require
-require 'active_record'
+require 'Active_record'
 require 'db'
-
-#require 'sinatra'
-
-#require 'logger'
-#require 'redcarpet'
-#require 'pygments'
-#require 'active_support'
-require 'active_support/json'
-#require 'json'
-#require 'haml'
-#require 'yaml'
-#require 'db.rb'
 
 
 class HTMLwithPygments < Redcarpet::Render::HTML
@@ -74,107 +62,109 @@ end
 
 post '/note_add' do
   begin
-    p = Project.get(params[:project_id])
-    n = p.notes.create(:text => params[:note_text])
-    n.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    p = Project.find(params[:project_id])
+    n = p.notes.create!(:text => params[:note_text])
+    n.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/note_addtag' do
   begin
-    n = Note.get(params[:note_id])
-    t = Tag.get(params[:tag_id])
+    n = Note.find(params[:note_id])
+    t = Tag.find(params[:tag_id])
 
     n.tags << t
-    n.save
-    n.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    n.save!
+    n.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/note_deletetag' do
+  #XXX
   begin
     nt = NoteTag.get(params[:note_id], params[:tag_id])
     nt.destroy
 
     n = Note.get(params[:note_id])
     n.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/note_delete' do
   begin
-    n = Note.get(params[:note_id])
+    n = Note.find(params[:note_id])
     n.destroy
     {}.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/tag_add' do
   begin
-    puts "Project: " << params[:project_id] << " / tag name: " << params[:tag_name]
-    p = Project.get(params[:project_id])
-    t = p.tags.create(:name => params[:tag_name])
-    puts t.to_json
+    p = Project.find(params[:project_id])
+    t = p.tags.create!(:name => params[:tag_name])
     t.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/tag_update' do
   begin
-    t = Tag.get(params[:tag_id])
-    t.update(:name => params[:tag_name],
-             :color => params[:tag_color])
+    t = Tag.find(params[:tag_id])
+    t.name = params[:tag_name]
+    t.color = params[:tag_color]
+    t.save!
     t.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/tag_changecolor' do
   begin
-    t = Tag.get(params[:tag_id])
-    t.update(:color => params[:tag_color])
+    t = Tag.find(params[:tag_id])
+    t.color = params[:tag_color]
+    t.save!
     t.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/tag_changename' do
   begin
-    t = Tag.get(params[:tag_id])
-    t.update(:name => params[:tag_name])
+    t = Tag.find(params[:tag_id])
+    t.name = params[:tag_name]
+    t.save!
     t.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/tag_delete' do
   begin
-    t = Tag.get(params[:tag_id])
+    t = Tag.find(params[:tag_id])
     t.destroy
     {}.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
@@ -182,153 +172,162 @@ end
 
 post '/task_add' do
   begin
-    p = Project.get(params[:project_id])
-    t = p.tasks.create(:summary => params[:task_summary])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    p = Project.find(params[:project_id])
+    t = p.tasks.create!(:summary => params[:task_summary])
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_delete' do
   begin
-    t = Task.get(params[:task_id])
+    t = Task.find(params[:task_id])
     t.destroy
     {}.to_json
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_block' do
   begin
-    t = Task.get(params[:task_id])
+    t = Task.find(params[:task_id])
     if params[:task_block] == "no"
-      t.update(:blocked => false)
+      t.blocked = false
     elsif params[:task_block] == "yes"
-      t.update(:blocked => true)
+      t.blocked = true
     end
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t.save!
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_adddep' do
   begin
-    t = Task.get(params[:task_id])
+    t = Task.find(params[:task_id])
 
+    #XXX
     if TaskDep.get(params[:task_id], params[:task_dep_id]) == nil
-      tdep = Task.get(params[:task_dep_id])
+      tdep = Task.find(params[:task_dep_id])
 
-      dep = TaskDep.create(:task => t, :dependency => tdep)
+      dep = TaskDep.create!(:task => t, :dependency => tdep)
 
       t.task_deps << dep
 
-      t.save
+      t.save!
     end
 
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_deletedep' do
   begin
+    #XXX
     dep = TaskDep.get(params[:task_id], params[:task_dep_id])
     dep.destroy
 
-    t = Task.get(params[:task_id])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_addtag' do
   begin
-    task = Task.get(params[:task_id])
-    t = Tag.get(params[:tag_id])
+    task = Task.find(params[:task_id])
+    t = Tag.find(params[:tag_id])
 
     task.tags << t
-    task.save
-    task.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    task.save!
+    task.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_deletetag' do
   begin
+    #XXX
     tt = TagTask.get(params[:task_id], params[:tag_id])
     tt.destroy
 
-    t = Task.get(params[:task_id])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_complete' do
   begin
-    t = Task.get(params[:task_id])
-    t.update(:completed => true)
+    t = Task.find(params[:task_id])
+    t.completed = true
+    t.save!
     t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_uncomplete' do
   begin
-    t = Task.get(params[:task_id])
-    t.update(:completed => false)
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.completed = false
+    t.save!
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_changeimportance' do
   begin
-    t = Task.get(params[:task_id])
-    t.update(:importance => params[:task_importance])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.importance = params[:task_importance]
+    t.save!
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_changesummary' do
   begin
-    t = Task.get(params[:task_id])
-    t.update(:summary => params[:task_summary])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.summary = params[:task_summary]
+    t.save!
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
 
 post '/task_changetext' do
   begin
-    t = Task.get(params[:task_id])
-    t.update(:text => params[:task_text])
-    t.to_json_ex
-  rescue DataMapper::SaveFailureError => e
-    { "errors" => [e.to_s].concat(dm_errors_to_array(e.resource)) }.to_json
+    t = Task.find(params[:task_id])
+    t.text = params[:task_text]
+    t.save!
+    t.to_json
+  rescue ActiveRecord::RecordInvalid => e
+    e.errors_to_json
   end
 end
 
