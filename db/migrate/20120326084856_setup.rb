@@ -33,6 +33,7 @@ class Setup < ActiveRecord::Migration
       t.integer       :importance,    :default => 0
       t.boolean       :completed,     :default => false
       t.boolean       :blocked,       :default => false
+      t.datetime      :due_date
       t.timestamps
     end
 

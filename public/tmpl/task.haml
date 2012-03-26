@@ -31,11 +31,11 @@
               %a.adddep-button
               .clearer
             .clearer
-          {{for task_deps}}
-          .dep{ :class => '{{:"status-"+dependency.status}}' }
+          {{for deps}}
+          .dep{ :class => '{{:"status-"+status}}' }
             .dep-sum
-              %a{ :href => "#task{{:dependency.id}}" }
-                {{:dependency.id}}: {{: dependency.summary.trunc(30, true) }}
+              %a{ :href => "#task{{:id}}" }
+                {{:id}}: {{: summary.trunc(30, true) }}
             %span.rm-icon-2
               %a.rm-button-2{ :href => "javascript:void(0);" }
               .clearer

@@ -20,6 +20,7 @@ end
 class Note < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :notes
 
+  has_many :note_tags
   has_many :tags,       :through => :note_tags,
                         :uniq => true
 
@@ -33,8 +34,8 @@ class Note < ActiveRecord::Base
     end
   end
 
-  def as_json_ex
-    return self.as_json(
+  def as_json(options={})
+    super(
       :methods => :html_text,
       :include => :tags
     )
@@ -52,14 +53,11 @@ class WikiContent < ActiveRecord::Base
       return $markdown.render(text)
     end
   end
-
-  def as_json_ex
-    return
-  end
 end
 
 
 class Wiki < ActiveRecord::Base
+  has_many :wiki_tags
   has_many :tags,       :through => :wiki_tags,
                         :uniq => true
 
@@ -73,12 +71,13 @@ class Wiki < ActiveRecord::Base
     newestContent = wiki_contents.order('created_at DESC').first
     if newestContent != nil
       text = newestContent.text
+    end
 
     return $markdown.render(text)
   end
 
-  def as_json_ex
-    return self.as_json(
+  def as_json(options={})
+    super(
       :methods => :html_text,
       :include => :tags
     )
@@ -88,7 +87,6 @@ end
 
 class NoteTag < ActiveRecord::Base
 #  self.primary_keys = :note_id, :tag_id
-  
 
   belongs_to :note
   belongs_to :tag
@@ -105,13 +103,18 @@ end
 
 class Tag < ActiveRecord::Base
   belongs_to :project,    :inverse_of => :tags
+  has_many :note_tags
   has_many :notes,        :through => :note_tags
+
+  has_many :task_tags
   has_many :tasks,        :through => :task_tags
+
+  has_many :wiki_tags
   has_many :wikis,        :through => :wiki_tags
 
   validates :name,        :length => { :in => 1..32 }
   validates_uniqueness_of :name, :scope => :project_id
-  validates :color        :format => { :with => /#[abcdefABCDEF0123456789]{6}/,
+  validates :color,       :format => { :with => /#[abcdefABCDEF0123456789]{6}/,
                                        :message => "Color must be an HTML color like #abcdef" }
 end
 
@@ -133,11 +136,11 @@ class Task < ActiveRecord::Base
 
   belongs_to :project,  :inverse_of => :tasks
 
+  has_many :task_tags
   has_many :tags,       :through => :task_tags,
                         :uniq => true
 
-  has_many :task_deps
-                        
+  has_many :task_deps   
   has_many :deps,       :through => :task_deps,
                         :source => :dependency
 
@@ -191,8 +194,8 @@ class Task < ActiveRecord::Base
     end
   end
 
-  def as_json_ex
-    self.as_json(
+  def as_json(options={})
+    super(
       :methods => [
                     :html_text,
                     :status

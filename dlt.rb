@@ -2,14 +2,16 @@ require 'rubygems'
 require 'bundler/setup'
 
 Bundler.require
+require 'active_record'
+require 'db'
+
 #require 'sinatra'
 
 #require 'logger'
-#require 'active_record'
 #require 'redcarpet'
 #require 'pygments'
 #require 'active_support'
-#require 'active_support/json'
+require 'active_support/json'
 #require 'json'
 #require 'haml'
 #require 'yaml'
@@ -51,42 +53,22 @@ end
 
 get '/project' do
   #:limit =>, :offset =>
-  Project.get(params[:project_id]).to_json
+  Project.where("project_id = ?", params[:project_id]).to_json
 end
 
 
 get '/tags' do
-  Tag.all(:project_id => params[:project_id]).to_json
+  Tag.where("project_id = ?", params[:project_id]).to_json
 end
 
 
 get '/tasks' do
-#  Task.all(:project_id => params[:project_id]).to_json(:relationships => {:tags => {:include => [:color, :name] }, :task_deps => {:include => [:task, :dependency]}})
-
-
-  Task.all(:project_id => params[:project_id]).to_json(
-    :methods => [
-      :html_text,
-      :status
-    ], 
-    :relationships => {
-      :tags => {
-        :include => [:id, :color, :name]
-      },
-      :task_deps => {
-        :relationships => {
-          :dependency => {
-            :include => [:id, :summary]
-          }
-        }
-      }
-  })
+  Task.where("project_id = ?", params[:project_id]).to_json
 end
 
 
 get '/notes' do
-  Note.all(:project_id => params[:project_id]).to_json(:relationships => {:tags => {:include => [:color, :name] }})
-
+  Note.where("project_id = ?", params[:project_id]).to_json
 end
 
 
@@ -357,7 +339,6 @@ end
 
 
 get '/db_populate' do
-  DataMapper.auto_migrate!
   p = Project.create(:name => 'mrf24j40-driver', :github_repo => 'bwalex/mrf24j40-driver')
   tag1 = p.tags.create(:color => '#00ff00', :name => 'Tag1')
   tag2 = p.tags.create(:color => '#0000ff', :name => 'Tag2')
@@ -384,10 +365,10 @@ get '/db_populate' do
   n.tags << tag3
   n.save
 
-    t1 = p.tasks.create(:summary => 'Take garbage out')
-    t1.tags << tag2
-    t1.tags << tag4
-    t1.save
+  t1 = p.tasks.create(:summary => 'Take garbage out')
+  t1.tags << tag2
+  t1.tags << tag4
+  t1.save
 
 
   t2 = p.tasks.create(:summary => 'Finish this web app', :importance => 'high')
@@ -405,16 +386,8 @@ get '/db_populate' do
   t.task_deps << dep
   t.save
 
-
   p = Project.create(:name => 'tc-play', :github_repo => 'bwalex/tc-play')
-
   p = Project.create(:name => 'sniff802154')
-  if p.valid?
-    redirect '/'
-  else
-    j = dm_errors_to_array(p)
-    j.to_json
-  end
 end
 
 
