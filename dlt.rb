@@ -1,8 +1,17 @@
 require 'rubygems'
 require 'bundler/setup'
 
-Bundler.require
 require 'active_record'
+require 'foreigner'
+
+require 'redcarpet'
+require 'pygments'
+
+require 'sinatra'
+require 'logger'
+
+require 'haml'
+
 require 'db'
 
 
