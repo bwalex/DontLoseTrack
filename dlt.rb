@@ -59,6 +59,21 @@ get '/notes' do
   Note.where("project_id = ?", params[:project_id]).to_json
 end
 
+get '/api/note' do
+  Note.where("project_id = ?", 1).to_json
+end
+
+get '/api/note/:note_id' do
+  Note.find(params[:note_id]).to_json
+end
+
+get '/api/tag' do
+  Tag.where("project_id = ?", 1).to_json
+end
+
+get 'a/pi/tag/:tag_id' do
+  Tag.find(params[:tag_id]).to_json
+end
 
 post '/note_add' do
   p = Project.find(params[:project_id])
