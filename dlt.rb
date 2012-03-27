@@ -249,7 +249,7 @@ set :raise_errors, false
 set :show_exceptions, false
 
 error do
-  "Unknown Exception: " + env['sinatra.error'].to_s
+  env['sinatra.error'].backtrace
 end
 
 
