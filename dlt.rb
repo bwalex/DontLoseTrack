@@ -43,6 +43,11 @@ configure do
 end
 
 
+after do
+  ActiveRecord::Base.clear_active_connections!
+end
+
+
 get '/' do
   haml :main, :format => :html5
 end
