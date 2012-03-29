@@ -32,7 +32,9 @@ class Note < ActiveRecord::Base
   def as_json(options={})
     super(
       :methods => :html_text,
-      :include => { :tags => {}, :note_tags => { :include => [:note, :tag] } }
+      :include => [ :note_tags ]
+      #:include => [ :tags, :note_tags ]
+      #:include => { :tags => {}, :note_tags => { :include => [:note, :tag] } }
     )
   end
 end
@@ -89,11 +91,11 @@ class NoteTag < ActiveRecord::Base
   validates_uniqueness_of  :tag_id, :scope => :note_id,
                                     :message => "already applied to that Note"
 
-  def as_json(options={})
-    super(
-      :include => [ :note, :tag ]
-    )
-  end
+#  def as_json(options={})
+#    super(
+#      :include => [ :note, :tag ]
+#    )
+#  end
 end
 
 
@@ -139,7 +141,7 @@ class Tag < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :include => { :note_tags => { :include => [:note, :tag] } }
+      :include => [ :note_tags ]
     )
   end
 end
@@ -223,15 +225,21 @@ class Task < ActiveRecord::Base
     end
   end
 
+  def dep_tasks
+    return task_deps
+  end
+
   def as_json(options={})
     super(
       :methods => [
                     :html_text,
-                    :status
+                    :status,
+                    :dep_tasks
                   ],
       :include => [
                     {:deps => { :methods => [:status], :only => [:id, :summary] }},
-                    :tags
+                    :tags,
+                    :task_deps
                   ]
     )
   end

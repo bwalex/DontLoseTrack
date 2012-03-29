@@ -8,7 +8,8 @@ require([
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl",
   "require.text!/tmpl/tag.tmpl",
-  "require.text!/tmpl/tag-norm.tmpl"
+  "require.text!/tmpl/tag-norm.tmpl",
+  "require.text!/tmpl/tag-applied.tmpl"
   ], function() {
   //XXX: hardcoded project ID :(
   projectId = 1;
@@ -311,55 +312,130 @@ require([
 
   ////////////////////////////////////////////////////////
   // NOTES
-  n = [];
 
-  $.moo = {};
+  $.app = {};
 
-  $.moo.NoteTag = Backbone.RelationalModel.extend();
+  $.app.TaskDep = Backbone.RelationalModel.extend({
+    initialize: function() {
+      var dit = this;
+      console.log("moo, taskdep: %o", this);
+      this.get('dependency_id').on('change', function(model) {
+        dit.get('task_id').trigger('change:dep', model);
+      });
+    }
+  });
+
+  $.app.Task = Backbone.RelationalModel.extend({
+    urlRoot: '/api/task',
+    idAttribute: 'id',
+    relations: [
+      {
+        type: Backbone.HasMany,
+        key:  'task_deps',
+        relatedModel: $.app.TaskDep,
+        reverseRelation: {
+          key: 'task_id'
+        }
+      },
+      {
+        type: Backbone.HasMany,
+        key:  'dep_tasks',
+        relatedModel: $.app.TaskDep,
+        reverseRelation: {
+          key: 'dependency_id'
+        }
+      }
+    ]
+  });
+
+  $.app.TaskCollection = Backbone.Collection.extend({
+    url: '/api/task',
+    model: $.app.Task
+  });
+
+  $.app.taskCollection  = new $.app.TaskCollection();
+  $.app.taskCollection.fetch();
+
+  $.app.NoteTag = Backbone.RelationalModel.extend({
+    initialize: function() {
+      var dit = this;
+      console.log("this.get('tag_id'):");
+      console.log(this.get('tag_id'));
+      this.get('tag_id').on('change', function(model) {
+        dit.get('note_id').trigger('change:tag', model);
+      });
+    }
+  });
 
 
-  $.moo.Tag  = Backbone.RelationalModel.extend({
+  $.app.Tag  = Backbone.RelationalModel.extend({
+    defaults: {
+      selected: true
+    },
     urlRoot: '/api/tag',
     idAttribute: 'id',
     relations: [
       {
         type: Backbone.HasMany,
         key:  'note_tags',
-        relatedModel: $.moo.NoteTag,
+        relatedModel: $.app.NoteTag,
         reverseRelation: {
-          key: 'tag'
+          key: 'tag_id'
         }
       }
     ]
   });
 
-  $.moo.TagCollection = Backbone.RelationalModel.extend({
+  $.app.TagCollection = Backbone.Collection.extend({
     url: '/api/tag',
-    model: $.moo.Tag
+    model: $.app.Tag
   });
 
-  $.moo.Note = Backbone.RelationalModel.extend({
+  $.app.Note = Backbone.RelationalModel.extend({
+    defaults: {
+      visible: true
+    },
     urlRoot: '/api/note',
     idAttribute: 'id',
     relations: [
       {
         type: Backbone.HasMany,
         key:  'note_tags',
-        relatedModel: $.moo.NoteTag,
+        relatedModel: $.app.NoteTag,
         reverseRelation: {
-          key: 'note'
+          key: 'note_id'
         }
       }
-    ]
+    ],
+    initialize: function() {
+      this.on('change:tag', function(model) {
+        console.log('related tag=%o updated', model);
+      });
+    }
   });
 
-  $.moo.NoteCollection = Backbone.Collection.extend({
+  $.app.NoteCollection = Backbone.Collection.extend({
     url: '/api/note',
-    model: $.moo.Note
+    model: $.app.Note
   });
 
-  $.moo.NoteView = Backbone.View.extend({
-    tagNanem: 'div',
+  $.app.AppliedTagView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'tag',
+    initialize: function() {
+      _.bindAll(this, 'render');
+      this.model.bind('change', this.render);
+    },
+    template: $.templates('#tag-applied-tmpl'),
+    render: function() {
+      var ht = $(this.el).html(this.template.render(this.model.toJSON()));
+      console.log("AppliedTagView render: %o", ht);
+      return ht;
+    }
+  });
+
+  $.app.NoteView = Backbone.View.extend({
+    tagName: 'div',
     className: 'noteView',
     initialize: function() {
       _.bindAll(this, 'render', 'renderTags');
@@ -368,93 +444,69 @@ require([
     },
     template: $.templates('#note-tmpl'),
     render: function() {
-      return $(this.el).html(this.template.render(this.model.toJSON()));
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      this.model.get('note_tags').each(function(m) {
+
+        console.log("Each note_tags: %o", m);
+        console.log("---> %o", m.get('note_id'));
+        console.log("---> %o", m.get('tag_id'));
+        var tagView = new $.app.AppliedTagView({model: m.get('tag_id') });
+        $(html).find('div.tags').append($(tagView.render()));
+      });
+      console.log("app.NoteView.render: %o", this.model);
+      return $(this.el).html(html);
     },
     renderTags: function(tag) {
-      console.log("Party time! Tag!!!!!!!!!!!!!!!!!!!");
-      console.log(tag);
+      console.log("Party time, tag=%o", tag);
     }
   });
 
-  $.moo.NoteListView = Backbone.View.extend({
+  $.app.NoteListView = Backbone.View.extend({
     tagName: 'div',
     className: 'noteListView',
     initialize: function() {
       _.bindAll(this, 'render', 'renderNote');
-      this.model.bind('change', this.render);
-      this.model.bind('reset', this.render);
+      //this.model.bind('change', this.render);
+      this.collection.bind('reset', this.render);
     },
     template: $.templates('#note-tmpl'),
     render: function() {
-      this.model.forEach(this.renderNote);
+      this.collection.each(this.renderNote);
       console.log(this);
-      //      $(this.el).html(this.template.render()
     },
     renderNote: function(inote) {
-      console.log("renderNote");
-      console.log(inote);
-      //var note = new $.moo.Note(inote);
-      var noteView = new $.moo.NoteView({model: inote});
-      //note.fetch();
+      console.log("renderNote: inote=%o", inote);
+      var noteView = new $.app.NoteView({model: inote});
       $(this.el).append($(noteView.render()));
     }
   });
 
+  var scope = this;
 
-  $.moo.Router = Backbone.Router.extend({
+  $.app.tagCollection  = new $.app.TagCollection();
+  $.app.tagCollection.fetch();
+  alert('miau!');
+
+  $.app.Router = Backbone.Router.extend({
     routes: {
       "tab4": "showNotes"
     },
     showNotes: function() {
-      var noteCollection = new $.moo.NoteCollection();
-      var tagCollection  = new $.moo.TagCollection();
-      var noteListView   = new $.moo.NoteListView({
+      $.app.noteCollection = new $.app.NoteCollection();
+      $.app.noteListView   = new $.app.NoteListView({
         el: $('#wikis'),
-        model: noteCollection
+        collection: $.app.noteCollection
       });
-      tagCollection.fetch();
-      noteCollection.fetch();
+      //scope.tagCollection.reset([{id:1, name: 'inbox'}, {id:2, name: 'waiting for'}]);
+      //scope.noteCollection.reset([{id:1, contents:'get groceries', note_tags: [ { id: 1, tag_id: 1 } ]}]);
+      $.app.noteCollection.fetch();
     }
   });
 
-  var app_router = new $.moo.Router;
+  var app_router = new $.app.Router;
   Backbone.history.start();
-
-  $.templates({
-    noteTemplate: "#note-tmpl"
-  });
-
-  $.link.noteTemplate("#notelist", n);
-
-  $.getJSON('/notes?project_id=' + projectId, function(j) {
-    $.each(j, function(k, v) {
-      $.observable(n).insert(0, v);
-    });
-  });
-
-  $('#newnote > form').submit(function() {
-    $.ajax({
-      type: 'POST',
-      url: '/note_add',
-      data: {
-        project_id: projectId,
-        note_text: $("#newnotetext").val()
-      },
-      dataType: "json",
-      error: function(r, s, e) {
-        var data = $.parseJSON(r.responseText);
-        if (data != null) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        }
-      },
-      success: function(data) {
-        $.observable(n).insert(n.length, data);
-        $("#newnotetext").val("");
-      }
-    });
-  });
 
 
 
