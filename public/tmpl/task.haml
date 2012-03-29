@@ -11,12 +11,6 @@
         &nbsp;&nbsp;
       %span.summary {{:summary}}
       .tags
-        {{for tags}}
-        .tag{ :style => "border: 2px solid {{:color}};" }
-          {{:name}}
-          %span.rm-icon
-            %a.rm-button{ :href => "javascript:void(0);" }
-        {{/for}}
         .tag.placeholder-tag
           &nbsp;
       %span.duedate {{:due_date}}

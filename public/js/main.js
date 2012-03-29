@@ -310,6 +310,57 @@ require([
   });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   ////////////////////////////////////////////////////////
   // NOTES
 
@@ -446,7 +497,7 @@ require([
 
   $.app.AppliedTagView = Backbone.View.extend({
     tagName: 'div',
-    className: 'tag',
+    className: 'tagAppliedView',
     initialize: function() {
       _.bindAll(this, 'render');
       this.model.bind('change', this.render);
@@ -595,7 +646,7 @@ require([
 	console.log("---> %o", task);
 	console.log("---> %o", tag);
 	var tagView = new $.app.AppliedTagView({model: tag });
-	$(html).find('div.tags').append($(tagView.render()));
+	$(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
       });
       console.log("app.TaskView.render: %o", this.model);
       return $(this.el).html(html);
@@ -696,6 +747,66 @@ require([
 
   var app_router = new $.app.Router;
   Backbone.history.start();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
