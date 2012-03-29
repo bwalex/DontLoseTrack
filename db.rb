@@ -141,7 +141,7 @@ class Tag < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :include => [ :note_tags ]
+      :include => [ :note_tags, :task_tags ]
     )
   end
 end
@@ -171,9 +171,11 @@ class Task < ActiveRecord::Base
   has_many :tags,       :through => :task_tags,
                         :uniq => true
 
-  has_many :task_deps   
+  has_many :task_deps
   has_many :deps,       :through => :task_deps,
                         :source => :dependency
+
+  has_many :dep_tasks,  :class_name => 'TaskDep', :foreign_key => 'dependency_id'
 
   validates :summary,   :length => { :in => 1..140 }
 
@@ -225,21 +227,19 @@ class Task < ActiveRecord::Base
     end
   end
 
-  def dep_tasks
-    return task_deps
-  end
 
   def as_json(options={})
     super(
       :methods => [
                     :html_text,
-                    :status,
-                    :dep_tasks
+                    :status
                   ],
       :include => [
                     {:deps => { :methods => [:status], :only => [:id, :summary] }},
                     :tags,
-                    :task_deps
+                    :task_tags,
+                    :task_deps,
+                    :dep_tasks
                   ]
     )
   end

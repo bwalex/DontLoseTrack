@@ -31,16 +31,6 @@
               %a.adddep-button
               .clearer
             .clearer
-          {{for deps}}
-          .dep{ :class => '{{:"status-"+status}}' }
-            .dep-sum
-              %a{ :href => "#task{{:id}}" }
-                {{:id}}: {{: summary.trunc(30, true) }}
-            %span.rm-icon-2
-              %a.rm-button-2{ :href => "javascript:void(0);" }
-              .clearer
-            .clearer
-          {{/for}}
         .blocked
           %span.label
             Blocked:&nbsp;

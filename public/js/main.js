@@ -7,10 +7,11 @@ require([
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl",
+  "require.text!/tmpl/taskdep.tmpl",
   "require.text!/tmpl/tag.tmpl",
   "require.text!/tmpl/tag-norm.tmpl",
   "require.text!/tmpl/tag-applied.tmpl"
-  ], function() {
+], function() {
   //XXX: hardcoded project ID :(
   projectId = 1;
 
@@ -20,19 +21,18 @@ require([
   for (l = arguments.length-1 ; l >= 4; l--)
     $("body").append(arguments[l]);
 
-
   // Set up tabs
   $(".tabs:first").tabs(".panes:first > div", { history: true });
 
 
   String.prototype.trunc = function(n,useWordBoundary) {
     var toLong = this.ength>n,
-      s_ = toLong ? this.substr(0,n-1) : this;
-      s_ = useWordBoundary && toLong ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
-      return  toLong ? s_ +'...' : s_;
+    s_ = toLong ? this.substr(0,n-1) : this;
+    s_ = useWordBoundary && toLong ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
+    return  toLong ? s_ +'...' : s_;
   };
 
- 
+  
   ////////////////////////////////////////////////////////
   // SIDEBAR TAG FILTER, TAG DRAG
   tags = [];
@@ -41,12 +41,12 @@ require([
     tagFilterTemplate: "#tag-tmpl",
     tagNoRmTemplate: "#tag-norm-tmpl"
   });
- 
+  
   $.link.tagFilterTemplate("#tagfilterlist > .tags", tags);
   $.link.tagNoRmTemplate("#tagdrag > .tags", tags);
 
   $.getJSON('/tags?project_id=' + projectId, function(j) {
-     $.each(j, function(k, v) {
+    $.each(j, function(k, v) {
       $.observable(tags).insert(0, v);
     });
   });
@@ -172,59 +172,59 @@ require([
     var ibd = $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>');
 
     ibd.find('input')
-      .on('focus', function() {
-        if ($(this).val() == 'Add Dependency...')
-          $(this).val('');
-      })
-      .on('focusout', function() {
-        if ($(this).val() == '')
-          $(this).val('Add Dependency...');
-      })
-      .autocomplete({
-        source: function(req, cb) {
-          var options = [];
-          $.each(tasks, function(k, v) {
-            if (v.summary.toLowerCase().indexOf(req.term.toLowerCase()) !== -1)
-              options.push({label: v.summary, value: v.id});
-          });
-          cb(options);
-        },
-        focus: function(ev, ui) {
-                 return false;
-        },
-        select: function(ev, ui) {
-          var view = $.view(this);
-          //view.data.expanded = !$(this).closest('.task').children('.body').hasClass('hide');
-          
-          ev.stopImmediatePropagation();
-          $.ajax({
-            type: 'POST',
-            url: '/task_adddep',
-            data: {
-              project_id: projectId,
-              task_id: view.data.id,
-              task_dep_id: ui.item.value
-            },
-            dataType: "json",
-            error: function(r, s, e) {
-              var data = $.parseJSON(r.responseText);
-              if (data != null) {
-                $.each(data.errors, function(k, v) {
-                  alert(v);
-                });
+	.on('focus', function() {
+          if ($(this).val() == 'Add Dependency...')
+            $(this).val('');
+	})
+	.on('focusout', function() {
+          if ($(this).val() == '')
+            $(this).val('Add Dependency...');
+	})
+	.autocomplete({
+          source: function(req, cb) {
+            var options = [];
+            $.each(tasks, function(k, v) {
+              if (v.summary.toLowerCase().indexOf(req.term.toLowerCase()) !== -1)
+		options.push({label: v.summary, value: v.id});
+            });
+            cb(options);
+          },
+          focus: function(ev, ui) {
+            return false;
+          },
+          select: function(ev, ui) {
+            var view = $.view(this);
+            //view.data.expanded = !$(this).closest('.task').children('.body').hasClass('hide');
+            
+            ev.stopImmediatePropagation();
+            $.ajax({
+              type: 'POST',
+              url: '/task_adddep',
+              data: {
+		project_id: projectId,
+		task_id: view.data.id,
+		task_dep_id: ui.item.value
+              },
+              dataType: "json",
+              error: function(r, s, e) {
+		var data = $.parseJSON(r.responseText);
+		if (data != null) {
+                  $.each(data.errors, function(k, v) {
+                    alert(v);
+                  });
+		}
+              },
+              success: function(data) {
+		var depc = $(this).closest('.deps');
+		depc.find('.adddep-button').removeClass('btn-selected');
+		view.data.magic_editing = false;
+		depc.find('.input-dep').remove();
+		$.observable(tasks).update(view.index, data);
               }
-            },
-            success: function(data) {
-              var depc = $(this).closest('.deps');
-              depc.find('.adddep-button').removeClass('btn-selected');
-              view.data.magic_editing = false;
-              depc.find('.input-dep').remove();
-              $.observable(tasks).update(view.index, data);
-            }
-          });
-        }
-      });
- 
+            });
+          }
+	});
+    
     $(document).keydown(function(ev) {
       if (ev.keyCode === 27 /* ESC */) {
         $.view(s).data.magic_editing = false; 
@@ -239,74 +239,74 @@ require([
 
   $.views.helpers({
     afterUpdate: function(oldItem, newItem) {
-                    var view = this,
-                        oldItem = oldItem[0],
-                        newItem = newItem[0];
+      var view = this,
+      oldItem = oldItem[0],
+      newItem = newItem[0];
 
-                    console.log("After Update");
-                    console.log(view);
-                    console.log(oldItem);
-                    console.log(newItem);
-                    newItem.expanded = oldItem.expanded;
-                    if (newItem.expanded) {
-                      console.log(view.nodes[0]);
-                      console.log($(view.nodes[0]));
-                      $(view.nodes[0]).children('.contracted').removeClass('contracted');
-                    }
+      console.log("After Update");
+      console.log(view);
+      console.log(oldItem);
+      console.log(newItem);
+      newItem.expanded = oldItem.expanded;
+      if (newItem.expanded) {
+        console.log(view.nodes[0]);
+        console.log($(view.nodes[0]));
+        $(view.nodes[0]).children('.contracted').removeClass('contracted');
+      }
     },
     afterChange: function(ev) {
-                   $('#tagdrag > .tags > .tag').draggable({
-                     helper: 'clone',
-                     cursor: 'move',
-                     snap: false
-                   });
+      $('#tagdrag > .tags > .tag').draggable({
+        helper: 'clone',
+        cursor: 'move',
+        snap: false
+      });
 
-                   $('.task > .summary'/*'.tags > .placeholder-tag' */).droppable({
-                     accept: '#tagdrag > .tags > .tag',
-                     //activeClass: 'show',
-                     //hoverClass: 'placeholder-tag-highlight',
-                     activate: function(ev, ui) {
-                       $(this).find('.placeholder-tag').width(ui.draggable.width());
-                       $(this).find('.placeholder-tag').addClass('show');
-                     },
-                     deactivate: function(ev, ui) {
-                       $(this).find('.placeholder-tag').removeClass('show');
-                     },
-                     over: function(ev, ui) {
-                       $(this).find('.placeholder-tag').addClass('placeholder-tag-highlight');
-                     },
-                     out: function(ev, ui) {
-                       $(this).find('.placeholder-tag').removeClass('placeholder-tag-highlight');
-                     },
-                     drop: function(ev, ui) {
-                       var view = $.view(this);
-                       if (view.data.magic_editing === true)
-                        return;
-                       var view_tag = $.view(ui.draggable.context);
-                       $.ajax({
-                         type: 'POST',
-                         url: '/task_addtag',
-                         data: {
-                           project_id: projectId,
-                           task_id: view.data.id,
-                           tag_id: view_tag.data.id
-                         },
-                         dataType: "json",
-                         error: function(r, s, e) {
-                           var data = $.parseJSON(r.responseText);
-                           if (data != null) {
-                             $.each(data.errors, function(k, v) {
-                               alert(v);
-                             });
-                           }
-                         }, 
-                         success: function(data) {
-                           $.observable(tasks).update(view.index, data);
-                         }
-                       });
-                     }
-                   });
-                 }
+      $('.task > .summary'/*'.tags > .placeholder-tag' */).droppable({
+        accept: '#tagdrag > .tags > .tag',
+        //activeClass: 'show',
+        //hoverClass: 'placeholder-tag-highlight',
+        activate: function(ev, ui) {
+          $(this).find('.placeholder-tag').width(ui.draggable.width());
+          $(this).find('.placeholder-tag').addClass('show');
+        },
+        deactivate: function(ev, ui) {
+          $(this).find('.placeholder-tag').removeClass('show');
+        },
+        over: function(ev, ui) {
+          $(this).find('.placeholder-tag').addClass('placeholder-tag-highlight');
+        },
+        out: function(ev, ui) {
+          $(this).find('.placeholder-tag').removeClass('placeholder-tag-highlight');
+        },
+        drop: function(ev, ui) {
+          var view = $.view(this);
+          if (view.data.magic_editing === true)
+            return;
+          var view_tag = $.view(ui.draggable.context);
+          $.ajax({
+            type: 'POST',
+            url: '/task_addtag',
+            data: {
+              project_id: projectId,
+              task_id: view.data.id,
+              tag_id: view_tag.data.id
+            },
+            dataType: "json",
+            error: function(r, s, e) {
+              var data = $.parseJSON(r.responseText);
+              if (data != null) {
+                $.each(data.errors, function(k, v) {
+                  alert(v);
+                });
+              }
+            }, 
+            success: function(data) {
+              $.observable(tasks).update(view.index, data);
+            }
+          });
+        }
+      });
+    }
   });
 
 
@@ -319,8 +319,20 @@ require([
     initialize: function() {
       var dit = this;
       console.log("moo, taskdep: %o", this);
+      console.log(this.get("dependency_id") === this.get("task_id"));
       this.get('dependency_id').on('change', function(model) {
         dit.get('task_id').trigger('change:dep', model);
+      });
+    }
+  });
+
+  $.app.TaskTag = Backbone.RelationalModel.extend({
+    initialize: function() {
+      var dit = this;
+      console.log("this.get('tag_id'):");
+      console.log(this.get('tag_id'));
+      this.get('tag_id').on('change', function(model) {
+        dit.get('task_id').trigger('change:tag', model);
       });
     }
   });
@@ -344,6 +356,14 @@ require([
         reverseRelation: {
           key: 'dependency_id'
         }
+      },
+      {
+	type: Backbone.HasMany,
+	key:  'task_tags',
+	relatedModel: $.app.TaskTag,
+	reverseRelation: {
+	  key: 'task_id'
+	}
       }
     ]
   });
@@ -352,9 +372,6 @@ require([
     url: '/api/task',
     model: $.app.Task
   });
-
-  $.app.taskCollection  = new $.app.TaskCollection();
-  $.app.taskCollection.fetch();
 
   $.app.NoteTag = Backbone.RelationalModel.extend({
     initialize: function() {
@@ -382,6 +399,14 @@ require([
         reverseRelation: {
           key: 'tag_id'
         }
+      },
+      {
+	type: Backbone.HasMany,
+	key:  'task_tags',
+	relatedModel: $.app.TaskTag,
+	reverseRelation: {
+	  key: 'tag_id'
+	}
       }
     ]
   });
@@ -483,6 +508,163 @@ require([
     }
   });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  $.app.TaskDepView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'taskdep',
+    initialize: function() {
+      _.bindAll(this, 'render');
+      this.model.bind('change', this.render);
+    },
+    template: $.templates('#task-dep-tmpl'),
+    render: function() {
+      var ht = $(this.el).html(this.template.render(this.model.toJSON()));
+      console.log("TaskDepView render: %o", ht);
+      return ht;
+    }
+  });
+
+  $.app.TaskView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'taskView',
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderDeps');
+      this.model.bind('change', this.render);
+      this.model.bind('add:task_deps', this.renderDeps);
+    },
+    template: $.templates('#task-tmpl'),
+    render: function() {
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      this.model.get('task_deps').each(function(m) {
+	var t = m.get('task_id');
+	var d = m.get('dependency_id');
+        console.log("Each task_deps: %o", m);
+        console.log("---> %o", t);
+        console.log("---> %o", d);
+	console.log(d === t);
+        var depView = new $.app.TaskDepView({model: d });
+        $(html).find('div.deps').append($(depView.render()));
+      });
+
+      this.model.get('task_tags').each(function(m) {
+	var task = m.get('task_id');
+	var tag  = m.get('tag_id');
+	console.log("Each task_tags: %o", m);
+	console.log("---> %o", task);
+	console.log("---> %o", tag);
+	var tagView = new $.app.AppliedTagView({model: tag });
+	$(html).find('div.tags').append($(tagView.render()));
+      });
+      console.log("app.TaskView.render: %o", this.model);
+      return $(this.el).html(html);
+    },
+    renderDeps: function(dep) {
+      console.log("Party time, dep=%o", dep);
+    }
+  });
+
+  $.app.TaskListView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'taskListView',
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderTask');
+      //this.model.bind('change', this.render);
+      this.collection.bind('reset', this.render);
+    },
+    render: function() {
+      this.collection.each(this.renderTask);
+      console.log(this);
+    },
+    renderTask: function(task) {
+      console.log("renderTask: task=%o", task);
+      var taskView = new $.app.TaskView({model: task});
+      $(this.el).append($(taskView.render()));
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   var scope = this;
 
   $.app.tagCollection  = new $.app.TagCollection();
@@ -491,17 +673,24 @@ require([
 
   $.app.Router = Backbone.Router.extend({
     routes: {
-      "tab4": "showNotes"
+      "notes": "showNotes",
+      "tasks": "showTasks"
     },
     showNotes: function() {
       $.app.noteCollection = new $.app.NoteCollection();
       $.app.noteListView   = new $.app.NoteListView({
-        el: $('#wikis'),
+        el: $('#notelist'),
         collection: $.app.noteCollection
       });
-      //scope.tagCollection.reset([{id:1, name: 'inbox'}, {id:2, name: 'waiting for'}]);
-      //scope.noteCollection.reset([{id:1, contents:'get groceries', note_tags: [ { id: 1, tag_id: 1 } ]}]);
       $.app.noteCollection.fetch();
+    },
+    showTasks: function() {
+      $.app.taskCollection = new $.app.TaskCollection();
+      $.app.taskListView   = new $.app.TaskListView({
+	el: $('#tasklist'),
+	collection: $.app.taskCollection
+      });
+      $.app.taskCollection.fetch();
     }
   });
 
@@ -515,6 +704,7 @@ require([
   // TASKS
   tasks = [];
 
+/*
   $.templates({
     taskTemplate: "#task-tmpl"
   });
@@ -526,7 +716,7 @@ require([
       $.observable(tasks).insert(tasks.length, v);
     });
   });
-
+*/
 
   $('#newtasksummary').on('focus', function() {
     if ($(this).val() == 'Add Task...')
@@ -709,7 +899,7 @@ require([
     }
   });
 
- 
+  
   $("#tasklist").magicedit('dblclick', ".task > .body", {
     subclass: "text",
     type: 'text-area', 
