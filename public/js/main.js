@@ -370,9 +370,9 @@ require([
     initialize: function() {
       var dit = this;
       console.log("moo, taskdep: %o", this);
-      console.log(this.get("dependency_id") === this.get("task_id"));
-      this.get('dependency_id').on('change', function(model) {
-        dit.get('task_id').trigger('change:dep', model);
+      console.log(this.get("dependency") === this.get("task"));
+      this.get('dependency').on('change', function(model) {
+        dit.get('task').trigger('change:dep', model);
       });
     }
   });
@@ -380,10 +380,10 @@ require([
   $.app.TaskTag = Backbone.RelationalModel.extend({
     initialize: function() {
       var dit = this;
-      console.log("this.get('tag_id'):");
-      console.log(this.get('tag_id'));
-      this.get('tag_id').on('change', function(model) {
-        dit.get('task_id').trigger('change:tag', model);
+      console.log("this.get('tag'):");
+      console.log(this.get('tag'));
+      this.get('tag').on('change', function(model) {
+        dit.get('task').trigger('change:tag', model);
       });
     }
   });
@@ -397,15 +397,19 @@ require([
         key:  'task_deps',
         relatedModel: $.app.TaskDep,
         reverseRelation: {
-          key: 'task_id'
+	  includeInJSON: Backbone.Model.prototype.idAttribute,
+          key: 'task',
+	  keySource: 'task_id'
         }
       },
       {
         type: Backbone.HasMany,
         key:  'dep_tasks',
         relatedModel: $.app.TaskDep,
+	includeInJSON: false,
         reverseRelation: {
-          key: 'dependency_id'
+          key: 'dependency',
+	  keySource: 'dependency_id'
         }
       },
       {
@@ -413,7 +417,9 @@ require([
 	key:  'task_tags',
 	relatedModel: $.app.TaskTag,
 	reverseRelation: {
-	  key: 'task_id'
+	  includeInJSON: "tag_id",
+	  key: 'task',
+	  keySource: 'task_id'
 	}
       }
     ]
@@ -427,10 +433,10 @@ require([
   $.app.NoteTag = Backbone.RelationalModel.extend({
     initialize: function() {
       var dit = this;
-      console.log("this.get('tag_id'):");
-      console.log(this.get('tag_id'));
-      this.get('tag_id').on('change', function(model) {
-        dit.get('note_id').trigger('change:tag', model);
+      console.log("this.get('tag'):");
+      console.log(this.get('tag'));
+      this.get('tag').on('change', function(model) {
+        dit.get('note').trigger('change:tag', model);
       });
     }
   });
@@ -447,16 +453,20 @@ require([
         type: Backbone.HasMany,
         key:  'note_tags',
         relatedModel: $.app.NoteTag,
+	includeInJSON: false,
         reverseRelation: {
-          key: 'tag_id'
+          key: 'tag',
+	  keySource: 'tag_id'
         }
       },
       {
 	type: Backbone.HasMany,
 	key:  'task_tags',
 	relatedModel: $.app.TaskTag,
+	includeInJSON: false,
 	reverseRelation: {
-	  key: 'tag_id'
+	  key: 'tag',
+	  keySource: 'tag_id'
 	}
       }
     ]
@@ -479,7 +489,8 @@ require([
         key:  'note_tags',
         relatedModel: $.app.NoteTag,
         reverseRelation: {
-          key: 'note_id'
+          key: 'note',
+	  keySource: 'note_id'
         }
       }
     ],
@@ -526,9 +537,9 @@ require([
       this.model.get('note_tags').each(function(m) {
 
         console.log("Each note_tags: %o", m);
-        console.log("---> %o", m.get('note_id'));
-        console.log("---> %o", m.get('tag_id'));
-        var tagView = new $.app.AppliedTagView({model: m.get('tag_id') });
+        console.log("---> %o", m.get('note'));
+        console.log("---> %o", m.get('tag'));
+        var tagView = new $.app.AppliedTagView({model: m.get('tag') });
         $(html).find('div.tags').append($(tagView.render()));
       });
       console.log("app.NoteView.render: %o", this.model);
@@ -615,22 +626,41 @@ require([
     }
   });
 
+
   $.app.TaskView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskView',
+
+    events: {
+      "dblclick .summary > .summary": "editSummary"
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderDeps');
+      _.bindAll(this,
+		'render',
+		'renderDeps',
+		'editSummary'
+	       );
+
       this.model.bind('change', this.render);
       this.model.bind('add:task_deps', this.renderDeps);
     },
+
     template: $.templates('#task-tmpl'),
+
+    editSummary: function(ev) {
+      console.log("editSummary: %o, %o, %o", this, ev, ev.currentTarget);
+      $(ev.currentTarget).magicedit('text', function(val) {
+      });
+    },
+
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
       var self = this;
 
       this.model.get('task_deps').each(function(m) {
-	var t = m.get('task_id');
-	var d = m.get('dependency_id');
+	var t = m.get('task');
+	var d = m.get('dependency');
         console.log("Each task_deps: %o", m);
         console.log("---> %o", t);
         console.log("---> %o", d);
@@ -640,14 +670,38 @@ require([
       });
 
       this.model.get('task_tags').each(function(m) {
-	var task = m.get('task_id');
-	var tag  = m.get('tag_id');
+	var task = m.get('task');
+	var tag  = m.get('tag');
 	console.log("Each task_tags: %o", m);
 	console.log("---> %o", task);
 	console.log("---> %o", tag);
 	var tagView = new $.app.AppliedTagView({model: tag });
 	$(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
       });
+
+      $(html).children('.summary').droppable({
+        accept: '#tagdrag > .tags > .tag',
+        activate: function(ev, ui) {
+          $(this).find('.placeholder-tag')
+	      .width(ui.draggable.width())
+	      .addClass('show');
+        },
+        deactivate: function(ev, ui) {
+          $(this).find('.placeholder-tag')
+	      .removeClass('show');
+        },
+        over: function(ev, ui) {
+          $(this).find('.placeholder-tag')
+	      .addClass('placeholder-tag-highlight');
+        },
+        out: function(ev, ui) {
+          $(this).find('.placeholder-tag')
+	      .removeClass('placeholder-tag-highlight');
+        },
+        drop: function(ev, ui) {
+        }
+      });
+
       console.log("app.TaskView.render: %o", this.model);
       return $(this.el).html(html);
     },
@@ -727,6 +781,7 @@ require([
       "notes": "showNotes",
       "tasks": "showTasks"
     },
+
     showNotes: function() {
       $.app.noteCollection = new $.app.NoteCollection();
       $.app.noteListView   = new $.app.NoteListView({
@@ -735,6 +790,7 @@ require([
       });
       $.app.noteCollection.fetch();
     },
+
     showTasks: function() {
       $.app.taskCollection = new $.app.TaskCollection();
       $.app.taskListView   = new $.app.TaskListView({

@@ -235,8 +235,8 @@ class Task < ActiveRecord::Base
                     :status
                   ],
       :include => [
-                    {:deps => { :methods => [:status], :only => [:id, :summary] }},
-                    :tags,
+#                   {:deps => { :methods => [:status], :only => [:id, :summary] }},
+#                   :tags,
                     :task_tags,
                     :task_deps,
                     :dep_tasks
