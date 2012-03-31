@@ -603,6 +603,33 @@ $task_summary_height: 28px;
 }
 
 
+.task .duedate {
+  font-size: 80%;
+  //font-style: italic;
+  color: $light_grey;
+  display: inline;
+  float: right;
+}
+
+.task .duedate-edit {
+  display: inline;
+  float: right;
+}
+
+
+.task .duedate-past {
+  font-weight: bold;
+  color: $redish;
+}
+
+.task .duedate-today {
+  font-weight: bold;
+  color: black;
+}
+
+.task .duedate-tomorrow {
+  font-weight: bold;
+}
 
 .task a {
   font-style: italic; 
@@ -803,6 +830,10 @@ $task_summary_height: 28px;
 
 #tagdrag .tags {
   width: 100%;
+}
+
+#tagdrag .tagDragView {
+  display: inline;
 }
 
 #tagdrag .tags .tag {

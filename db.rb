@@ -207,6 +207,36 @@ class Task < ActiveRecord::Base
     end
   end
 
+  def due_date=(date)
+    self[:due_date] = (date != nil && date != '') ? DateTime.strptime(date, "%d/%m/%Y") : nil
+  end
+
+  def due_date
+    return (self[:due_date] != nil) ? self[:due_date].strftime("%d/%m/%Y") : nil
+  end
+
+  def due_date_class
+    if self[:due_date] == nil
+      return ''
+    end
+
+    date = self[:due_date].to_date
+    classes = ''
+    if date < Date.today
+      classes << 'duedate-past'
+    end
+
+    if date == Date.today
+      classes << 'duedate-today'
+    end
+
+    if date == Date.today+1
+      classes << 'duedate-tomorrow'
+    end
+
+    return classes
+  end
+
   def status
     if    completed
       return "completed"
@@ -232,6 +262,7 @@ class Task < ActiveRecord::Base
     super(
       :methods => [
                     :html_text,
+                    :due_date_class,
                     :status
                   ],
       :include => [

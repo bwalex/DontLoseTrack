@@ -152,7 +152,11 @@ get '/api/task/:task_id' do
 end
 
 put '/api/task/:task_id' do
-  status 500
+  content_type :json
+  t = Task.find(params[:task_id])
+  JSON.parse(request.body.read).each { |p, v| t.send(p + "=", v) }
+  t.save!
+  t.to_json
 end
 
 post '/api/task/:task_id' do

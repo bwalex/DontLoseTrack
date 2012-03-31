@@ -13,9 +13,9 @@
       .tags
         .tag.placeholder-tag
           &nbsp;
-      %span.duedate {{:due_date}}
-    
-    .body.contracted
+      %span.duedate{ :class => '{{:due_date_class}}' }
+        {{if due_date != nil}}{{:due_date}}{{else}}no due date{{/if}}
+    .body{ :class => '{{:(expanded)?"":"contracted"}}' }
       .info
         .deps
           .dep-top-line

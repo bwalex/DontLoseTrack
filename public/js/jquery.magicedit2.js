@@ -16,7 +16,7 @@
 
 
     'select': {
-      template: $.templates(null, "<select class='magic-select'> {{for options ~val=val}} \<option value='{{>option }}' {{if val.toLowerCase() === option.toLowerCase() }}selected='selected'{{/if}}>{{:option}}</option>{{/for}}</select>"),
+      template: $.templates(null, "<select class='magic-select'> {{for options ~val=val}} {{if (~val).toLowerCase() === (#data).toLowerCase()}}<option value='{{>#data }}' selected='selected'>{{:#data}}</option>{{else}}<option value='{{>#data }}'>{{:#data}}{{/if}}{{/for}}</select>"),
 
       render: function(el, opts, change) {
 	$(this.template.render(opts))
@@ -24,36 +24,41 @@
 	    .change(function(ev) {
 	      change($(this).val());
 	    });
-      },
+      }
+    },
 
 
-      'text-area': {
-	template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:origContent}}</textarea></div><div class='magic-tarea-input'><input type='submit'></div></form>"),
+    'textarea': {
+      template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:val}}</textarea></div><div class='magic-tarea-input'><input type='submit'></div></form>"),
 
-	render: function(el, opts, change) {
-	  $(this.template.render(opts))
-	      .appendTo($(el))
-	      .submit(function(ev) {
-		change($(this).find("textarea").val());
-	      });
-	}
-      },
+      render: function(el, opts, change) {
+	$(this.template.render(opts))
+	    .appendTo($(el))
+	    .submit(function(ev) {
+	      change($(this).find("textarea").val());
+	    });
+      }
+    },
 
 
-      'date': {
-	template: $.templates(null, "<input type='date' min='0' value='{{>val}}'>"),
+    'date': {
+      template: $.templates(null, "<input type='date' min='-1' value='{{>val}}'>"),
 
-	render: function(el, opts, change) {
-	  $(this.template.render(opts))
-	      .appendTo($(el))
-	      .dateinput({
-		format: "dd/mm/yyyy",
-		firstDay: 1 /* Monday */
-	      })
-	      .change(function(ev, date) {
-		change(date);
-	      });
-	}
+      render: function(el, opts, change) {
+	$(this.template.render(opts))
+	    .appendTo($(el))
+	    .dateinput({
+	      format: "dd/mm/yyyy",
+	      firstDay: 1 /* Monday */
+	    })
+	    .change(function(ev) {
+	      change($(this).val());
+	    })
+	    .keypress(function(ev) {
+	      if (ev.keyCode === 13 /* ENTER */) {
+		change($(this).val());
+	      }
+	    });
       }
     }
   };
@@ -92,5 +97,6 @@
 	cleanup();
       }
     });
-  }
+  };
+
 })(jQuery);
