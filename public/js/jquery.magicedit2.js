@@ -92,7 +92,7 @@
       cb(newVal);
     });
 
-    $(document).one("keydown", function(ev) {
+    $(document).on("keydown", function(ev) {
       if (ev.keyCode === 27 /* ESC */) {
 	cleanup();
       }

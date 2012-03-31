@@ -1240,6 +1240,7 @@
           this.$el.bind(eventName, method);
         } else {
           this.$el.delegate(selector, eventName, method);
+	  //this.$el.on(eventName, selector, method);
         }
       }
     },

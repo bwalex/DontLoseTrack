@@ -140,6 +140,22 @@ end
 
 
 
+post '/api/tasktag' do
+  content_type :json
+  data = JSON.parse(request.body.read)
+  data.inspect
+  task = Task.find(data['task_id'])
+  tag = Tag.find(data['tag_id'])
+  tt = TaskTag.create!(:task => task, :tag => tag)
+  tt.to_json
+end
+
+
+delete '/api/tasktag/:tasktag_id' do
+  tt = TaskTag.find(params[:tasktag_id])
+  TaskTag.destroy(tt)
+end
+
 
 
 

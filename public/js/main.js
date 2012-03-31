@@ -282,21 +282,31 @@ require([
     initialize: function() {
       var dit = this;
       console.log("moo, taskdep: %o", this);
-      console.log(this.get("dependency") === this.get("task"));
+      //console.log(this.get("dependency") === this.get("task"));
       this.get('dependency').on('change', function(model) {
+	dit.trigger('change:dep', model);
         dit.get('task').trigger('change:dep', model);
       });
+    },
+    toJSON: function() {
+      return { task_id: this.get('task').get('id'), dependency_id: this.get('dependency').get('id') };
     }
   });
 
   $.app.TaskTag = Backbone.RelationalModel.extend({
+    urlRoot: '/api/tasktag',
+    idAttribute: 'id',
     initialize: function() {
       var dit = this;
       console.log("this.get('tag'):");
-      console.log(this.get('tag'));
+      //console.log(this.get('tag'));
       this.get('tag').on('change', function(model) {
+	dit.trigger('change:tag', model);
         dit.get('task').trigger('change:tag', model);
       });
+    },
+    toJSON: function() {
+      return { task_id: this.get('task').get('id'), tag_id: this.get('tag').get('id') };
     }
   });
 
@@ -348,11 +358,11 @@ require([
   $.app.NoteTag = Backbone.RelationalModel.extend({
     initialize: function() {
       var dit = this;
-      console.log("this.get('tag'):");
-      console.log(this.get('tag'));
-      this.get('tag').on('change', function(model) {
-        dit.get('note').trigger('change:tag', model);
-      });
+      //console.log("this.get('tag'):");
+      //console.log(this.get('tag'));
+      //this.get('tag').on('change', function(model) {
+      //  dit.get('note').trigger('change:tag', model);
+      //});
     }
   });
 
@@ -424,11 +434,28 @@ require([
   $.app.AppliedTagView = Backbone.View.extend({
     tagName: 'div',
     className: 'tagAppliedView',
-    initialize: function() {
-      _.bindAll(this, 'render');
-      this.model.bind('change', this.render);
+
+    events: {
+      "click .rm-icon > .rm-button"     : "removeMe"
     },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'removeMe', 'remove');
+      this.model.bind('change:tag', this.render);
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.remove);
+    },
+
+    removeMe: function(ev) {
+      this.model.destroy();
+    },
+
+    destroy: function(ev) {
+      $(this.el).remove();
+    },
+
     template: $.templates('#tag-applied-tmpl'),
+
     render: function() {
       var ht = $(this.el).html(this.template.render(this.model.get('tag').toJSON()));
       console.log("AppliedTagView render: %o", ht);
@@ -541,7 +568,7 @@ require([
 	helper: 'clone',
 	cursor: 'move',
 	snap: false
-      });
+      }).data('tagModel', this.model);
 
       console.log("app.TagDragView.render: %o", this.model);
       return $(this.el).html(html);
@@ -648,13 +675,16 @@ require([
   $.app.TaskView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskView',
+    expanded: false,
 
     events: {
-      "click .summary"                 : "toggleExpand",
+      "click .task > .summary"         : "toggleExpand",
       "dblclick .summary > .summary"   : "editSummary",
       "dblclick .summary > .imp"       : "editImportance",
       "dblclick .summary > .duedate"   : "editDueDate",
-      "dblclick .body > .text"         : "editText"
+      "dblclick .body > .text"         : "editText",
+      "change input:checkbox"          : "editComplete",
+      "drop .summary"                  : "dropTag"
     },
 
     initialize: function() {
@@ -666,10 +696,13 @@ require([
 		'editSummary',
 		'editImportance',
 		'editDueDate',
-		'editText'
+		'editText',
+		'editComplete',
+		'dropTag'
 	       );
 
       this.model.bind('change', this.render);
+      this.model.bind('add:task_tags', this.render);
       this.model.bind('error', this.error);
       this.model.bind('add:task_deps', this.renderDeps);
     },
@@ -678,9 +711,46 @@ require([
 
 
     toggleExpand: function(ev) {
-      var expanded = this.model.get('expanded');
-      this.model.set('expanded', !expanded);
-      return true;
+      if ($(ev.target).is('input,textarea,select,option') === false)
+	$(this.el).find('div.body').toggleClass('contracted');
+
+      this.expanded = !$(this.el).find('div.body').hasClass('contracted');
+    },
+
+
+    dropTag: function(ev, ui) {
+      var tagModel = ui.draggable.data('tagModel');
+      var found = false;
+      _.each(this.model.get('task_tags').pluck('tag'), function(tag) {
+	console.log("moo moo moo", tag, tagModel);
+	if (tag === tagModel)
+	  found = true;
+      });
+      if (!found) {
+	var m = new $.app.TaskTag({tag: tagModel, tag_id: tagModel.get('id'), task: this.model, task_id: this.model.get('id')});
+	console.log(m);
+	//var ret = this.model.get('task_tags').add({tag: tagModel, tag_id: tagModel.get('id'),  task: this.model});
+	this.model.get('task_tags').add(m);
+	console.log(m);
+	//console.log("RET: ", ret);
+	m.save();
+      }
+
+    },
+
+
+    editComplete: function(ev) {
+      console.log("editComplete event: %o", ev);
+      var self = this;
+
+      self.model.save({ 'completed': $(ev.currentTarget).prop('checked')?true:false },
+        {
+	  wait: true,
+	  partialUpdate: true,
+	  success: function(model, resp) {
+	    self.model.set('status', resp.status);
+	  }
+	});
     },
 
 
@@ -693,7 +763,6 @@ require([
 	  val: this.model.get('due_date')
 	},
 	function(val) {
-	  console.log('due date edit: %o', val);
 	  self.model.save({ 'due_date': val },
 	    {
 	      wait: true,
@@ -718,8 +787,6 @@ require([
 	  self.model.save({ 'summary': val },
 	    { wait: true, partialUpdate: true });
 	});
-
-      return false;
     },
 
 
@@ -796,11 +863,10 @@ require([
 	$(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
       });
 
-      $(html).children('.summary').tagDroppable({
-        drop: function(ev, ui) {
-	  console.log("Drop: %o", this);
-        }
-      });
+      $(html).children('.summary').tagDroppable({});
+
+      if (this.expanded)
+	$(html).find('div.body').removeClass('contracted');
 
       console.log("app.TaskView.render: %o", this.model);
       return $(this.el).html(html);
@@ -1045,67 +1111,6 @@ require([
   // XXX: Collapse all button
 
 
-  $("#tasklist").on("click", ".task .summary .tags .tag .rm-icon .rm-button", function(ev) {
-    view = $.view(this);
-    console.log(view);
-    console.log(view.data);
-    parview = $.view(this).parent.parent;
-    if (parview.data.magic_editing === true)
-      return;
-    console.log(parview);
-    var ctx = { view: view, data: view.data, idx: parview.index };
-    $.ajax({
-      type: 'POST',
-      url: '/task_deletetag',
-      data: {
-        project_id: projectId,
-        task_id: parview.data.id,
-        tag_id: view.data.id
-      },
-      dataType: "json",
-      context: ctx,
-      error: function(r, s, e) {
-        var data = $.parseJSON(r.responseText);
-        if (data != null) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        }
-      },
-      success: function(data) {
-        $.observable(tasks).update(this.idx, data);
-      }
-    });
-    ev.stopImmediatePropagation();
-  });
-
-  $("#tasklist").on("change", ".task .summary .check input:checkbox", function(ev) {
-    var view = $.view(this);
-    var complete = $(this).prop('checked');
-    $.ajax({
-      type: 'POST',
-      url: '/task_' + (complete?'':'un') + 'complete',
-      data: {
-        project_id: projectId,
-        task_id: view.data.id
-      },
-      dataType: "json",
-      error: function(r, s, e) {
-        var data = $.parseJSON(r.responseText);
-        if (data != null) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        }
-      },
-      success: function(data) {
-        $.observable(tasks).update(view.index, data);
-      }
-    });
-  });
-  $("#tasklist").on("click", ".task .summary .check input:checkbox", function(ev) {
-    ev.stopImmediatePropagation();
-  });
 
 
 
