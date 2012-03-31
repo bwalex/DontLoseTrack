@@ -1,7 +1,7 @@
 require([
   "jquery.tools",
   "jquery-ui-1.8.18.custom.min",
-  "jquery.magicedit",
+  "jquery.magicedit2",
   "jquery.jdropdown",
   //"jquery.views",
   "require.text!/tmpl/test.tmpl",
@@ -639,19 +639,35 @@ require([
       _.bindAll(this,
 		'render',
 		'renderDeps',
+		'error',
 		'editSummary'
 	       );
 
       this.model.bind('change', this.render);
+      this.model.bind('error', this.error);
       this.model.bind('add:task_deps', this.renderDeps);
     },
 
     template: $.templates('#task-tmpl'),
 
     editSummary: function(ev) {
-      console.log("editSummary: %o, %o, %o", this, ev, ev.currentTarget);
-      $(ev.currentTarget).magicedit('text', function(val) {
-      });
+      var self = this;
+
+      $(ev.currentTarget).magicedit2(
+	'summary', 'text',
+	{
+	  val: this.model.get('summary')
+	},
+	function(val) {
+	  self.model.save({ 'summary': val },
+	    { wait: true, partialUpdate: true });
+	});
+    },
+
+    error: function(oldModel, resp) {
+      alert('error error!');
+      console.log(oldModel === this.model);
+      console.log(resp);
     },
 
     render: function() {

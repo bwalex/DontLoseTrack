@@ -152,6 +152,7 @@ get '/api/task/:task_id' do
 end
 
 put '/api/task/:task_id' do
+  status 500
 end
 
 post '/api/task/:task_id' do
