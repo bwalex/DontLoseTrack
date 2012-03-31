@@ -393,6 +393,10 @@
       // Finish configuring and sending the Ajax request.
       options.error = Backbone.wrapError(options.error, model, options);
       var method = this.isNew() ? 'create' : 'update';
+
+      if (options.partialUpdate === true)
+	options.updateAttrs = attrs;
+
       var xhr = (this.sync || Backbone.sync).call(this, method, this, options);
       if (options.wait) this.set(current, silentOptions);
       return xhr;
@@ -1329,7 +1333,9 @@
     // Ensure that we have the appropriate request data.
     if (!options.data && model && (method == 'create' || method == 'update')) {
       params.contentType = 'application/json';
-      params.data = JSON.stringify(model.toJSON());
+      params.data = (options.partialUpdate === true)
+	  ? JSON.stringify(options.updateAttrs)
+	  : JSON.stringify(model.toJSON());
     }
 
     // For older servers, emulate JSON by encoding the request into an HTML-form.
