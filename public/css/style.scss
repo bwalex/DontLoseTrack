@@ -738,23 +738,19 @@ $task_summary_height: 28px;
     background-color: #FFFFD5;
     position: fixed;
     bottom: 0;
-}
-
-#tagdrag .tags {
-    width: 100%;
-}
-
-#tagdrag .tagDragView {
-    display: inline;
-}
-
-#tagdrag .tags .tag {
-    cursor: move;
-    padding-right: 5px;
-}
-
-#tagdrag .rm-icon-2 .rm-button-2 {
-    right: 8px;
+    .tags {
+	width: 100%;
+	.tag {
+	    cursor: move;
+	    padding-right: 5px;
+	}
+    }
+    .tagDragView {
+	display: inline;
+    }
+    .rm-icon-2 .rm-button-2 {
+	right: 8px;
+    }
 }
 
 .placeholder-tag {
@@ -779,15 +775,14 @@ $task_summary_height: 28px;
     padding: 2px;
     background-color: white;
     text-align: left;
-}
-
-.ui-menu .ui-menu-item {
-    clear: left;
-    float: left;
-    margin: 0;
-    padding-left: 4px;
-    width: 100%;
-    background-color: white;
+    .ui-menu-item {
+	clear: left;
+	float: left;
+	margin: 0;
+	padding-left: 4px;
+	width: 100%;
+	background-color: white;
+    }
     
 }
 
@@ -811,15 +806,14 @@ $task_summary_height: 28px;
     margin: 0;
     padding: 0;
     vertical-align: bottom;
-}
-
-.colorSelector div {
-    height: 36px;
-    width: 36px;
-    display: block;
-    background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
-    margin: 0;
-    padding: 0;
+    div {
+	height: 36px;
+	width: 36px;
+	display: block;
+	background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
+	margin: 0;
+	padding: 0;
+    }
 }
 
 .magic-tag-text input {
