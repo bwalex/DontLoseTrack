@@ -35,55 +35,6 @@ require([
     return  toLong ? s_ +'...' : s_;
   };
 
-  
-  ////////////////////////////////////////////////////////
-  // SIDEBAR TAG FILTER, TAG DRAG
-  tags = [];
-
-
-  $('#newtagname').on('focus', function() {
-    if ($(this).val() == 'Add Tag...')
-      $(this).val('');
-  });
-
-  $('#newtagname').on('focusout', function() {
-    if ($(this).val() == '')
-      $(this).val('Add Tag...');
-  });
-
-  $('#newtagname').keypress(function(ev) {
-    if (ev.keyCode === 13 /* ENTER */) {
-      $.ajax({
-        type: 'POST',
-        url: '/tag_add',
-        data: {
-          project_id: projectId,
-          tag_name: $("#newtagname").val()
-        },
-        dataType: "json",
-        error: function(r, s, e) {
-          var data = $.parseJSON(r.responseText);
-          if (data != null) {
-            $.each(data.errors, function(k, v) {
-              alert(v);
-            });
-          }
-        },
-        success: function(data) {
-          $.observable(tags).insert(0, data);
-          $("#newtagname").val("");
-          $("#newtagname").blur();
-        }
-      });
-    }
-  });
-
-
-
-
-
-
-
 
 
 
@@ -214,7 +165,7 @@ require([
 
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
-    urlRoot: '/api/taskdep',
+    urlRoot: '/api/project/'+projectId+'/taskdep',
     idAttribute: 'id',
     initialize: function() {
       var dit = this;
@@ -231,7 +182,7 @@ require([
   });
 
   $.app.TaskTag = Backbone.RelationalModel.extend({
-    urlRoot: '/api/tasktag',
+    urlRoot: '/api/project/'+projectId+'/tasktag',
     idAttribute: 'id',
     initialize: function() {
       var dit = this;
@@ -256,7 +207,7 @@ require([
     defaults: {
       expanded: false
     },
-    urlRoot: '/api/task',
+    urlRoot: '/api/project/'+projectId+'/task',
     idAttribute: 'id',
     relations: [
       {
@@ -290,7 +241,7 @@ require([
   });
 
   $.app.TaskCollection = Backbone.Collection.extend({
-    url: '/api/task',
+    url: '/api/project/'+projectId+'/task',
     model: $.app.Task
   });
 
@@ -310,7 +261,7 @@ require([
     defaults: {
       selected: true
     },
-    urlRoot: '/api/tag',
+    urlRoot: '/api/project/'+projectId+'/tag',
     idAttribute: 'id',
     relations: [
       {
@@ -337,7 +288,7 @@ require([
   });
 
   $.app.TagCollection = Backbone.Collection.extend({
-    url: '/api/tag',
+    url: '/api/project/'+projectId+'/tag',
     model: $.app.Tag
   });
 
@@ -345,7 +296,7 @@ require([
     defaults: {
       visible: true
     },
-    urlRoot: '/api/note',
+    urlRoot: '/api/project/'+projectId+'/note',
     idAttribute: 'id',
     relations: [
       {
@@ -366,7 +317,7 @@ require([
   });
 
   $.app.NoteCollection = Backbone.Collection.extend({
-    url: '/api/note',
+    url: '/api/project/'+projectId+'/note',
     model: $.app.Note
   });
 
@@ -537,6 +488,9 @@ require([
     className: 'tagListView',
 
     events: {
+      "focus #newtagname"          : "newTagFocus",
+      "focusout #newtagname"       : "newTagFocusOut",
+      "keypress #newtagname"       : "newTagKeypress"
     },
 
     destroy: function() {
@@ -545,10 +499,47 @@ require([
       this.unbind();
     },
 
+    newTagFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Add Tag...')
+	$(ev.currentTarget).val('');
+    },
+
+    newTagFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Add Tag...');
+    },
+
+    newTagKeypress: function(ev) {
+      var self = this;
+
+      if (ev.keyCode === 13 /* ENTER */) {
+	var m = new $.app.Tag({ name: $(ev.currentTarget).val() });
+	console.log("Moo, saving... ", m);
+	m.save({},{
+	  wait: true,
+	  success: function(model, resp) {
+	    console.log("Success: ", model, resp);
+	    self.collection.add(m);
+	    $(ev.currentTarget).val("");
+	    $(ev.currentTarget).blur();
+	  }
+	});
+      }
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTag', 'destroy');
+      _.bindAll(this,
+		'render',
+		'renderTag',
+		'renderTagTop',
+		'newTagFocus',
+		'newTagFocusOut',
+		'newTagKeypress',
+		'destroy');
+
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+      this.collection.bind('add', this.renderTagTop);
       $.app.globalController.register(this);
     },
 
@@ -564,6 +555,11 @@ require([
       var tagView = new $.app.TagView({model: tag});
       $(this.el).find('#tagfilterlist .tags').append($(tagView.render()));
       console.log(this.el, tagView.render());
+    },
+
+    renderTagTop: function(tag) {
+      var tagView = new $.app.TagView({model: tag});
+      $(this.el).find('#tagfilterlist .tags').prepend($(tagView.render()));
     }
   });
 
