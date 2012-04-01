@@ -163,22 +163,6 @@ div#bio {
     z-index: 4;
 }
 
-#twitter-profile {
-    @include social-icon("/icons/twitter.png");
-}
-
-#flickr-profile {
-    @include social-icon("/icons/flickr.png");
-}
-
-#gplus-profile {
-    @include social-icon("/icons/gplus.png");
-}
-
-#linkedin-profile {
-    @include social-icon("/icons/linkedin.png");
-}
-
 #rss-feed {
     @include social-icon("/icons/rss.png");
 }
@@ -220,17 +204,6 @@ span.post-date {
     padding: 3px 7px;
 }
 
-span.post-categories {
-    background: none repeat scroll 0 0 	#EBD1D8;
-    color: white;
-    float: left;
-    margin-left: 2px;
-    padding: 3px 5px 3px 5px;
-}
-
-.post-categories a {
-    color: #99173C;
-}
 
 div#sidebar {
     padding-top: 10px;
@@ -652,15 +625,6 @@ $task_summary_height: 28px;
     font-weight: bold;
 }
 
-/*
-  #sidebar {
-  z-index: 500;
-  position: fixed;
-  bottom: 50%;
-  right: 100px;
-  width: 332px;
-  }
-  */
 
 #tagfilterlist .tags .tag {
     display: block;
@@ -765,15 +729,6 @@ $task_summary_height: 28px;
     width: 50%;
 }
 
-/*
-  #newtasksummary:focus {
-  color: #000000;
-  }
-
-#newtasksummary:hover {
-background-color: #FFFFD5;
-}
-*/
 
 
 #tagdrag {
@@ -853,8 +808,6 @@ background-color: #FFFFD5;
     height: 36px;
     width: 36px;
     display: inline-block;
-    //position: relative;
-    //background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
     margin: 0;
     padding: 0;
     vertical-align: bottom;
