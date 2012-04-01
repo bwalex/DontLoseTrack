@@ -11,6 +11,7 @@ require([
   "require.text!/tmpl/task-list.tmpl",
   "require.text!/tmpl/taskdep.tmpl",
   "require.text!/tmpl/tag.tmpl",
+  "require.text!/tmpl/tag-list.tmpl",
   "require.text!/tmpl/tag-norm.tmpl",
   "require.text!/tmpl/tag-applied.tmpl"
 ], function() {
@@ -28,7 +29,7 @@ require([
 
 
   String.prototype.trunc = function(n,useWordBoundary) {
-    var toLong = this.ength>n,
+    var toLong = this.length>n,
     s_ = toLong ? this.substr(0,n-1) : this;
     s_ = useWordBoundary && toLong ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
     return  toLong ? s_ +'...' : s_;
@@ -534,20 +535,34 @@ require([
   $.app.TagListView = Backbone.View.extend({
     tagName: 'div',
     className: 'tagListView',
+
+    events: {
+    },
+
+    destroy: function() {
+      $.app.globalController.unregister(this);
+      this.remove();
+      this.unbind();
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTag');
+      _.bindAll(this, 'render', 'renderTag', 'destroy');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+      $.app.globalController.register(this);
     },
+
+    template: $.templates('#tag-list-tmpl'),
+
     render: function() {
-      console.log("render in TagListView: %o", this);
+      $(this.el).html(this.template.render({}));
       this.collection.each(this.renderTag);
-      console.log(this);
     },
+
     renderTag: function(tag) {
       console.log("renderTag: tag=%o", tag);
       var tagView = new $.app.TagView({model: tag});
-      $(this.el).append($(tagView.render()));
+      $(this.el).find('#tagfilterlist .tags').append($(tagView.render()));
       console.log(this.el, tagView.render());
     }
   });
@@ -1095,10 +1110,9 @@ require([
     showNotes: function() {
       this.cleanView();
 
-      var el = $('<div></div>').appendTo('#notes');
       $.app.noteCollection = new $.app.NoteCollection();
       this.currentView = $.app.noteListView   = new $.app.NoteListView({
-        el: el,
+        el: $('<div></div>').appendTo('#notes'),
         collection: $.app.noteCollection
       });
       $.app.noteCollection.fetch();
@@ -1107,10 +1121,9 @@ require([
     showTasks: function() {
       this.cleanView();
 
-      var el = $('<div></div>').appendTo('#tasks');
       $.app.taskCollection = new $.app.TaskCollection();
       this.currentView = $.app.taskListView = new $.app.TaskListView({
-	el: el,
+	el: $('<div></div>').appendTo('#tasks'),
 	collection: $.app.taskCollection
       });
       $.app.taskCollection.fetch();
@@ -1121,7 +1134,7 @@ require([
   $.app.tagCollection  = new $.app.TagCollection();
 
   $.app.tagListView = new $.app.TagListView({
-    el: $('#tagfilterlist .tags'),
+    el: $('<div></div>').appendTo('#sidebar'),
     collection: $.app.tagCollection
   });
 
