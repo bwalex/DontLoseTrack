@@ -1016,7 +1016,10 @@ require([
     className: 'taskListView',
 
     events: {
-      "click .tabmenu .btn_addtag"     : "addTagBtn"
+      "click .tabmenu .btn_addtag"     : "addTagBtn",
+      "focus #newtasksummary"          : "newTaskFocus",
+      "focusout #newtasksummary"       : "newTaskFocusOut",
+      "keypress #newtasksummary"       : "newTaskKeypress"
     },
 
     addTagBtn: function(ev) {
@@ -1035,9 +1038,47 @@ require([
       this.unbind();
     },
 
+    newTaskFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Add Task...')
+	$(ev.currentTarget).val('');
+    },
+
+    newTaskFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Add Task...');
+    },
+
+    newTaskKeypress: function(ev) {
+      var self = this;
+
+      if (ev.keyCode === 13 /* ENTER */) {
+	var m = new $.app.Task({ summary: $(ev.currentTarget).val() });
+	console.log("Moo, saving... ", m);
+	m.save({},{
+	  wait: true,
+	  success: function(model, resp) {
+	    console.log("Success: ", model, resp);
+	    self.collection.add(m);
+	    $(ev.currentTarget).val("");
+	    $(ev.currentTarget).blur();
+	  }
+	});
+      }
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTask', 'addTagBtn', 'destroy', 'tagbtn');
+      _.bindAll(this,
+		'render',
+		'renderTask',
+		'renderTaskTop',
+		'addTagBtn',
+		'destroy',
+		'tagbtn',
+		'newTaskFocus',
+		'newTaskFocusOut',
+		'newTaskKeypress');
       //this.collection.bind('change', this.render);
+      this.collection.bind('add', this.renderTaskTop);
       this.collection.bind('reset', this.render);
 
       this.bind('btn:addTags', this.tagbtn);
@@ -1057,6 +1098,11 @@ require([
       console.log("renderTask: task=%o", task);
       var taskView = new $.app.TaskView({model: task});
       $(this.el).find('#tasklist').append($(taskView.render()));
+    },
+
+    renderTaskTop: function(task) {
+      var taskView = new $.app.TaskView({model: task});
+      $(this.el).find('#tasklist').prepend($(taskView.render()));
     }
   });
 
@@ -1150,117 +1196,6 @@ require([
 
   var app_router = new $.app.Router;
   Backbone.history.start();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  ///////////////////////////////////////////////////////
-  // TASKS
-  tasks = [];
-
-
-  $('#newtasksummary').on('focus', function() {
-    if ($(this).val() == 'Add Task...')
-      $(this).val('');
-  });
-
-  $('#newtasksummary').on('focusout', function() {
-    if ($(this).val() == '')
-      $(this).val('Add Task...');
-  });
-
-  $('#newtasksummary').keypress(function(ev) {
-    if (ev.keyCode === 13 /* ENTER */) {
-      $.ajax({
-        type: 'POST',
-        url: '/task_add',
-        data: {
-          project_id: projectId,
-          task_summary: $("#newtasksummary").val()
-        },
-        dataType: "json",
-        error: function(r, s, e) {
-          var data = $.parseJSON(r.responseText);
-          if (data != null) {
-            $.each(data.errors, function(k, v) {
-              alert(v);
-            });
-          }
-        },
-        success: function(data) {
-          $.observable(tasks).insert(0, data);
-          $("#newtasksummary").val("");
-          $("#newtasksummary").blur();
-        }
-      });
-    }
-  });
-
-  $(document).keydown(function(ev) {
-    if (ev.keyCode === 27 /* ESC */)
-      $('#newtasksummary').blur();
-  });
-
-  // XXX: Collapse all button
-
-
 
 });
 

@@ -201,6 +201,11 @@ get '/api/task/:task_id' do
 end
 
 post '/api/task' do
+  content_type :json
+  p = Project.find(1) #XXX!
+  data = JSON.parse(request.body.read)
+  t = Task.create!(:summary => data['summary'], :project => p)
+  t.to_json
 end
 
 put '/api/task/:task_id' do

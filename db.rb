@@ -178,6 +178,8 @@ class Task < ActiveRecord::Base
   has_many :dep_tasks,  :class_name => 'TaskDep', :foreign_key => 'dependency_id'
 
   validates :summary,   :length => { :in => 1..140 }
+  validates_presence_of :project
+  validates_associated  :project
 
   def importance=(imp)
     case imp
