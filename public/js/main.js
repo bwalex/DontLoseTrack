@@ -25,7 +25,7 @@ require([
     $("body").append(arguments[l]);
 
   // Set up tabs
-  $(".tabs:first").tabs(".panes:first > div", { history: true });
+  //$(".tabs:first").tabs(".panes:first > div", { history: false });
 
 
   String.prototype.trunc = function(n,useWordBoundary) {
@@ -54,6 +54,8 @@ require([
   _.extend(GlobalController.prototype, {
     events: {},
 
+    attributes: {},
+
     initialize: function(){},
 
     register: function(listener, options) {
@@ -71,6 +73,17 @@ require([
       this.listeners = _.reject(this.listeners, function(l) {
 	return (l.obj === listener);
       });
+    },
+
+    get: function(attr) {
+      return this.attributes[attr];
+    },
+
+    set: function(attr, val) {
+      var oldVal = this.attributes[attr];
+      this.attributes[attr] = val;
+
+      this.trigger('change:'+attr, val, oldVal);
     },
 
     trigger: function(event) {
@@ -145,11 +158,33 @@ require([
   $.app.GlobalController = DontLoseTrack.GlobalController.extend({
     events: {
       "btn:addTags"     : "addTagsPress",
-      "clean:addTags"   : "addTagsClean"
+      "clean:addTags"   : "addTagsClean",
+      "change:project"  : "changeProject",
+      "navigate"        : "navigate"
+    },
+
+    attributes: {
+       project: -1
     },
 
     initialize: function() {
-      _.bindAll(this, 'addTagsPress', 'addTagsClean');
+      _.bindAll(this, 'addTagsPress', 'addTagsClean', 'changeProject', 'navigate');
+    },
+
+    navigate: function(item) {
+      $('#navbar .menu a').removeClass('current');
+      $('#navbar .menu a[title="' + item + '"]').addClass('current');
+    },
+
+    changeProject: function(newProj, oldProj) {
+      var self = this;
+      if (newProj === oldProj)
+	return;
+
+      $('#navbar .menu a').each(function(i, a) {
+	var href = '#project/' + newProj + '/' + $(a).attr('title');
+	$(a).attr('href', href);
+      });
     },
 
     addTagsPress: function() {
@@ -165,7 +200,10 @@ require([
 
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
-    urlRoot: '/api/project/'+projectId+'/taskdep',
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/taskdep';
+    },
+
     idAttribute: 'id',
     initialize: function() {
       var dit = this;
@@ -182,7 +220,9 @@ require([
   });
 
   $.app.TaskTag = Backbone.RelationalModel.extend({
-    urlRoot: '/api/project/'+projectId+'/tasktag',
+    urlRoot:  function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/tasktag';
+    },
     idAttribute: 'id',
     initialize: function() {
       var dit = this;
@@ -207,7 +247,10 @@ require([
     defaults: {
       expanded: false
     },
-    urlRoot: '/api/project/'+projectId+'/task',
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/task';
+    },
+
     idAttribute: 'id',
     relations: [
       {
@@ -241,7 +284,9 @@ require([
   });
 
   $.app.TaskCollection = Backbone.Collection.extend({
-    url: '/api/project/'+projectId+'/task',
+    url: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/task';
+    },
     model: $.app.Task
   });
 
@@ -261,7 +306,9 @@ require([
     defaults: {
       selected: true
     },
-    urlRoot: '/api/project/'+projectId+'/tag',
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/tag';
+    },
     idAttribute: 'id',
     relations: [
       {
@@ -288,7 +335,9 @@ require([
   });
 
   $.app.TagCollection = Backbone.Collection.extend({
-    url: '/api/project/'+projectId+'/tag',
+    url: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/tag';
+    },
     model: $.app.Tag
   });
 
@@ -296,7 +345,9 @@ require([
     defaults: {
       visible: true
     },
-    urlRoot: '/api/project/'+projectId+'/note',
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/note';
+    },
     idAttribute: 'id',
     relations: [
       {
@@ -317,7 +368,9 @@ require([
   });
 
   $.app.NoteCollection = Backbone.Collection.extend({
-    url: '/api/project/'+projectId+'/note',
+    url: function() {
+      return '/api/project/'+ $.app.globalController.get('project') +'/note';
+    },
     model: $.app.Note
   });
 
@@ -1137,35 +1190,72 @@ require([
 
   $.app.Router = Backbone.Router.extend({
     routes: {
-      "notes": "showNotes",
-      "tasks": "showTasks"
+      "project/:projectId/notes": "showNotes",
+      "project/:projectId/tasks": "showTasks"
     },
 
+
     currentView: null,
+    currentSidebarView: null,
     cleanView: function() {
       if (this.currentView != null && typeof(this.currentView.destroy) === 'function') {
 	this.currentView.destroy();
 	this.currentView = null;
       }
+
+      if (this.currentSidebarView != null && typeof(this.currentSidebarView.destroy) === 'function') {
+	this.currentSidebarView.destroy();
+	this.currentSidebarView = null;
+      }
     },
 
-    showNotes: function() {
+
+    showTags: function() {
+      $.app.tagCollection  = new $.app.TagCollection();
+
+      this.currentSidebarView = $.app.tagListView = new $.app.TagListView({
+	el: $('<div></div>').appendTo('#sidebar'),
+	collection: $.app.tagCollection
+      });
+
+      $.app.tagDragListView = new $.app.TagDragListView({
+	el: $('#tagdrag .tags'),
+	collection: $.app.tagCollection
+      });
+
+      // XXX: Kludge; for some reason the tag collection needs
+      //      to be fetched synchronously (and first), otherwise
+      //      the relationships won't work as expected.
+      $.app.tagCollection.fetch({async: false});
+    },
+
+
+    showNotes: function(proj) {
       this.cleanView();
+      $.app.globalController.set('project', proj);
+      $.app.globalController.trigger('navigate', 'notes');
+
+      this.showTags();
 
       $.app.noteCollection = new $.app.NoteCollection();
       this.currentView = $.app.noteListView   = new $.app.NoteListView({
-        el: $('<div></div>').appendTo('#notes'),
+        el: $('<div></div>').appendTo('#main-pane'),
         collection: $.app.noteCollection
       });
       $.app.noteCollection.fetch();
     },
 
-    showTasks: function() {
+
+    showTasks: function(proj) {
       this.cleanView();
+      $.app.globalController.set('project', proj);
+      $.app.globalController.trigger('navigate', 'tasks');
+
+      this.showTags();
 
       $.app.taskCollection = new $.app.TaskCollection();
       this.currentView = $.app.taskListView = new $.app.TaskListView({
-	el: $('<div></div>').appendTo('#tasks'),
+	el: $('<div></div>').appendTo('#main-pane'),
 	collection: $.app.taskCollection
       });
       $.app.taskCollection.fetch();
@@ -1173,6 +1263,7 @@ require([
   });
 
 
+/*
   $.app.tagCollection  = new $.app.TagCollection();
 
   $.app.tagListView = new $.app.TagListView({
@@ -1189,6 +1280,7 @@ require([
   //      to be fetched synchronously (and first), otherwise
   //      the relationships won't work as expected.
   $.app.tagCollection.fetch({async: false});
+*/
 
   var app_router = new $.app.Router;
   Backbone.history.start();

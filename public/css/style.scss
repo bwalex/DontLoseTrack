@@ -76,11 +76,15 @@ div#content {
 #navbar {
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
-    height: 50px;
+    //height: 50px;
     margin: 0 0 0 -20px;
     overflow: hidden;
     padding: 0 20px;
     width: 100%;
+
+    .grid_16 {
+	width: 100%;
+    }
 
     div {
         margin: 0;
@@ -89,7 +93,7 @@ div#content {
     ul {
         float: left;
 	margin: 0;
-	width: 100%;
+	//width: 100%;
 	padding-left: 0px;
 	li {
             float: left;
@@ -102,13 +106,16 @@ div#content {
 	display: block;
 	font-size: 90%;
 	font-weight: bold;
-	height: 26px;
-	padding: 15px 15px 6px;
+	//height: 26px;
+	padding: 15px 15px 0px;
 	text-decoration: none;
 
         &.current, &:hover {
             color: #99173C;    
 	}
+    }
+    input#projectSelector {
+	float: right;
     }
 }
 

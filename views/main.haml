@@ -30,30 +30,34 @@
         %h1.logo Don’t Lose Track!
 
     .container_16#header
-      .container_16.clearfix#navbar
+      .container_16#navbar.clearfix
         .grid_16
           %ul.menu.tabs
             %li
-              %a{ :href => "#timeline" } Timeline
+              %a{ :title => 'timeline', :href => "#timeline" } Timeline
             %li
-              %a{ :href => "#notes" } Notes
+              %a{ :title => 'notes', :href => "#notes" } Notes
             %li
-              %a{ :href => "#tasks" } Tasks
+              %a{ :title => 'tasks', :href => "#tasks" } Tasks
             %li
-              %a{ :href => "#wikis" } Wikis
+              %a{ :title => 'wikis', :href => "#wikis" } Wikis
             %li
-              %a{ :href => "#emails" } Emails
+              %a{ :title => 'emails', :href => "#emails" } Emails
+            %li
+              %a{ :title => 'settings', :href => "#settings" } Settings
+          %input#projectSelector{ :type => "text", :value => "Switch Project..." }
 
     .container_16.spacer.clearfix
 
     .container_16.clearfix#content
       .grid_12
         .panes
-          #timeline
-          #notes
-          #tasks
-          #wikis
-          #emails
+          #main-pane
+          -# timeline
+          -# notes
+          -# tasks
+          -# wikis
+          -# emails
 
       .grid_4.clearfix
         #sidebar
