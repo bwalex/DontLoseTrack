@@ -6,6 +6,7 @@ require([
   //"jquery.views",
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
+  "require.text!/tmpl/note-list.tmpl",
   "require.text!/tmpl/task.tmpl",
   "require.text!/tmpl/task-list.tmpl",
   "require.text!/tmpl/taskdep.tmpl",
@@ -420,8 +421,10 @@ require([
         console.log("---> %o", m.get('note'));
         console.log("---> %o", m.get('tag'));
         var tagView = new $.app.AppliedTagView({model: m });
-        $(html).find('div.tags').append($(tagView.render()));
+        $(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
       });
+
+      $(html).children('.meta').tagDroppable({});
       console.log("app.NoteView.render: %o", this.model);
       return $(this.el).html(html);
     },
