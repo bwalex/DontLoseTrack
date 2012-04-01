@@ -440,7 +440,8 @@ img.boring {
     display: inline;
 }
 
-/* .task .summary */ .tags .tag {
+/* .task .summary */ .tags .tag,
+.tags .tag-edit {
     padding-left: 5px;
     margin-left: 10px;
     //margin-right: 5px;
@@ -456,6 +457,16 @@ img.boring {
 
     //float: left;
     //border: 1px solid darkgrey;
+}
+
+#tagfilterlist .tags .tag,
+#tagfilterlist .tags .tag-edit {
+    width: 100%;
+    margin-top: 2px;
+}
+
+#tagfilterlist .tags .tag-edit {
+    padding: 4px;
 }
 
 .task .body {
@@ -659,6 +670,18 @@ $task_summary_height: 28px;
 .dep-top-line {
   margin-top: 3px;
   margin-right: 3px;
+}
+
+.taskdep .status-completed a {
+  text-decoration: line-through;
+}
+
+.taskdep .status-blocked a {
+  color: $redish;
+}
+
+.taskdep .status-depends a {
+  color: $redish;
 }
 
 .fl {
@@ -892,3 +915,27 @@ $task_summary_height: 28px;
   background-color: #FFFFD5;
 }
 
+.colorSelector {
+  height: 36px;
+  width: 36px;
+  display: inline-block;
+  //position: relative;
+  //background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
+  margin: 0;
+  padding: 0;
+  vertical-align: bottom;
+}
+
+.colorSelector div {
+    height: 36px;
+    width: 36px;
+    display: block;
+    background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
+    margin: 0;
+    padding: 0;
+}
+
+.magic-tag-text input {
+    margin-left: 8px;
+    width: 60%;
+}

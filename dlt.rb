@@ -133,9 +133,19 @@ get '/api/tag/:tag_id' do
 end
 
 put '/api/tag/:tag_id' do
+  content_type :json
+  t = Tag.find(params[:tag_id])
+  JSON.parse(request.body.read).each { |p, v| t.send(p + "=", v) }
+  t.save!
+  t.to_json
 end
 
-post '/api/tag/:tag_id' do
+post '/api/tag' do
+end
+
+delete '/api/tag/:tag_id' do
+  t = Tag.find(params[:tag_id])
+  Tag.destroy(t)
 end
 
 
@@ -143,7 +153,6 @@ end
 post '/api/tasktag' do
   content_type :json
   data = JSON.parse(request.body.read)
-  data.inspect
   task = Task.find(data['task_id'])
   tag = Tag.find(data['tag_id'])
   tt = TaskTag.create!(:task => task, :tag => tag)
@@ -159,12 +168,39 @@ end
 
 
 
+
+
+post '/api/taskdep' do
+  content_type :json
+  data = JSON.parse(request.body.read)
+  task = Task.find(data['task_id'])
+  dep = Task.find(data['dependency_id'])
+  tdep = TaskDep.create!(:task => task, :dependency => dep)
+  tdep.to_json
+end
+
+
+delete '/api/taskdep/:taskdep_id' do
+  tdep = TaskDep.find(params[:taskdep_id])
+  TaskDep.destroy(tdep)
+end
+
+
+
+
+
+
+
+
 get '/api/task' do
   Task.where("project_id = ?", 1).to_json
 end
 
 get '/api/task/:task_id' do
   Task.find(params[:task_id]).to_json
+end
+
+post '/api/task' do
 end
 
 put '/api/task/:task_id' do
@@ -175,9 +211,10 @@ put '/api/task/:task_id' do
   t.to_json
 end
 
-post '/api/task/:task_id' do
+delete '/api/task/:task_id' do
+  t = Task.find(params[:task_id])
+  Task.destroy(t)
 end
-
 
 
 

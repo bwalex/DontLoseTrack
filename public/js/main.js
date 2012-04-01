@@ -38,31 +38,6 @@ require([
   tags = [];
 
 
-  $('#tagfilterlist').on('click', '.tags .tag .rm-icon .rm-button', function(ev) {
-    var view = $.view(this);
-    $.ajax({
-      type: 'POST',
-      url: '/tag_delete',
-      data: {
-        project_id: projectId,
-        tag_id: view.data.id
-      },
-      dataType: "json",
-      error: function(r, s, e) {
-        var data = $.parseJSON(r.responseText);
-        if (data != null) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        }
-      },
-      success: function(data) {
-        $.observable(tags).remove(view.index);
-      }
-    });
-  });
-
-
   $('#newtagname').on('focus', function() {
     if ($(this).val() == 'Add Tag...')
       $(this).val('');
@@ -107,160 +82,6 @@ require([
     $('.btn_addtag').toggleClass('btn-selected');
   });
 
-  $('#tasklist').on('click', '.dep .rm-icon-2 .rm-button-2', function(ev) {
-    var view = $.view(this);
-    var parview = $.view(this).parent.parent;
-    if (parview.data.magic_editing === true)
-      return;
-    console.log(view);
-    console.log(parview);
-    $.ajax({
-      type: 'POST',
-      url: '/task_deletedep',
-      data: {
-        project_id: projectId,
-        task_id: view.data.task_id,
-        task_dep_id: view.data.dependency_id
-      },
-      dataType: "json",
-      error: function(r, s, e) {
-        var data = $.parseJSON(r.responseText);
-        if (data != null) {
-          $.each(data.errors, function(k, v) {
-            alert(v);
-          });
-        }
-      },
-      success: function(data) {
-        $.observable(tasks).update(parview.index, data);
-      }
-    });
-  });
-
-  $('#tasklist').on('click', '.adddep-button', function(ev) {
-    var depc = $(this).closest('.deps');
-    var s = this;
-
-    if ($(this).hasClass('btn-selected')) {
-      depc.find('.input-dep').remove();
-      $(this).removeClass('btn-selected');
-      $.view(this).data.magic_editing = false;
-      return;
-    } else {
-      if ($.view(this).data.magic_editing === true)
-        return;
-      $.view(this).data.magic_editing = true;
-    }
-
-    $(this).toggleClass('btn-selected');
-    
-    var ibd = $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>');
-
-    ibd.find('input')
-	.on('focus', function() {
-          if ($(this).val() == 'Add Dependency...')
-            $(this).val('');
-	})
-	.on('focusout', function() {
-          if ($(this).val() == '')
-            $(this).val('Add Dependency...');
-	})
-	.autocomplete({
-          source: function(req, cb) {
-            var options = [];
-            $.each(tasks, function(k, v) {
-              if (v.summary.toLowerCase().indexOf(req.term.toLowerCase()) !== -1)
-		options.push({label: v.summary, value: v.id});
-            });
-            cb(options);
-          },
-          focus: function(ev, ui) {
-            return false;
-          },
-          select: function(ev, ui) {
-            var view = $.view(this);
-            //view.data.expanded = !$(this).closest('.task').children('.body').hasClass('hide');
-            
-            ev.stopImmediatePropagation();
-            $.ajax({
-              type: 'POST',
-              url: '/task_adddep',
-              data: {
-		project_id: projectId,
-		task_id: view.data.id,
-		task_dep_id: ui.item.value
-              },
-              dataType: "json",
-              error: function(r, s, e) {
-		var data = $.parseJSON(r.responseText);
-		if (data != null) {
-                  $.each(data.errors, function(k, v) {
-                    alert(v);
-                  });
-		}
-              },
-              success: function(data) {
-		var depc = $(this).closest('.deps');
-		depc.find('.adddep-button').removeClass('btn-selected');
-		view.data.magic_editing = false;
-		depc.find('.input-dep').remove();
-		$.observable(tasks).update(view.index, data);
-              }
-            });
-          }
-	});
-    
-    $(document).keydown(function(ev) {
-      if (ev.keyCode === 27 /* ESC */) {
-        $.view(s).data.magic_editing = false; 
-        depc.find('.input-dep').remove();
-        depc.find('.adddep-button').removeClass('btn-selected');
-      }
-    });
-
-    ibd.appendTo(depc);
-    
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -279,14 +100,16 @@ require([
   $.app = {};
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
+    urlRoot: '/api/taskdep',
+    idAttribute: 'id',
     initialize: function() {
       var dit = this;
       console.log("moo, taskdep: %o", this);
       //console.log(this.get("dependency") === this.get("task"));
-      this.get('dependency').on('change', function(model) {
-	dit.trigger('change:dep', model);
-        dit.get('task').trigger('change:dep', model);
-      });
+      //this.get('dependency').on('change', function(model) {
+	//dit.trigger('change:dep', model);
+        //dit.get('task').trigger('change:dep', model);
+      //});
     },
     toJSON: function() {
       return { task_id: this.get('task').get('id'), dependency_id: this.get('dependency').get('id') };
@@ -322,7 +145,6 @@ require([
         key:  'task_deps',
         relatedModel: $.app.TaskDep,
         reverseRelation: {
-	  includeInJSON: Backbone.Model.prototype.idAttribute,
           key: 'task',
 	  keySource: 'task_id'
         }
@@ -331,7 +153,6 @@ require([
         type: Backbone.HasMany,
         key:  'dep_tasks',
         relatedModel: $.app.TaskDep,
-	includeInJSON: false,
         reverseRelation: {
           key: 'dependency',
 	  keySource: 'dependency_id'
@@ -342,7 +163,6 @@ require([
 	key:  'task_tags',
 	relatedModel: $.app.TaskTag,
 	reverseRelation: {
-	  includeInJSON: "tag_id",
 	  key: 'task',
 	  keySource: 'task_id'
 	}
@@ -517,11 +337,44 @@ require([
   $.app.TagView = Backbone.View.extend({
     tagName: 'div',
     className: 'tagView',
-    initialize: function() {
-      _.bindAll(this, 'render');
-      this.model.bind('change', this.render);
+
+    events: {
+      "dblclick .tag"               : "editTag",
+      "click .rm-icon > .rm-button" : "removeMe"
     },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'editTag', 'removeMe', 'remove');
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.remove);
+    },
+
+    removeMe: function(ev) {
+      this.model.destroy();
+    },
+
+    destroy: function(ev) {
+      $(this.el).remove();
+    },
+
+    editTag: function(ev) {
+      var self = this;
+
+      $(ev.currentTarget).magicedit2(
+	'tag', 'tag',
+	{
+	  text: this.model.get('name'),
+	  color: this.model.get('color')
+	},
+	function(val) {
+	  console.log('editTag: ', val);
+	  self.model.save({ name: val.text, color: val.color },
+            { wait: true, partialUpdate: true });
+	});
+    },
+
     template: $.templates('#tag-tmpl'),
+
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
 
@@ -659,11 +512,28 @@ require([
   $.app.TaskDepView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskdep',
-    initialize: function() {
-      _.bindAll(this, 'render');
-      this.model.bind('change', this.render);
+
+    events: {
+      "click .rm-icon-2 > .rm-button-2"  : "removeMe"
     },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'removeMe', 'remove');
+      this.model.bind('change:dep', this.render);
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.remove);
+    },
+
+    removeMe: function(ev) {
+      this.model.destroy();
+    },
+
+    destroy: function(ev) {
+      $(this.el).remove();
+    },
+
     template: $.templates('#task-dep-tmpl'),
+
     render: function() {
       var ht = $(this.el).html(this.template.render(this.model.get('dependency').toJSON()));
       console.log("TaskDepView render: %o", ht);
@@ -678,13 +548,17 @@ require([
     expanded: false,
 
     events: {
-      "click .task > .summary"         : "toggleExpand",
-      "dblclick .summary > .summary"   : "editSummary",
-      "dblclick .summary > .imp"       : "editImportance",
-      "dblclick .summary > .duedate"   : "editDueDate",
-      "dblclick .body > .text"         : "editText",
-      "change input:checkbox"          : "editComplete",
-      "drop .summary"                  : "dropTag"
+      "click .task > .summary"           : "toggleExpand",
+      "dblclick .summary > .summary"     : "editSummary",
+      "dblclick .summary > .imp"         : "editImportance",
+      "dblclick .summary > .duedate"     : "editDueDate",
+      "dblclick .body > .text"           : "editText",
+      "dblclick .info > .blocked .value" : "editBlocked",
+      "change input:checkbox"            : "editComplete",
+
+      "drop .summary"                    : "dropTag",
+
+      "click .adddep-button"             : "addDep"
     },
 
     initialize: function() {
@@ -698,13 +572,15 @@ require([
 		'editDueDate',
 		'editText',
 		'editComplete',
-		'dropTag'
+		'editBlocked',
+		'dropTag',
+		'addDep'
 	       );
 
       this.model.bind('change', this.render);
       this.model.bind('add:task_tags', this.render);
       this.model.bind('error', this.error);
-      this.model.bind('add:task_deps', this.renderDeps);
+      this.model.bind('add:task_deps', this.render);
     },
 
     template: $.templates('#task-tmpl'),
@@ -715,6 +591,75 @@ require([
 	$(this.el).find('div.body').toggleClass('contracted');
 
       this.expanded = !$(this.el).find('div.body').hasClass('contracted');
+    },
+
+
+    addDep: function(ev) {
+      var self = this;
+      var task = this.model;
+      var btn = ev.currentTarget;
+      var depc = $(btn).closest('.deps');
+
+      function cleanup() {
+	depc.find('.input-dep').remove();
+	$(btn).removeClass('btn-selected');
+      }
+
+      if ($(btn).hasClass('btn-selected')) {
+	cleanup();
+	return;
+      }
+
+      $(btn).addClass('btn-selected');
+      $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>')
+	  .appendTo(depc)
+	  .children('input')
+	  .on('focus', function() {
+            if ($(this).val() == 'Add Dependency...')
+              $(this).val('');
+	  })
+	  .on('focusout', function() {
+            if ($(this).val() == '')
+              $(this).val('Add Dependency...');
+	  })
+	  .autocomplete({
+	    source: function(req, cb) {
+	      cb($.app.taskCollection
+		 .filter(function(task) {
+		   return (task.get('summary').toLowerCase().indexOf(req.term.toLowerCase()) !== -1);
+		 })
+		 .map(function(task) {
+		   return {
+		     label: task.get('summary'),
+		     value: task
+		   };
+		 })
+		);
+	    },
+	    focus: function(ev, ui) {
+	      return false;
+	    },
+	    select: function(ev, ui) {
+	      var depModel = ui.item.value;
+	      var found = false;
+	      _.each(task.get('task_deps').pluck('dependency'), function(dep) {
+		if (dep === depModel)
+		  found = true;
+	      });
+	      if (!found) {
+		var m = new $.app.TaskDep({dependency: depModel, dependency_id: depModel.get('id'), task: task, task_id: task.get('id')});
+		console.log(m);
+		task.get('task_deps').add(m);
+		m.save();
+	      }
+	      cleanup();
+	    }
+	  });
+
+      $(document).keydown(function(ev) {
+	if (ev.keyCode === 27 /* ESC */)
+	  cleanup();
+      });
     },
 
 
@@ -786,6 +731,32 @@ require([
 	function(val) {
 	  self.model.save({ 'summary': val },
 	    { wait: true, partialUpdate: true });
+	});
+    },
+
+
+    editBlocked: function(ev) {
+      var self = this;
+
+      $(ev.currentTarget).magicedit2(
+	'value', 'select',
+	{
+	  val: this.model.get('blocked') ? "Yes" : "No",
+	  options: [
+	    "No",
+	    "Yes"
+	  ]
+	},
+	function(val) {
+	  self.model.save({ 'blocked': (val === 'Yes') ? true : false },
+	    {
+	      wait: true,
+	      partialUpdate: true,
+	      success: function(model, resp) {
+		console.log('Response: ', resp);
+		self.model.set('status', resp.status);
+	      }
+	    });
 	});
     },
 

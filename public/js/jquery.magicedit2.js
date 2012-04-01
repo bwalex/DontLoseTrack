@@ -60,6 +60,48 @@
 	      }
 	    });
       }
+    },
+
+
+    'tag': {
+      template: $.templates(null, "<span class='magic-tag-color'><div class='colorSelector'><div></div></div></span><span class='magic-tag-text'><input type='text' value='{{>text}}'></span>"),
+
+      render: function(el, opts, change) {
+	var c = $(this.template.render(opts));
+
+	c.find('input:text')
+	    .keypress(function(ev) {
+	      if (ev.keyCode === 13 /* ENTER */) {
+		change({
+		  text: $(c).find('input:text').val(),
+		  color: $(c).find('.colorSelector div').data('color')
+		});
+	      }
+	    });
+	
+	$(c).find('.colorSelector')
+	    .ColorPicker({
+	      color: opts.color,
+	      onShow: function(colpkr) {
+		$(colpkr).fadeIn(100);
+		return false;
+	      },
+	      onHide: function(colpkr) {
+		$(colpkr).fadeOut(100);
+		return false;
+	      },
+	      onChange: function(hsb, hex, rgb) {
+		$(c).find('.colorSelector div')
+		    .css('backgroundColor', '#' + hex)
+		    .data('color', '#' + hex);
+		
+	      }
+	    })
+	    .find('div')
+	    .css('backgroundColor', opts.color);
+
+	$(el).append(c);
+      }
     }
   };
 
