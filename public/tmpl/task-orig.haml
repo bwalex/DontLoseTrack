@@ -1,0 +1,53 @@
+%script{ :type => "text/x-jsrender",:id => "task-tmpl"}
+  .task{ :class => '{{:"status-"+status}}' }
+
+    .summary
+      %a{ :name => "task{{:id}}" }
+        %span.check
+          :plain
+            <input type="checkbox" {{: completed ? "checked" : "" }}/>
+          -#%input{ :type => "checkbox", :checked => "{{: (completed) ? 'checked' : ''}}" }
+      %span.imp{ :class => '{{:"importance-"+importance}}' }
+        &nbsp;&nbsp;
+      %span.summary {{:summary}}
+      .tags
+        {{for tags}}
+        .tag{ :style => "border: 2px solid {{:color}};" }
+          {{:name}}
+          %span.rm-icon
+            %a.rm-button{ :href => "javascript:void(0);" }
+        {{/for}}
+        .tag.placeholder-tag
+          &nbsp;
+      %span.duedate {{:due_date}}
+    
+    .body.contracted
+      .info
+        .deps
+          .dep-top-line
+            .label.fl
+              Dependencies:
+            .icon-adddep
+              %a.adddep-button
+              .clearer
+            .clearer
+          {{for deps}}
+          .dep{ :class => '{{:"status-"+status}}' }
+            .dep-sum
+              %a{ :href => "#task{{:id}}" }
+                {{:id}}: {{: summary.trunc(30, true) }}
+            %span.rm-icon-2
+              %a.rm-button-2{ :href => "javascript:void(0);" }
+              .clearer
+            .clearer
+          {{/for}}
+        .blocked
+          %span.label
+            Blocked:&nbsp;
+          %span.value
+            {{: (status === "blocked") ? "Yes" : "No"}}
+        .clearer
+
+      .text
+        {{: (text != null && text != "") ? html_text : "No comments..."}}
+

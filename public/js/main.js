@@ -7,6 +7,7 @@ require([
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
   "require.text!/tmpl/task.tmpl",
+  "require.text!/tmpl/task-list.tmpl",
   "require.text!/tmpl/taskdep.tmpl",
   "require.text!/tmpl/tag.tmpl",
   "require.text!/tmpl/tag-norm.tmpl",
@@ -77,16 +78,6 @@ require([
 
 
 
-  $('.btn_addtag').on('click', function(ev) {
-    $('#tagdrag').toggleClass('hide');
-    $('.btn_addtag').toggleClass('btn-selected');
-  });
-
-
-
-
-
-
 
 
 
@@ -98,6 +89,127 @@ require([
   // NOTES
 
   $.app = {};
+
+  DontLoseTrack = this.DontLoseTrack = {};
+
+  var GlobalController = DontLoseTrack.GlobalController = function(options) {
+    this.listeners = [];
+
+    this.initialize.apply(this, options);
+  };
+
+  _.extend(GlobalController.prototype, {
+    events: {},
+
+    initialize: function(){},
+
+    register: function(listener, options) {
+      if ((typeof(listener) !== 'object') ||
+	  (typeof(listener.trigger) !== 'function')) {
+	throw "Only objects with a 'trigger' function can be registered";
+      }
+
+      var opts = (typeof(options) === 'object') ? options : {};
+
+      this.listeners.push({ obj: listener, opts: opts});
+    },
+
+    unregister: function(listener) {
+      this.listeners = _.reject(this.listeners, function(l) {
+	return (l.obj === listener);
+      });
+    },
+
+    trigger: function(event) {
+      console.log('GlobalController: trigger event', event);
+      var args = Array.prototype.slice.call(arguments, 1);
+      var allArgs = Array.prototype.slice.call(arguments);
+
+      _.each(this.listeners, function(listener) {
+	listener.obj.trigger.apply(listener.obj, allArgs);
+      });
+
+      var handler = null;
+
+      if (typeof(this.events[event]) === 'string')
+	handler = this[this.events[event]];
+      else if (typeof(this.events[event]) === 'function')
+	handler = this.events[event];
+
+      if (typeof(handler) === 'function')
+	handler.apply(this, args);
+    }
+  });
+
+  GlobalController.extend = function(protoProps, classProps) {
+    var ctor = function(){};
+
+    var inherits = function(parent, protoProps, staticProps) {
+      var child;
+
+      // The constructor function for the new subclass is either defined by you
+      // (the "constructor" property in your `extend` definition), or defaulted
+      // by us to simply call the parent's constructor.
+      if (protoProps && protoProps.hasOwnProperty('constructor')) {
+	child = protoProps.constructor;
+      } else {
+	child = function(){ parent.apply(this, arguments); };
+      }
+
+      // Inherit class (static) properties from parent.
+      _.extend(child, parent);
+
+      // Set the prototype chain to inherit from `parent`, without calling
+      // `parent`'s constructor function.
+      ctor.prototype = parent.prototype;
+      child.prototype = new ctor();
+
+      // Add prototype properties (instance properties) to the subclass,
+      // if supplied.
+      if (protoProps) _.extend(child.prototype, protoProps);
+
+      // Add static properties to the constructor function, if supplied.
+      if (staticProps) _.extend(child, staticProps);
+
+      // Correctly set child's `prototype.constructor`.
+      child.prototype.constructor = child;
+
+      // Set a convenience property in case the parent's prototype is needed later.
+      child.__super__ = parent.prototype;
+
+      return child;
+    };
+
+    var child = inherits(this, protoProps, classProps);
+
+
+    child.extend = this.extend;
+    return child;
+  };
+
+
+
+  $.app.GlobalController = DontLoseTrack.GlobalController.extend({
+    events: {
+      "btn:addTags"     : "addTagsPress",
+      "clean:addTags"   : "addTagsClean"
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'addTagsPress', 'addTagsClean');
+    },
+
+    addTagsPress: function() {
+      $('#tagdrag').toggleClass('hide');
+    },
+
+    addTagsClean: function() {
+      $('#tagdrag').addClass('hide');
+    }
+  });
+
+  $.app.globalController = new $.app.GlobalController();
+
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
     urlRoot: '/api/taskdep',
@@ -123,6 +235,11 @@ require([
       var dit = this;
       console.log("this.get('tag'):");
       //console.log(this.get('tag'));
+      this.get('tag').on('destroy', function(model) {
+	dit.trigger('destroy:tag', model);
+	dit.get('task').trigger('destroy:tag', model);
+      });
+
       this.get('tag').on('change', function(model) {
 	dit.trigger('change:tag', model);
         dit.get('task').trigger('change:tag', model);
@@ -264,13 +381,14 @@ require([
       this.model.bind('change:tag', this.render);
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.remove);
+      this.model.bind('destroy:tag', this.remove);
     },
 
     removeMe: function(ev) {
       this.model.destroy();
     },
 
-    destroy: function(ev) {
+    remove: function(ev) {
       $(this.el).remove();
     },
 
@@ -847,22 +965,55 @@ require([
     }
   });
 
+
+
   $.app.TaskListView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskListView',
+
+    events: {
+      "click .tabmenu .btn_addtag"     : "addTagBtn"
+    },
+
+    addTagBtn: function(ev) {
+      console.log("addTagBtn pressed");
+      $.app.globalController.trigger('btn:addTags');
+    },
+
+    tagbtn: function() {
+      console.log('TAGBTN!!!!!!!!!!', this);
+      $(this.el).find('.tabmenu .btn_addtag')
+	  .toggleClass('btn-selected');
+    },
+
+    destroy: function() {
+      $.app.globalController.unregister(this);
+      $.app.globalController.trigger('clean:addTags');
+      this.remove();
+      this.unbind();
+      //$(this.el).empty();
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTask');
-      //this.model.bind('change', this.render);
+      _.bindAll(this, 'render', 'renderTask', 'addTagBtn', 'destroy');
+      //this.collection.bind('change', this.render);
       this.collection.bind('reset', this.render);
+
+      this.bind('btn:addTags', this.tagbtn);
+      $.app.globalController.register(this);
     },
+
+    template: $.templates('#task-list-tmpl'),
+
     render: function() {
+      $(this.el).html(this.template.render({}));
       this.collection.each(this.renderTask);
-      console.log(this);
     },
+
     renderTask: function(task) {
       console.log("renderTask: task=%o", task);
       var taskView = new $.app.TaskView({model: task});
-      $(this.el).append($(taskView.render()));
+      $(this.el).find('#tasklist').append($(taskView.render()));
     }
   });
 
@@ -899,39 +1050,39 @@ require([
 
 
 
-
-
-
-
-
-
-
-
-  var scope = this;
-
-  //$.app.tagCollection  = new $.app.TagCollection();
-  //$.app.tagCollection.fetch();
-  //alert('miau!');
-
   $.app.Router = Backbone.Router.extend({
     routes: {
       "notes": "showNotes",
       "tasks": "showTasks"
     },
 
+    currentView: null,
+    cleanView: function() {
+      if (this.currentView != null && typeof(this.currentView.destroy) === 'function') {
+	this.currentView.destroy();
+	this.currentView = null;
+      }
+    },
+
     showNotes: function() {
+      this.cleanView();
+
+      var el = $('<div></div>').appendTo('#notes');
       $.app.noteCollection = new $.app.NoteCollection();
       $.app.noteListView   = new $.app.NoteListView({
-        el: $('#notelist'),
+        el: el,
         collection: $.app.noteCollection
       });
       $.app.noteCollection.fetch();
     },
 
     showTasks: function() {
+      this.cleanView();
+
+      var el = $('<div></div>').appendTo('#tasks');
       $.app.taskCollection = new $.app.TaskCollection();
-      $.app.taskListView   = new $.app.TaskListView({
-	el: $('#tasklist'),
+      this.currentView = $.app.taskListView = new $.app.TaskListView({
+	el: el,
 	collection: $.app.taskCollection
       });
       $.app.taskCollection.fetch();
@@ -1023,19 +1174,6 @@ require([
   // TASKS
   tasks = [];
 
-/*
-  $.templates({
-    taskTemplate: "#task-tmpl"
-  });
-
-  $.link.taskTemplate("#tasklist", tasks);
-
-  $.getJSON('/tasks?project_id=' + projectId, function(j) {
-    $.each(j, function(k, v) {
-      $.observable(tasks).insert(tasks.length, v);
-    });
-  });
-*/
 
   $('#newtasksummary').on('focus', function() {
     if ($(this).val() == 'Add Task...')

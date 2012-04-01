@@ -1,0 +1,10 @@
+%script{ :type => "text/x-jsrender",:id => "task-dep-tmpl"}
+  .dep{ :class => '{{:"status-"+status}}' }
+    .dep-sum
+      %a{ :href => "#task{{:id}}" }
+        {{:id}}: {{: summary.trunc(30, true) }}
+    %span.rm-icon-2
+      %a.rm-button-2{ :href => "javascript:void(0);" }
+      .clearer
+    .clearer
+
