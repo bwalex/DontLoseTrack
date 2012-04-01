@@ -245,32 +245,6 @@ div#sidebar {
     text-decoration: none;
 }
 
-#tag-cloud a {
-    display: inline;
-    border-bottom: none;
-    color: #99173C;
-}
-
-#tag-cloud a.set-1 {
-    font-size: 70%;
-}
-
-#tag-cloud a.set-2 {
-    font-size: 87%;
-}
-
-#tag-cloud a.set-3 {
-    font-size: 102%;
-}
-
-#tag-cloud a.set-4 {
-    font-size: 116%;
-}
-
-#tag-cloud a.set-5 {
-    font-size: 140%;
-}
-
 #sidebar h3 {
     border-bottom: 1px solid #666666;
     margin-bottom: 5px;
@@ -334,54 +308,6 @@ pre, code, .code {
     line-height: 16px;
 }
 
-div.row {
-    clear: left;
-    padding-top: 5px;
-    width: 100%;
-}
-div.row span.label {
-    float: left;
-    text-align: right;
-    width: 40%;
-}
-div.row span.formw {
-    float: right;
-    text-align: left;
-    width: 60%;
-}
-div.row span.labelfull {
-    float: left;
-    text-align: right;
-    width: 20%;
-}
-div.row span.labelfullleft {
-    float: left;
-    text-align: left;
-    width: 100px;
-}
-div.row span.formfull {
-    float: right;
-    text-align: left;
-    width: 800px;
-}
-div.row span.left {
-    float: left;
-    width: 50%;
-}
-div.row span.right {
-    float: right;
-    width: 50%;
-}
-div.row div.leftfixed {
-    float: left;
-    text-align: left;
-    width: 300px;
-}
-div.row div.rightfixed {
-    float: right;
-    text-align: left;
-    width: 300px;
-}
 
 .clearfix:after {
     clear: both;
