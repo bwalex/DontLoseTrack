@@ -88,27 +88,27 @@ div#content {
     }
     ul {
         float: left;
-	      margin: 0;
-	      width: 100%;
-	      padding-left: 0px;
-	      li {
+	margin: 0;
+	width: 100%;
+	padding-left: 0px;
+	li {
             float: left;
-	          list-style: none outside none;
-	          margin: 0 0;
+	    list-style: none outside none;
+	    margin: 0 0;
         }
     }
     a {
-	      color: black;
-	      display: block;
-	      font-size: 90%;
-	      font-weight: bold;
-	      height: 26px;
-	      padding: 15px 15px 6px;
-	      text-decoration: none;
+	color: black;
+	display: block;
+	font-size: 90%;
+	font-weight: bold;
+	height: 26px;
+	padding: 15px 15px 6px;
+	text-decoration: none;
 
         &.current, &:hover {
             color: #99173C;    
-	      }
+	}
     }
 }
 
@@ -140,8 +140,8 @@ div#bio {
 }
 
 #social-nav {
-	padding: 12px;
-	float: right;
+    padding: 12px;
+    float: right;
 }
 
 @mixin social-icon($icon) {
@@ -192,9 +192,9 @@ p.post-info {
 }
 
 p.post-info {
-  padding-left: 0px;
-  margin-left: 0px;
-  
+    padding-left: 0px;
+    margin-left: 0px;
+    
 }
 
 div.post-body {
@@ -280,8 +280,8 @@ div#sidebar {
 }
 
 div#main {
-	padding-right: 30px;
-	padding-top: 10px;
+    padding-right: 30px;
+    padding-top: 10px;
 }
 
 table {
@@ -432,8 +432,8 @@ img.boring {
 
 
 /* .task .summary */ .tags {
-  position: relative;
-  display: inline;
+    position: relative;
+    display: inline;
 }
 
 .tagAppliedView {
@@ -463,6 +463,7 @@ img.boring {
 #tagfilterlist .tags .tag-edit {
     width: 100%;
     margin-top: 2px;
+    min-height: 1.5em;
 }
 
 #tagfilterlist .tags .tag-edit {
@@ -473,24 +474,24 @@ img.boring {
 }
 
 .hide {
-  display: none;
+    display: none;
 }
 
 
 .contracted {
-  display: none;
+    display: none;
 }
 
 .tag p {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  display: inline;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    display: inline;
 }
 
 /*.tag*/ .rm-icon {
-  float: right;
-  height: 15px;
-  width: 15px;
+    float: right;
+    height: 15px;
+    width: 15px;
 }
 
 /*.tag*/ .rm-icon .rm-button {
@@ -504,11 +505,11 @@ img.boring {
 }
 
 /*.tag*/ .rm-icon-2 {
-  float: right;
-  top: 50%;
-  margin-top: -7px;
-  height: 15px;
-  width: 15px;
+    float: right;
+    top: 50%;
+    margin-top: -7px;
+    height: 15px;
+    width: 15px;
 }
 
 /*.tag*/ .rm-icon-2 .rm-button-2 {
@@ -527,8 +528,8 @@ img.boring {
 }
 
 #sidebar .rm-button {
-  border: none;
-  padding: 0px;
+    border: none;
+    padding: 0px;
 }
 
 .tag:hover .rm-icon .rm-button {
@@ -544,386 +545,386 @@ img.boring {
 }
 
 .dep:hover {
-  background-color: #FFFFD5;
+    background-color: #FFFFD5;
 }
 
 .dep {
-  padding-right: 4px;
-  position: relative;
+    padding-right: 4px;
+    position: relative;
 }
 
 $task_summary_height: 28px;
 
 .task .summary .imp {
-  //width: 10px;
-  //height: 1em;
-  min-height: $task_summary_height;
-  display: inline-block;
-  margin-left: 5px;
-  margin-right: 5px;
+    //width: 10px;
+    //height: 1em;
+    min-height: $task_summary_height;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
 
 }
 
 .task .summary .importance-medium {
-  background-color: #0060BF;
+    background-color: #0060BF;
 }
 
 .task .summary .importance-high {
-  background-color: $orangeish;
-  //background-color: $redish;
+    background-color: $orangeish;
+    //background-color: $redish;
 }
 
 .task .summary .importance-low {
-  background-color: #359AFF;
+    background-color: #359AFF;
 }
 
 .task {
-  //background-color: #FCFCFC;
-  background-color: white;
-  padding-left: 5px;
-  padding-right: 5px;
-  //padding-bottom: 2px;
-  //padding-top: 2px;
-  margin-top: -1px;
-  min-height: $task_summary_height;
-  border: 1px solid #AAAAAA;
+    //background-color: #FCFCFC;
+    background-color: white;
+    padding-left: 5px;
+    padding-right: 5px;
+    //padding-bottom: 2px;
+    //padding-top: 2px;
+    margin-top: -1px;
+    min-height: $task_summary_height;
+    border: 1px solid #AAAAAA;
 }
 
 .task .summary:hover {
-  background-color: #FFFFD5;
+    background-color: #FFFFD5;
 }
 
 .status-blocked .summary .summary {
-  font-style: italic;
-  color: $light_grey;
+    font-style: italic;
+    color: $light_grey;
 }
 
 .status-completed .summary .summary {
-  text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 .task .body {
-  padding-left: 32px;
-  padding-right: 32px;
-  padding-bottom: 32px;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-bottom: 32px;
 }
 
 .task .body .info {
-  font-size: 90%;
-  padding-bottom: 16px;
+    font-size: 90%;
+    padding-bottom: 16px;
 }
 
 
 .task .duedate {
-  font-size: 80%;
-  //font-style: italic;
-  color: $light_grey;
-  display: inline;
-  float: right;
+    font-size: 80%;
+    //font-style: italic;
+    color: $light_grey;
+    display: inline;
+    float: right;
 }
 
 .task .duedate-edit {
-  display: inline;
-  float: right;
+    display: inline;
+    float: right;
 }
 
 
 .task .duedate-past {
-  font-weight: bold;
-  color: $redish;
+    font-weight: bold;
+    color: $redish;
 }
 
 .task .duedate-today {
-  font-weight: bold;
-  color: black;
+    font-weight: bold;
+    color: black;
 }
 
 .task .duedate-tomorrow {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .task a {
-  font-style: italic; 
+    font-style: italic; 
 }
 
 
 .task .body .info .deps {
-  padding-left: 5px;
-  float: left;
-  width: 40%;
-  display: block-inline;
+    padding-left: 5px;
+    float: left;
+    width: 40%;
+    display: block-inline;
 
-  border: 2px solid $light_grey;
-  border-radius: 5px;
+    border: 2px solid $light_grey;
+    border-radius: 5px;
 }
 
 .task .body .info .blocked {
-  margin-left: 20px;
-  padding-left: 5px;
-  float: left;
-  width: 30%;
+    margin-left: 20px;
+    padding-left: 5px;
+    float: left;
+    width: 30%;
 
-  border: 2px solid $light_grey;
-  border-radius: 5px;
+    border: 2px solid $light_grey;
+    border-radius: 5px;
 }
 
 .dep-top-line {
-  margin-top: 3px;
-  margin-right: 3px;
+    margin-top: 3px;
+    margin-right: 3px;
 }
 
 .taskdep .status-completed a {
-  text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 .taskdep .status-blocked a {
-  color: $redish;
+    color: $redish;
 }
 
 .taskdep .status-depends a {
-  color: $redish;
+    color: $redish;
 }
 
 .fl {
-  float: left;
-  display: inline;
+    float: left;
+    display: inline;
 }
 
 .icon-adddep {
-  float: right;
-  display: inline;
+    float: right;
+    display: inline;
 }
 
 .adddep-button {
-  width: 40px;
-  height: 22px;
-  text-decoration: none;
-  float: left;
-  display: block;
-  background: url('/img/anchor_adddep.png') 0 -22px;
+    width: 40px;
+    height: 22px;
+    text-decoration: none;
+    float: left;
+    display: block;
+    background: url('/img/anchor_adddep.png') 0 -22px;
 }
 
 .dep .dep-sum {
-  float: left;
-  display: block-inline;
+    float: left;
+    display: block-inline;
 }
 
 .adddep-button:hover {
-  text-decoration: none;
-  //background-position: 0 0;
+    text-decoration: none;
+    //background-position: 0 0;
 }
 
 
 .label {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 /*
-#sidebar {
+  #sidebar {
   z-index: 500;
   position: fixed;
   bottom: 50%;
   right: 100px;
   width: 332px;
-}
-*/
+  }
+  */
 
 #tagfilterlist .tags .tag {
-  display: block;
+    display: block;
 }
 
 
 .clearer{
-  clear:both;
+    clear:both;
 }
 
 .tabmenu {
-  //float: right;
+    //float: right;
 }
 
 .ico {
-  display: block-inline;
-  float: right;
+    display: block-inline;
+    float: right;
 }
 
 .fb_dropdown {
-  width:40px;
-  height:22px;
-  text-decoration:none;
-  float:left;
-  display:block;
-  background: url('/img/anchor_sort.png') 0 -22px;
+    width:40px;
+    height:22px;
+    text-decoration:none;
+    float:left;
+    display:block;
+    background: url('/img/anchor_sort.png') 0 -22px;
 }
 
 .btn_addtag {
-  width: 40px;
-  height: 22px;
-  text-decoration: none;
-  float: left;
-  display: block;
-  background: url('/img/anchor_addtag.png') 0 -22px;
+    width: 40px;
+    height: 22px;
+    text-decoration: none;
+    float: left;
+    display: block;
+    background: url('/img/anchor_addtag.png') 0 -22px;
 }
 
 .btn_addtag:hover {
-  //background-position: 0 0;
+    //background-position: 0 0;
 }
 
 .btn_showcompleted {
-  width: 40px;
-  height: 22px;
-  text-decoration: none;
-  float: left;
-  display: block;
-  background: url('/img/anchor_viewcompleted.png') 0 -22px;
+    width: 40px;
+    height: 22px;
+    text-decoration: none;
+    float: left;
+    display: block;
+    background: url('/img/anchor_viewcompleted.png') 0 -22px;
 }
 
 
 .btn-selected {
-  background-position: 0 0;
+    background-position: 0 0;
 }
 
 
 .fb_dropdown:hover {
-  text-decoration: none;
-//background-position: 0 0;
+    text-decoration: none;
+    //background-position: 0 0;
 }
 
 .fb_dropdown.jdropdown-active{
-  background-position:0 0;
+    background-position:0 0;
 }
 
 .fb_menu{
-  background:#EEEEEE none repeat scroll 0 0; border:1px solid #656565; padding:3px 0;
+    background:#EEEEEE none repeat scroll 0 0; border:1px solid #656565; padding:3px 0;
 }
 
 .fb_menu ul {
-  list-style:none;
-  margin: 0px 0px 0px 0px;
-  padding-left: 0px;
+    list-style:none;
+    margin: 0px 0px 0px 0px;
+    padding-left: 0px;
 }
 
 .fb_menu a {
-  font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-  font-size: 11px;
-  display:block;
-  font-weight:normal;
-  width:137px;
-  text-align:left;
-  overflow:hidden;
-  padding:2px 4px 3px 19px;
-  color:#111111;
-  text-decoration:none;
+    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    font-size: 11px;
+    display:block;
+    font-weight:normal;
+    width:137px;
+    text-align:left;
+    overflow:hidden;
+    padding:2px 4px 3px 19px;
+    color:#111111;
+    text-decoration:none;
 }
 
 .fb_menu a:hover {
-  background:#656565; color:white; text-decoration:none;
+    background:#656565; color:white; text-decoration:none;
 }
 
 .fb_menu a:visited {
-  text-decoration:none;
+    text-decoration:none;
 }
 
 #newtask {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 #newtasksummary {
-  width: 50%;
+    width: 50%;
 }
 
 /*
-#newtasksummary:focus {
+  #newtasksummary:focus {
   color: #000000;
-}
+  }
 
 #newtasksummary:hover {
-  background-color: #FFFFD5;
+background-color: #FFFFD5;
 }
 */
 
 
 #tagdrag {
-  width: 100%;
-  border-top: 1px dotted $dark_grey;
-  padding-bottom: 4px;
-  background-color: #FFFFD5;
-  position: fixed;
-  bottom: 0;
+    width: 100%;
+    border-top: 1px dotted $dark_grey;
+    padding-bottom: 4px;
+    background-color: #FFFFD5;
+    position: fixed;
+    bottom: 0;
 }
 
 #tagdrag .tags {
-  width: 100%;
+    width: 100%;
 }
 
 #tagdrag .tagDragView {
-  display: inline;
+    display: inline;
 }
 
 #tagdrag .tags .tag {
-  cursor: move;
-  padding-right: 5px;
+    cursor: move;
+    padding-right: 5px;
 }
 
 #tagdrag .rm-icon-2 .rm-button-2 {
-  right: 8px;
+    right: 8px;
 }
 
 .placeholder-tag {
-  border: 2px dashed $light_grey;
-  padding-right: 5px;
-  visibility: hidden;
+    border: 2px dashed $light_grey;
+    padding-right: 5px;
+    visibility: hidden;
 }
 
 .show {
-  visibility: visible;
+    visibility: visible;
 }
 
 .placeholder-tag-highlight {
-  background-color: lighten($blueish, 50%);
+    background-color: lighten($blueish, 50%);
 }
 
 
 .ui-menu {
-  float: left;
-  list-style: none outside none;
-  margin: 0;
-  padding: 2px;
-  background-color: white;
-  text-align: left;
+    float: left;
+    list-style: none outside none;
+    margin: 0;
+    padding: 2px;
+    background-color: white;
+    text-align: left;
 }
 
 .ui-menu .ui-menu-item {
-  clear: left;
-  float: left;
-  margin: 0;
-  padding-left: 4px;
-  width: 100%;
-  background-color: white;
-  
+    clear: left;
+    float: left;
+    margin: 0;
+    padding-left: 4px;
+    width: 100%;
+    background-color: white;
+    
 }
 
 .ui-widget-content {
-  border: 1px solid $light_grey;
+    border: 1px solid $light_grey;
 }
 
 .ui-autocomplete {
-  cursor: default;
-  position: absolute;
+    cursor: default;
+    position: absolute;
 }
 
 .ui-state-hover {
-  background-color: #FFFFD5;
+    background-color: #FFFFD5;
 }
 
 .colorSelector {
-  height: 36px;
-  width: 36px;
-  display: inline-block;
-  //position: relative;
-  //background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
-  margin: 0;
-  padding: 0;
-  vertical-align: bottom;
+    height: 36px;
+    width: 36px;
+    display: inline-block;
+    //position: relative;
+    //background: url("/img/colorpicker/select.png") repeat scroll 0 0 transparent;
+    margin: 0;
+    padding: 0;
+    vertical-align: bottom;
 }
 
 .colorSelector div {
