@@ -433,20 +433,46 @@ require([
   $.app.NoteListView = Backbone.View.extend({
     tagName: 'div',
     className: 'noteListView',
+
+    events: {
+      "click .tabmenu .btn_addtag"      : "addTagBtn"
+    },
+
+    addTagBtn: function(ev) {
+      $.app.globalController.trigger('btn:addTags');
+    },
+
+    tagbtn: function() {
+      $(this.el).find('.tabmenu .btn_addtag')
+	  .toggleClass('btn-selected');
+    },
+
+    destroy: function() {
+      $.app.globalController.unregister(this);
+      $.app.globalController.trigger('clean:addTags');
+      this.remove();
+      this.unbind();
+    },
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderNote');
+      _.bindAll(this, 'render', 'renderNote', 'addTagBtn', 'destroy', 'tagbtn');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+      this.bind('btn:addTags', this.tagbtn);
+      $.app.globalController.register(this);
     },
-    template: $.templates('#note-tmpl'),
+
+    template: $.templates('#note-list-tmpl'),
+
     render: function() {
+      $(this.el).html(this.template.render({}));
       this.collection.each(this.renderNote);
-      console.log(this);
     },
+
     renderNote: function(inote) {
       console.log("renderNote: inote=%o", inote);
       var noteView = new $.app.NoteView({model: inote});
-      $(this.el).append($(noteView.render()));
+      $(this.el).find('#notelist').append($(noteView.render()));
     }
   });
 
@@ -976,12 +1002,10 @@ require([
     },
 
     addTagBtn: function(ev) {
-      console.log("addTagBtn pressed");
       $.app.globalController.trigger('btn:addTags');
     },
 
     tagbtn: function() {
-      console.log('TAGBTN!!!!!!!!!!', this);
       $(this.el).find('.tabmenu .btn_addtag')
 	  .toggleClass('btn-selected');
     },
@@ -991,11 +1015,10 @@ require([
       $.app.globalController.trigger('clean:addTags');
       this.remove();
       this.unbind();
-      //$(this.el).empty();
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTask', 'addTagBtn', 'destroy');
+      _.bindAll(this, 'render', 'renderTask', 'addTagBtn', 'destroy', 'tagbtn');
       //this.collection.bind('change', this.render);
       this.collection.bind('reset', this.render);
 
@@ -1007,6 +1030,8 @@ require([
 
     render: function() {
       $(this.el).html(this.template.render({}));
+      $(this.el).find('#task_sorter')
+	  .jdropdown({ 'container': '#fb_menu', 'orientation': 'right' });
       this.collection.each(this.renderTask);
     },
 
@@ -1069,7 +1094,7 @@ require([
 
       var el = $('<div></div>').appendTo('#notes');
       $.app.noteCollection = new $.app.NoteCollection();
-      $.app.noteListView   = new $.app.NoteListView({
+      this.currentView = $.app.noteListView   = new $.app.NoteListView({
         el: el,
         collection: $.app.noteCollection
       });
@@ -1221,8 +1246,5 @@ require([
 
 
 
-
-
-  $('#task_sorter').jdropdown({ 'container': '#fb_menu', 'orientation': 'right' });
 });
 

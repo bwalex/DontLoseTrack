@@ -1,0 +1,14 @@
+%script{ :type => "text/x-jsrender", :id => "note-list-tmpl" }
+  .tabmenu
+    .ico
+      %a.btn_addtag
+    .clearer
+
+  #newnote
+    %form
+      %span.tarea
+	%textarea#newnotetext
+      %span.btn
+	%input{ :type => "submit" }
+
+  #notelist
