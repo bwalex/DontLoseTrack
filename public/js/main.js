@@ -1618,6 +1618,7 @@ require([
 	el: $('<div></div>').appendTo('#main-pane'),
 	collection: $.app.taskCollection
       });
+      //$.app.taskCollection.fetch({data: { filter: { tags: [5,17] }}});
       $.app.taskCollection.fetch();
     }
   });

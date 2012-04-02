@@ -208,7 +208,18 @@ end
 
 
 get '/api/project/:project_id/task' do
-  Task.where("project_id = ?", params[:project_id]).to_json
+  content_type :json
+
+  puts params[:filter].to_json
+
+
+  if params[:filter] != nil
+    Task.joins(:task_tags).where(
+     :project_id => params[:project_id],
+     :task_tags => { :tag_id => params[:filter][:tags]}).to_json
+  else
+    Task.where("project_id = ?", params[:project_id]).to_json
+  end
 end
 
 get '/api/project/:project_id/task/:task_id' do
