@@ -347,6 +347,21 @@ input:hover {
     background-color: #FFFFD5;
 }
 
+
+input[type="submit"] {
+    background-color: $light_grey;
+    color: white;
+    border-radius: 5px;
+    font-size: 80%;
+    padding-top: 1px;
+    padding-bottom: 1px;
+
+    &:hover {
+	cursor: pointer;
+	background-color: $redish;
+    }
+}
+
 .editsection {
     float: right;
     font-weight: normal;
@@ -402,6 +417,11 @@ img.boring {
     width: 100%;
     margin-top: 2px;
     min-height: 1.5em;
+}
+
+#tagfilterlist .tags .not-filtering {
+    border-color: $light_grey;
+    font-style: italic;    
 }
 
 #tagfilterlist .tags .tag-edit {
@@ -545,6 +565,7 @@ $task_summary_height: 28px;
 
     .text {
 	font-family: 'Nunito',sans-serif;
+	font-size: 90%;
     }
 }
 
@@ -882,6 +903,7 @@ $task_summary_height: 28px;
 	display: inline;
 	float: right;
 	font-family: 'Nunito',sans-serif;
+	font-size: 90%;
 
 	p {
 	    margin-top: 0px;
@@ -890,8 +912,33 @@ $task_summary_height: 28px;
     }
 }
 
-
 textarea {
     min-height: 5em;
+    width: 100%;
+    color: $light_grey;
+
+    font-family: 'Nunito',sans-serif;
+    font-size: 90%;
+
+    &:focus {
+	color: black;
+    }
+}
+
+.left15 {
+    width: 15%;
+    display: inline;
+    float: left;
+}
+
+.right85 {
     width: 85%;
+    display: inline;
+    float: right;
+}
+
+#newnote {
+    margin-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted $light_grey;
 }

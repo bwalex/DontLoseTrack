@@ -5,10 +5,15 @@
     .clearer
 
   #newnote
-    %form
-      .tarea
-        %textarea#newnotetext
-      .btn
-        %input{ :type => "submit", :value => "Save" }
+    .left15
+      &nbsp;
+    .right85
+      %form
+        .tarea
+          %textarea#newnotetext
+            Add Note...
+        .btn
+          %input{ :type => "submit", :value => "Save" }
+    .clearer
 
   #notelist

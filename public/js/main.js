@@ -696,9 +696,16 @@ require([
     tagName: 'div',
     className: 'tagDragView',
     initialize: function() {
-      _.bindAll(this, 'render');
+      _.bindAll(this, 'render', 'destroy');
       this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
     },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
     template: $.templates('#tag-norm-tmpl'),
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
@@ -722,6 +729,7 @@ require([
       _.bindAll(this, 'render', 'renderTag', 'toggleVisibility', 'removeVisibility', 'destroy');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+      this.collection.bind('add', this.renderTag);
 
       this.bind('btn:addTags', this.toggleVisibility);
       this.bind('clean:addTags', this.removeVisibility);
