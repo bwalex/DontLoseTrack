@@ -15,6 +15,8 @@ require([
   "require.text!/tmpl/tag-list.tmpl",
   "require.text!/tmpl/tag-norm.tmpl",
   "require.text!/tmpl/tag-applied.tmpl",
+  "require.text!/tmpl/project-list.tmpl",
+  "require.text!/tmpl/project-link.tmpl",
   "require.text!/tmpl/navbar.tmpl"
 ], function() {
   //XXX: hardcoded project ID :(
@@ -403,19 +405,20 @@ require([
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'removeMe', 'remove');
+      _.bindAll(this, 'render', 'removeMe', 'destroy');
       this.model.bind('change:tag', this.render);
       this.model.bind('change', this.render);
-      this.model.bind('destroy', this.remove);
-      this.model.bind('destroy:tag', this.remove);
+      this.model.bind('destroy', this.destroy);
+      this.model.bind('destroy:tag', this.destroy);
     },
 
     removeMe: function(ev) {
       this.model.destroy();
     },
 
-    remove: function(ev) {
-      $(this.el).remove();
+    destroy: function(ev) {
+      this.remove();
+      this.unbind();
     },
 
     template: $.templates('#tag-applied-tmpl'),
@@ -432,6 +435,7 @@ require([
     className: 'noteView',
 
     events: {
+      "click .delnote .rm-button"     : "deleteNote",
       "drop .meta"                    : "dropTag"
     },
 
@@ -451,10 +455,24 @@ require([
       }
     },
 
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteNote: function() {
+      this.model.destroy();
+    },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTags', 'dropTag');
+      _.bindAll(this,
+		'render',
+		'renderTags',
+		'dropTag',
+		'destroy',
+		'deleteNote');
       this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
       this.model.bind('add:note_tags', this.render);
     },
 
@@ -867,6 +885,7 @@ require([
     expanded: false,
 
     events: {
+      "click .deltask .rm-button"        : "deleteTask",
       "click .task > .summary"           : "toggleExpand",
       "dblclick .summary > .summary"     : "editSummary",
       "dblclick .summary > .imp"         : "editImportance",
@@ -885,6 +904,8 @@ require([
 		'render',
 		'renderDeps',
 		'error',
+		'destroy',
+		'deleteTask',
 		'toggleExpand',
 		'editSummary',
 		'editImportance',
@@ -899,10 +920,20 @@ require([
       this.model.bind('change', this.render);
       this.model.bind('add:task_tags', this.render);
       this.model.bind('error', this.error);
+      this.model.bind('destroy', this.destroy);
       this.model.bind('add:task_deps', this.render);
     },
 
     template: $.templates('#task-tmpl'),
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteTask: function(ev) {
+      this.model.destroy();
+    },
 
 
     toggleExpand: function(ev) {
@@ -1283,27 +1314,81 @@ require([
 
 
   $.app.ProjectLinkView = Backbone.View.extend({
-    tagName: 'div',
+    tagName: 'tr',
     className: 'ProjectLinkView',
 
     events: {
+      "click .delproject .rm-button"        : "deleteProject",
     },
 
-    initialize: function() {
-      _.bindAll(this, 'render');
+    destroy: function() {
+      this.remove();
+      this.unbind();
     },
 
-    template: $.templates(null, '<div><a href="#project/{{:id}}/notes">{{:name}}</a></div>'),
+    deleteProject: function(ev) {
+      this.model.destroy();
+    },
+
+    initialize: function(params) {
+      _.bindAll(this, 'render', 'deleteProject', 'destroy');
+      this.model.bind('destroy', this.destroy);
+
+      this.extraClass = params['extraClass'];
+    },
+
+    template: $.templates('#project-link-tmpl'),
 
     render: function() {
-      return $(this.el).html(this.template.render(this.model.toJSON()));
+      console.log("extraClass: ", this.extraClass);
+      return $(this.el)
+	  .addClass(this.extraClass)
+	  .html(this.template.render(this.model.toJSON()));
     }
   });
 
 
+
+
+
+
   $.app.ProjectListView = Backbone.View.extend({
     events: {
+      "focus #newprojectname"          : "newProjFocus",
+      "focusout #newprojectname"       : "newProjFocusOut",
+      "keypress #newprojectname"       : "newProjKeypress"
     },
+
+    renderCount: 0,
+
+    newProjFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Add Project...')
+	$(ev.currentTarget).val('');
+    },
+
+    newProjFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Add Project...');
+    },
+
+    newProjKeypress: function(ev) {
+      var self = this;
+
+      if (ev.keyCode === 13 /* ENTER */) {
+	var m = new $.app.Project({ name: $(ev.currentTarget).val() });
+	console.log("Moo, saving... ", m);
+	m.save({},{
+	  wait: true,
+	  success: function(model, resp) {
+	    console.log("Success: ", model, resp);
+	    self.collection.add(m);
+	    $(ev.currentTarget).val("");
+	    $(ev.currentTarget).blur();
+	  }
+	});
+      }
+    },
+
 
     destroy: function() {
       this.remove();
@@ -1316,16 +1401,20 @@ require([
       this.collection.bind('reset', this.render);
     },
 
-    template: $.templates(null, '<h3>Projects:</h3><div class="projectList"></div>'),
+    template: $.templates('#project-list-tmpl'),
 
     render: function() {
+      this.renderCount = 0;
       $(this.el).html(this.template.render({}));
       this.collection.each(this.renderProject);
     },
 
     renderProject: function(p) {
-      var pView = new $.app.ProjectLinkView({model: p});
-      $(this.el).find('.projectList').append($(pView.render()));
+      this.renderCount++;
+      var extraClass = (this.renderCount%2) ? 'odd' : 'even';
+      console.log("extraClass in ListView: ", extraClass);
+      var pView = new $.app.ProjectLinkView({model: p, extraClass: extraClass});
+      $(this.el).find('table').append($(pView.render()));
     }
   });
 

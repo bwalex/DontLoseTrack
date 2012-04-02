@@ -6,6 +6,7 @@ $orangeish:  #CC3300;
 $blackish:   #151515;
 $blueish:    #0055AA;
 $dark_blue:  #002B55;
+$light_red:  #EE8CA7;
 
 $link_color:  $blueish;
 $link_hover_color:  $dark_blue;
@@ -47,6 +48,12 @@ div#header {
     text-align: right;
     font-size: 1.2em;
     line-height: 1;
+    a {
+	color: black;
+	&:hover {
+	    color: $redish;
+	}
+    }
 }
 
 div#logo {
@@ -419,10 +426,6 @@ img.boring {
     min-height: 1.5em;
 }
 
-#tagfilterlist .tags .not-filtering {
-    border-color: $light_grey;
-    font-style: italic;    
-}
 
 #tagfilterlist .tags .tag-edit {
     padding: 4px;
@@ -490,7 +493,27 @@ img.boring {
     padding: 0px;
 }
 
-.tag:hover .rm-icon .rm-button {
+.delproject,
+.deltask,
+.delnote {
+    float: right;
+    display: inline;
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+
+.delproject .rm-icon,
+.delnote .rm-icon,
+.deltask .rm-icon {
+    top: 0.3em;
+    position: relative;
+}
+
+.projectList tr:hover .rm-icon .rm-button,
+.meta:hover .top .rm-icon .rm-button,
+.tag:hover .rm-icon .rm-button,
+.task:hover .deltask .rm-icon .rm-button {
     opacity: 1;
 }
 
@@ -885,14 +908,16 @@ $task_summary_height: 28px;
 	display: inline;
 	float: left;
 
-	.date {
+	.date-created {
+	    float: left;
+	    display: inline;
 	    border: none;
 	    box-shadow: none;
 	    font-size: normal;
 	    //font-weight: bold;
 	    padding: 0;
 	    text-align: left;
-	    width: 100%;
+	    //width: 100%;
 	    color: darken($light_grey, 20%);
 	    font-size: 90%;
 	}
@@ -941,4 +966,75 @@ textarea {
     margin-top: 10px;
     padding-bottom: 10px;
     border-bottom: 1px dotted $light_grey;
+}
+
+
+.projectList th.name {
+    border-left: none;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    width: 60%;
+    text-align: left;
+}
+
+.projectList th.top {
+    border-bottom: none;
+}
+
+.projectList tr.top th {
+    border: 1px solid white;
+}
+
+.projectList th {
+    text-align: center;
+}
+
+.projectList td {
+    text-align: right;
+}
+
+.projectList td.name {
+    text-align: left;
+}
+
+.projectList {
+    width: 100%;
+}
+
+.projectList th,td {
+    border-color: $redish;
+}
+
+.projectList th.visible {
+    background-color: $redish;
+    color: white;
+    border: 1px solid white;
+}
+
+.projectList tr.odd td {
+    border: none;
+}
+
+.projectList a {
+    color: $redish;
+
+    &:hover {
+	color: black;
+    }
+}
+
+.projectList td.name a {
+    font-weight: bold;
+}
+
+.projectList tr.even {
+    background-color: lighten($redish, 60%);
+    td {
+	border-color: white;
+    }
+}
+
+input#newprojectname {
+    width: 80%;
 }

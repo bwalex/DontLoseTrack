@@ -3,12 +3,43 @@ class Project < ActiveRecord::Base
 
   has_many :notes,    :dependent => :delete_all
   has_many :tasks,    :dependent => :delete_all
-  has_many :emails,   :dependent => :delete_all
+  #has_many :emails,   :dependent => :delete_all
   has_many :wikis,    :dependent => :delete_all
-  has_many :files,    :dependent => :delete_all
+  #has_many :files,    :dependent => :delete_all
 
   validates :name, :length => { :in => 1..50 }
   validates :name, :uniqueness => true
+
+  def task_stats
+    # total, tasks completed, pending, overdue
+    return {
+      'total' => tasks.count,
+      'completed' => tasks.count(:conditions => "completed = true"),
+      'pending' => tasks.count(:conditions => "completed != true"),
+      'overdue' => tasks.count(:conditions => "due_date < NOW()")
+    }
+  end
+
+  def note_stats
+    # total
+    return {
+      'total' => notes.count
+    }
+  end
+
+  def wiki_stats
+    # total
+    return {
+      'total' => wikis.count
+    }
+  end
+
+
+  def as_json(options={})
+    super(
+      :methods => [ :task_stats, :note_stats, :wiki_stats ]
+    )
+  end
 end
 
 

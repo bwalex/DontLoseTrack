@@ -1,7 +1,14 @@
 %script{ :type => "text/x-jsrender",:id => "note-tmpl"}
   .note
     .meta
-      .date {{:created_at}}
+      .top
+        .date-created {{:created_at}}
+        .delnote
+          %span.rm-icon
+            %a.rm-button{ :href => "javascript:void(0);" }
+            .clearer
+          .clearer
+        .clearer
       .tags
         .tag.placeholder-tag
           &nbsp;

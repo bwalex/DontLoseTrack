@@ -68,7 +68,15 @@ put '/api/project/:project_id' do
 end
 
 post '/api/project' do
-  status 500
+  content_type :json
+  data = JSON.parse(request.body.read)
+  p = Project.create!(:name => data['name'])
+  p.to_json
+end
+
+delete '/api/project/:project_id' do
+  p = Project.find(params[:project_id])
+  Project.destroy(p)
 end
 
 
@@ -93,6 +101,11 @@ post '/api/project/:project_id/note' do
   data = JSON.parse(request.body.read)
   n = Note.create!(:text => data['text'], :project => p)
   n.to_json
+end
+
+delete '/api/project/:project_id/note/:note_id' do
+  n = Note.find(params[:note_id])
+  Note.destroy(n)
 end
 
 

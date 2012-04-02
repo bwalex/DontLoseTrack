@@ -13,3 +13,5 @@ all:
 	haml -f $(FORMAT) -t $(STYLE) tag-norm.haml  | tr -d '\n' > tag-norm.tmpl
 	haml -f $(FORMAT) -t $(STYLE) tag-applied.haml | tr -d '\n' > tag-applied.tmpl
 	haml -f $(FORMAT) -t $(STYLE) navbar.haml | tr -d '\n' > navbar.tmpl
+	haml -f $(FORMAT) -t $(STYLE) project-list.haml | tr -d '\n' > project-list.tmpl
+	haml -f $(FORMAT) -t $(STYLE) project-link.haml | tr -d '\n' > project-link.tmpl

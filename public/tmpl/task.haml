@@ -13,8 +13,15 @@
       .tags
         .tag.placeholder-tag
           &nbsp;
+      .deltask
+        %span.rm-icon
+          %a.rm-button{ :href => "javascript:void(0);" }
+          .clearer
+        .clearer
       %span.duedate{ :class => '{{:due_date_class}}' }
         {{if due_date != nil}}{{:due_date}}{{else}}no due date{{/if}}
+      .clearer
+
     .body{ :class => '{{:(expanded)?"":"contracted"}}' }
       .info
         .deps
