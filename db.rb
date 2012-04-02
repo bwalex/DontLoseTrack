@@ -29,6 +29,11 @@ class Note < ActiveRecord::Base
     end
   end
 
+  def created_at
+    return (self[:created_at] != nil) ? self[:created_at].strftime("%d/%m/%Y - %H:%M") : nil
+  end
+
+
   def as_json(options={})
     super(
       :methods => :html_text,

@@ -88,6 +88,11 @@ put '/api/project/:project_id/note/:note_id' do
 end
 
 post '/api/project/:project_id/note' do
+  content_type :json
+  p = Project.find(params[:project_id])
+  data = JSON.parse(request.body.read)
+  n = Note.create!(:text => data['text'], :project => p)
+  n.to_json
 end
 
 
@@ -142,6 +147,25 @@ delete '/api/project/:project_id/tasktag/:tasktag_id' do
   tt = TaskTag.find(params[:tasktag_id])
   TaskTag.destroy(tt)
 end
+
+
+
+
+post '/api/project/:project_id/notetag' do
+  content_type :json
+  data = JSON.parse(request.body.read)
+  note = Note.find(data['note_id'])
+  tag = Tag.find(data['tag_id'])
+  nt = NoteTag.create!(:note => note, :tag => tag)
+  nt.to_json
+end
+
+
+delete '/api/project/:project_id/notetag/:notetag_id' do
+  nt = NoteTag.find(params[:notetag_id])
+  NoteTag.destroy(nt)
+end
+
 
 
 

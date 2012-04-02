@@ -3,6 +3,7 @@ require([
   "jquery-ui-1.8.18.custom.min",
   "jquery.magicedit2",
   "jquery.jdropdown",
+  "jquery.elastic",
   //"jquery.views",
   "require.text!/tmpl/test.tmpl",
   "require.text!/tmpl/note.tmpl",
@@ -295,13 +296,28 @@ require([
   });
 
   $.app.NoteTag = Backbone.RelationalModel.extend({
+    urlRoot:  function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/notetag';
+    },
+
+    idAttribute: 'id',
+
     initialize: function() {
       var dit = this;
-      //console.log("this.get('tag'):");
+      console.log("this.get('tag'):");
       //console.log(this.get('tag'));
-      //this.get('tag').on('change', function(model) {
-      //  dit.get('note').trigger('change:tag', model);
-      //});
+      this.get('tag').on('destroy', function(model) {
+	dit.trigger('destroy:tag', model);
+	dit.get('note').trigger('destroy:tag', model);
+      });
+
+      this.get('tag').on('change', function(model) {
+	dit.trigger('change:tag', model);
+        dit.get('note').trigger('change:tag', model);
+      });
+    },
+    toJSON: function() {
+      return { note_id: this.get('note').get('id'), tag_id: this.get('tag').get('id') };
     }
   });
 
@@ -383,7 +399,7 @@ require([
     className: 'tagAppliedView',
 
     events: {
-      "click .rm-icon > .rm-button"     : "removeMe"
+      "click .rm-icon > .rm-button"     : "removeMe",
     },
 
     initialize: function() {
@@ -414,12 +430,36 @@ require([
   $.app.NoteView = Backbone.View.extend({
     tagName: 'div',
     className: 'noteView',
-    initialize: function() {
-      _.bindAll(this, 'render', 'renderTags');
-      this.model.bind('change', this.render);
-      this.model.bind('add:note_tags', this.renderTags);
+
+    events: {
+      "drop .meta"                    : "dropTag"
     },
+
+
+    dropTag: function(ev, ui) {
+      var tagModel = ui.draggable.data('tagModel');
+      var found = false;
+      _.each(this.model.get('note_tags').pluck('tag'), function(tag) {
+	if (tag === tagModel)
+	  found = true;
+      });
+      if (!found) {
+	var m = new $.app.NoteTag({tag: tagModel, tag_id: tagModel.get('id'), note: this.model, note_id: this.model.get('id')});
+	this.model.get('note_tags').add(m);
+	console.log(m);
+	m.save();
+      }
+    },
+
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderTags', 'dropTag');
+      this.model.bind('change', this.render);
+      this.model.bind('add:note_tags', this.render);
+    },
+
     template: $.templates('#note-tmpl'),
+
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
       var self = this;
@@ -447,7 +487,10 @@ require([
     className: 'noteListView',
 
     events: {
-      "click .tabmenu .btn_addtag"      : "addTagBtn"
+      "click .tabmenu .btn_addtag"      : "addTagBtn",
+      "focus #newnotetext"              : "newNoteFocus",
+      "focusout #newnotetext"           : "newNoteFocusOut",
+      "submit #newnote"                 : "newNoteSubmit"
     },
 
     addTagBtn: function(ev) {
@@ -466,10 +509,37 @@ require([
       this.unbind();
     },
 
+    newNoteFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Add Note...')
+	$(ev.currentTarget).val('');
+    },
+
+    newNoteFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Add Note...');
+    },
+
+    newNoteSubmit: function(ev) {
+      var self = this;
+
+      var m = new $.app.Note({ text: $(ev.currentTarget).find('#newnotetext').val() });
+      console.log("Moo, saving... ", m);
+      m.save({},{
+	wait: true,
+	success: function(model, resp) {
+	  console.log("Success: ", model, resp);
+	  self.collection.add(m);
+	  $(ev.currentTarget).find('#newnotetext').val("");
+	  $(ev.currentTarget).find('#newnotetext').blur();
+	}
+      });
+    },
+
     initialize: function() {
       _.bindAll(this, 'render', 'renderNote', 'addTagBtn', 'destroy', 'tagbtn');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+      this.collection.bind('add', this.renderNote);
       this.bind('btn:addTags', this.tagbtn);
       $.app.globalController.register(this);
     },
@@ -478,13 +548,14 @@ require([
 
     render: function() {
       $(this.el).html(this.template.render({}));
+      $(this.el).find('#newnotetext').elastic();
       this.collection.each(this.renderNote);
     },
 
     renderNote: function(inote) {
       console.log("renderNote: inote=%o", inote);
       var noteView = new $.app.NoteView({model: inote});
-      $(this.el).find('#notelist').append($(noteView.render()));
+      $(this.el).find('#notelist').prepend($(noteView.render()));
     }
   });
 
@@ -705,7 +776,7 @@ require([
 
   $.fn.tagDroppable = function(opts) {
     $(this).droppable(_.defaults(opts, {
-      accept: '#tagdrag > .tags > .tagDragView > .tag',
+      accept: '#tagdrag .tags > .tagDragView > .tag',
       activate: function(ev, ui) {
         $(this).find('.placeholder-tag')
 	    .width(ui.draggable.width())
@@ -920,7 +991,6 @@ require([
 	//console.log("RET: ", ret);
 	m.save();
       }
-
     },
 
 
@@ -1196,13 +1266,60 @@ require([
     template: $.templates(null, '<h2>{{:name}}</h2>'),
 
     render: function(project) {
-      if (typeof(project) === 'undefined')
-	project = {attributes: {}};
+      if (typeof(project) !== 'object')
+	project = {toJSON: function() { return {}; }};
 
-      $(this.el).html(this.template.render(project.attributes));
+      $(this.el).html(this.template.render(project.toJSON()));
     },
   });
 
+
+  $.app.ProjectLinkView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'ProjectLinkView',
+
+    events: {
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render');
+    },
+
+    template: $.templates(null, '<div><a href="#project/{{:id}}/notes">{{:name}}</a></div>'),
+
+    render: function() {
+      return $(this.el).html(this.template.render(this.model.toJSON()));
+    }
+  });
+
+
+  $.app.ProjectListView = Backbone.View.extend({
+    events: {
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderProject', 'destroy');
+      this.collection.bind('add', this.renderProject);
+      this.collection.bind('reset', this.render);
+    },
+
+    template: $.templates(null, '<h3>Projects:</h3><div class="projectList"></div>'),
+
+    render: function() {
+      $(this.el).html(this.template.render({}));
+      this.collection.each(this.renderProject);
+    },
+
+    renderProject: function(p) {
+      var pView = new $.app.ProjectLinkView({model: p});
+      $(this.el).find('.projectList').append($(pView.render()));
+    }
+  });
 
 
 
@@ -1227,8 +1344,6 @@ require([
     },
 
 
-
-
     initialize: function() {
       _.bindAll(this,
 		'render',
@@ -1241,16 +1356,16 @@ require([
 
       $.app.globalController.register(this);
 
-      this.render({});
+      this.render();
     },
 
     template: $.templates('#navbar-tmpl'),
 
     render: function(project) {
-      if (typeof(project) === 'undefined')
-	project = {};
+      if (typeof(project) !== 'object')
+	project = { toJSON: function() { return {}; } };
 
-      $(this.el).html(this.template.render(project));
+      $(this.el).html(this.template.render(project.toJSON()));
       $(this.el).find('#projectSelector')
 	  .autocomplete({
 	    minLength: 0,
@@ -1314,6 +1429,7 @@ require([
 
   $.app.Router = Backbone.Router.extend({
     routes: {
+      "":                         "showProjects",
       "project/:projectId/notes": "showNotes",
       "project/:projectId/tasks": "showTasks"
     },
@@ -1360,6 +1476,20 @@ require([
       //      to be fetched synchronously (and first), otherwise
       //      the relationships won't work as expected.
       $.app.tagCollection.fetch({async: false});
+    },
+
+
+    showProjects: function() {
+      this.cleanView();
+      $.app.globalController.set('projectId', -1);
+      $.app.globalController.trigger('navigate', 'home');
+
+      this.currentView = $.app.projectListView = new $.app.ProjectListView({
+	el: $('<div></div>').appendTo('#main-pane'),
+	collection: $.app.projectCollection
+      });
+
+      $.app.projectListView.render();
     },
 
 

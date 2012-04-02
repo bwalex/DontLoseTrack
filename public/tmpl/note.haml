@@ -1,10 +1,10 @@
 %script{ :type => "text/x-jsrender",:id => "note-tmpl"}
   .note
-    %span.meta
+    .meta
       .date {{:created_at}}
       .tags
         .tag.placeholder-tag
           &nbsp;
-    %span.text
-      %p {{:text}}
-
+    .text
+      %p {{:html_text}}
+    .clearer

@@ -542,6 +542,10 @@ $task_summary_height: 28px;
     padding-left: 32px;
     padding-right: 32px;
     padding-bottom: 32px;
+
+    .text {
+	font-family: 'Nunito',sans-serif;
+    }
 }
 
 .task .body .info {
@@ -847,4 +851,47 @@ $task_summary_height: 28px;
 .magic-tag-text input {
     margin-left: 8px;
     width: 60%;
+}
+
+
+.note {
+    padding-bottom: 20px;
+    border-bottom: 1px dotted $light_grey;
+    margin-top: 20px;
+
+    .meta {
+	width: 15%;
+	display: inline;
+	float: left;
+
+	.date {
+	    border: none;
+	    box-shadow: none;
+	    font-size: normal;
+	    //font-weight: bold;
+	    padding: 0;
+	    text-align: left;
+	    width: 100%;
+	    color: darken($light_grey, 20%);
+	    font-size: 90%;
+	}
+    }
+
+    .text {
+	width: 85%;
+	display: inline;
+	float: right;
+	font-family: 'Nunito',sans-serif;
+
+	p {
+	    margin-top: 0px;
+	    margin-bottom: 0px;
+	}
+    }
+}
+
+
+textarea {
+    min-height: 5em;
+    width: 85%;
 }

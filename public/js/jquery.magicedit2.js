@@ -29,14 +29,16 @@
 
 
     'textarea': {
-      template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:val}}</textarea></div><div class='magic-tarea-input'><input type='submit'></div></form>"),
+      template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:val}}</textarea></div><div class='magic-tarea-input'><input type='submit' value='Save'></div></form>"),
 
       render: function(el, opts, change) {
 	$(this.template.render(opts))
 	    .appendTo($(el))
 	    .submit(function(ev) {
 	      change($(this).find("textarea").val());
-	    });
+	    })
+	    .find('textarea')
+	    .elastic();
       }
     },
 
