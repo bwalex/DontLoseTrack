@@ -3,6 +3,8 @@
 %html
   %head
     -#%link{ :type => "text/css", :href => "/css/smoothness/jquery-ui-1.8.18.custom.css", :rel => "stylesheet" }
+    -#%link{ :type => "text/css", :href => "http://fonts.googleapis.com/css?family=Tangerine", :rel => "stylesheet" }
+
     %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/dateinput.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/colorpicker.css", :rel => "stylesheet" }
@@ -27,25 +29,14 @@
   %body
     .container_16
       .grid_16#logo
-        %h1.logo Don’t Lose Track!
+        .project-name
+        .logo
+          %h3.logo Don't Lose Track!
+        .clearer
 
     .container_16#header
       .container_16#navbar.clearfix
         .grid_16
-          %ul.menu.tabs
-            %li
-              %a{ :title => 'timeline', :href => "#timeline" } Timeline
-            %li
-              %a{ :title => 'notes', :href => "#notes" } Notes
-            %li
-              %a{ :title => 'tasks', :href => "#tasks" } Tasks
-            %li
-              %a{ :title => 'wikis', :href => "#wikis" } Wikis
-            %li
-              %a{ :title => 'emails', :href => "#emails" } Emails
-            %li
-              %a{ :title => 'settings', :href => "#settings" } Settings
-          %input#projectSelector{ :type => "text", :value => "Switch Project..." }
 
     .container_16.spacer.clearfix
 
@@ -68,12 +59,7 @@
       .grid_16
         Copyright (C) 2012, Alex Hornung
 
-    #tagdrag.hide
-      .tags
-      -#%span.rm-icon-2
-        %a.rm-button-2{ :href => "javascript:void(0);" }
-        .clearer
-      .clearer
+    #tagdrag
 
 
     .fb_menu#fb_menu{ :style => "display:none;" }

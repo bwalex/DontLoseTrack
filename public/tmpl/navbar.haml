@@ -1,0 +1,17 @@
+%script{ :type => "text/x-jsrender", :id => "navbar-tmpl" }
+  {{if id}}
+  %ul.menu.tabs
+    %li
+      %a{ :title => 'timeline', :href => "#project/{{:id}}/timeline" } Timeline
+    %li
+      %a{ :title => 'notes', :href => "#project/{{:id}}/notes" } Notes
+    %li
+      %a{ :title => 'tasks', :href => "#project/{{:id}}/tasks" } Tasks
+    %li
+      %a{ :title => 'wikis', :href => "#project/{{:id}}/wikis" } Wikis
+    %li
+      %a{ :title => 'emails', :href => "#project/{{:id}}/emails" } Emails
+    %li
+      %a{ :title => 'settings', :href => "#project/{{:id}}/settings" } Settings
+  {{/if}}
+  %input#projectSelector{ :type => "text", :value => "Switch Project..." }

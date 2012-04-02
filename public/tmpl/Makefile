@@ -12,3 +12,4 @@ all:
 	haml -f $(FORMAT) -t $(STYLE) tag-list.haml  | tr -d '\n' > tag-list.tmpl
 	haml -f $(FORMAT) -t $(STYLE) tag-norm.haml  | tr -d '\n' > tag-norm.tmpl
 	haml -f $(FORMAT) -t $(STYLE) tag-applied.haml | tr -d '\n' > tag-applied.tmpl
+	haml -f $(FORMAT) -t $(STYLE) navbar.haml | tr -d '\n' > navbar.tmpl

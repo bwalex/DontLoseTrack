@@ -96,8 +96,6 @@ end
 
 
 
-
-
 get '/api/project/:project_id/tag' do
   Tag.where("project_id = ?", params[:project_id]).to_json
 end

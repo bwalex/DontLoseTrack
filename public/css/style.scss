@@ -33,17 +33,49 @@ div#header {
     border-bottom: 1px dotted #999999;
 }
 
-h1.logo {
-    font: bold 2em helvetica,arial,verdana,sans-serif;
+.logo h3 {
+    //font: bold 1em helvetica,arial,verdana,sans-serif;
+    font-weight: bold;
+    //font-family: 'Ubuntu', sans-serif;
+    font-family: helvetica,arial,verdana,sans-serif;
     color: $dark_grey;
     margin: 0px;
-    padding-top: 24px;
-    padding-bottom: 24px;
+    //padding-top: 24px;
+    //padding-bottom: 24px;
+    padding-top: 3px;
     letter-spacing: -1px;
-    text-align: center;
-    font-size: 2em;
+    text-align: right;
+    font-size: 1.2em;
     line-height: 1;
 }
+
+div#logo {
+    margin-right: 0px;
+}
+
+.project-name h2 {
+    //font: bold 1em helvetica,arial,verdana,sans-serif;
+    font-family: helvetica,arial,verdana,sans-serif;
+    font-weight: bold;
+    color: $redish;
+    font-size: 1.5em;
+    text-align: left;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    margin-top: 0px;
+}
+
+div.project-name {
+    display: inline;
+    float: left;
+}
+
+div.logo {
+    display: inline;
+    float: right;
+}
+
+
 
 div#content {
     background: none repeat scroll 0 0 #FFFFFF;
@@ -446,9 +478,6 @@ img.boring {
     opacity: 1;
 }
 
-#tagdrag:hover .rm-icon-2 .rm-button-2 {
-    opacity: 1;
-}
 
 .dep:hover {
     background-color: #FFFFD5;
@@ -608,16 +637,15 @@ $task_summary_height: 28px;
     float: left;
     display: block;
     background: url('/img/anchor_adddep.png') 0 -22px;
+
+    &:hover {
+	text-decoration: none;
+    }
 }
 
 .dep .dep-sum {
     float: left;
     display: block-inline;
-}
-
-.adddep-button:hover {
-    text-decoration: none;
-    //background-position: 0 0;
 }
 
 
@@ -731,7 +759,7 @@ $task_summary_height: 28px;
 
 
 
-#tagdrag {
+#tagdrag .tagdrag-container {
     width: 100%;
     border-top: 1px dotted $dark_grey;
     padding-bottom: 4px;

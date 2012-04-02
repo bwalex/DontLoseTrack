@@ -13,7 +13,8 @@ require([
   "require.text!/tmpl/tag.tmpl",
   "require.text!/tmpl/tag-list.tmpl",
   "require.text!/tmpl/tag-norm.tmpl",
-  "require.text!/tmpl/tag-applied.tmpl"
+  "require.text!/tmpl/tag-applied.tmpl",
+  "require.text!/tmpl/navbar.tmpl"
 ], function() {
   //XXX: hardcoded project ID :(
   projectId = 1;
@@ -157,51 +158,54 @@ require([
 
   $.app.GlobalController = DontLoseTrack.GlobalController.extend({
     events: {
-      "btn:addTags"     : "addTagsPress",
-      "clean:addTags"   : "addTagsClean",
-      "change:project"  : "changeProject",
-      "navigate"        : "navigate"
+      "change:projectId"    : "changeProjectId",
+      "change:project"      : "changeProject",
+      "navigate"            : "navigate"
     },
 
     attributes: {
-       project: -1
     },
 
     initialize: function() {
-      _.bindAll(this, 'addTagsPress', 'addTagsClean', 'changeProject', 'navigate');
+      _.bindAll(this,
+		'changeProjectId',
+		'changeProject',
+		'navigate');
     },
 
     navigate: function(item) {
-      $('#navbar .menu a').removeClass('current');
-      $('#navbar .menu a[title="' + item + '"]').addClass('current');
     },
 
-    changeProject: function(newProj, oldProj) {
+    changeProjectId: function(newProj, oldProj) {
       var self = this;
       if (newProj === oldProj)
 	return;
 
-      $('#navbar .menu a').each(function(i, a) {
-	var href = '#project/' + newProj + '/' + $(a).attr('title');
-	$(a).attr('href', href);
-      });
+      var projectModel = $.app.projectCollection.get(newProj);
+      this.set('project', projectModel);
     },
 
-    addTagsPress: function() {
-      $('#tagdrag').toggleClass('hide');
-    },
-
-    addTagsClean: function() {
-      $('#tagdrag').addClass('hide');
+    changeProject: function(newModel, oldModel) {
+      console.log("changeProject: ", newModel, oldModel);
     }
   });
 
-  $.app.globalController = new $.app.GlobalController();
+
+
+  $.app.Project = Backbone.Model.extend({
+    urlRoot: '/api/project',
+    idAttribute: 'id'
+  });
+
+  $.app.ProjectCollection = Backbone.Collection.extend({
+    url: '/api/project',
+    model: $.app.Project
+  });
 
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
     urlRoot: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/taskdep';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/taskdep';
     },
 
     idAttribute: 'id',
@@ -221,7 +225,7 @@ require([
 
   $.app.TaskTag = Backbone.RelationalModel.extend({
     urlRoot:  function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/tasktag';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/tasktag';
     },
     idAttribute: 'id',
     initialize: function() {
@@ -248,7 +252,7 @@ require([
       expanded: false
     },
     urlRoot: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/task';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/task';
     },
 
     idAttribute: 'id',
@@ -285,7 +289,7 @@ require([
 
   $.app.TaskCollection = Backbone.Collection.extend({
     url: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/task';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/task';
     },
     model: $.app.Task
   });
@@ -307,7 +311,7 @@ require([
       selected: true
     },
     urlRoot: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/tag';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/tag';
     },
     idAttribute: 'id',
     relations: [
@@ -336,7 +340,7 @@ require([
 
   $.app.TagCollection = Backbone.Collection.extend({
     url: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/tag';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/tag';
     },
     model: $.app.Tag
   });
@@ -346,7 +350,7 @@ require([
       visible: true
     },
     urlRoot: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/note';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/note';
     },
     idAttribute: 'id',
     relations: [
@@ -369,7 +373,7 @@ require([
 
   $.app.NoteCollection = Backbone.Collection.extend({
     url: function() {
-      return '/api/project/'+ $.app.globalController.get('project') +'/note';
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/note';
     },
     model: $.app.Note
   });
@@ -644,19 +648,44 @@ require([
     tagName: 'div',
     className: 'tagDragListView',
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTag');
+      _.bindAll(this, 'render', 'renderTag', 'toggleVisibility', 'removeVisibility', 'destroy');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
+
+      this.bind('btn:addTags', this.toggleVisibility);
+      this.bind('clean:addTags', this.removeVisibility);
+
+      $.app.globalController.register(this);
     },
+
+    toggleVisibility: function() {
+      $(this.el).toggleClass('hide');
+    },
+
+    removeVisibility: function() {
+      $(this.el).addClass('hide');
+    },
+
+    destroy: function() {
+      $.app.globalController.unregister(this);
+      this.remove();
+      this.unbind();
+    },
+
+    template: $.templates(null, '<div class="tags"></div><div class="clearer"></div>'),
+
     render: function() {
+      $(this.el).html(this.template.render({}));
+      this.removeVisibility();
       console.log("render in TagDragListView: %o", this);
       this.collection.each(this.renderTag);
       console.log(this);
     },
+
     renderTag: function(tag) {
       console.log("renderDragTag: tag=%o", tag);
       var tagView = new $.app.TagDragView({model: tag});
-      $(this.el).append($(tagView.render()));
+      $(this.el).children('.tags').append($(tagView.render()));
       console.log(this.el, tagView.render());
     }
   });
@@ -1157,11 +1186,106 @@ require([
 
 
 
+  $.app.ProjectNameView = Backbone.View.extend({
+    initialize: function() {
+      this.bind('change:project', this.render);
+
+      $.app.globalController.register(this);
+    },
+
+    template: $.templates(null, '<h2>{{:name}}</h2>'),
+
+    render: function(project) {
+      if (typeof(project) === 'undefined')
+	project = {attributes: {}};
+
+      $(this.el).html(this.template.render(project.attributes));
+    },
+  });
 
 
 
 
+  $.app.NavbarView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'NavbarView',
 
+    events: {
+      "focus #projectSelector"          : "projSelFocus",
+      "focusout #projectSelector"       : "projSelFocusOut"
+    },
+
+
+    projSelFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Switch Project...')
+	$(ev.currentTarget).val('');
+    },
+
+    projSelFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Switch Project...');
+    },
+
+
+
+
+    initialize: function() {
+      _.bindAll(this,
+		'render',
+		'nav',
+		'projSelFocus',
+		'projSelFocusOut');
+
+      this.bind('change:project', this.render);
+      this.bind('navigate', this.nav);
+
+      $.app.globalController.register(this);
+
+      this.render({});
+    },
+
+    template: $.templates('#navbar-tmpl'),
+
+    render: function(project) {
+      if (typeof(project) === 'undefined')
+	project = {};
+
+      $(this.el).html(this.template.render(project));
+      $(this.el).find('#projectSelector')
+	  .autocomplete({
+	    minLength: 0,
+	    source: function(req, cb) {
+	      cb($.app.projectCollection
+		 .filter(function(p) {
+		   return (p.get('name').toLowerCase().indexOf(req.term.toLowerCase()) !== -1);
+		 })
+		 .map(function(p) {
+		   return {
+		     label: p.get('name'),
+		     value: p.get('id')
+		   };
+		 })
+		);
+	    },
+	    focus: function(ev, ui) {
+	      return false;
+	    },
+	    select: function(ev, ui) {
+	      $.app.router.navigate("project/"+ ui.item.value +"/notes", {trigger: true});
+	      $(this).val('');
+	      $(this).blur();
+	      return false;
+	    }
+	  });
+    },
+
+    nav: function(item) {
+      console.log("NavbarView: nav: ", item, this);
+      console.log(this.el);
+      $(this.el).find('.menu a').removeClass('current');
+      $(this.el).find('.menu a[title="' + item + '"]').addClass('current');
+    }
+  });
 
 
 
@@ -1197,6 +1321,10 @@ require([
 
     currentView: null,
     currentSidebarView: null,
+
+    initialize: function() {
+    },
+
     cleanView: function() {
       if (this.currentView != null && typeof(this.currentView.destroy) === 'function') {
 	this.currentView.destroy();
@@ -1206,6 +1334,11 @@ require([
       if (this.currentSidebarView != null && typeof(this.currentSidebarView.destroy) === 'function') {
 	this.currentSidebarView.destroy();
 	this.currentSidebarView = null;
+      }
+
+      if (this.currentTagDraView != null && typeof(this.currentTagDragView.destroy) === 'function') {
+	this.currentTagDragView.destroy();
+	this.currentTagDragView = null;
       }
     },
 
@@ -1218,8 +1351,8 @@ require([
 	collection: $.app.tagCollection
       });
 
-      $.app.tagDragListView = new $.app.TagDragListView({
-	el: $('#tagdrag .tags'),
+      this.currentTagDragView = $.app.tagDragListView = new $.app.TagDragListView({
+	el: $('<div class="tagdrag-container"></div>').appendTo('#tagdrag'),
 	collection: $.app.tagCollection
       });
 
@@ -1232,7 +1365,7 @@ require([
 
     showNotes: function(proj) {
       this.cleanView();
-      $.app.globalController.set('project', proj);
+      $.app.globalController.set('projectId', proj);
       $.app.globalController.trigger('navigate', 'notes');
 
       this.showTags();
@@ -1248,7 +1381,7 @@ require([
 
     showTasks: function(proj) {
       this.cleanView();
-      $.app.globalController.set('project', proj);
+      $.app.globalController.set('projectId', proj);
       $.app.globalController.trigger('navigate', 'tasks');
 
       this.showTags();
@@ -1262,27 +1395,21 @@ require([
     }
   });
 
+  $.app.globalController = new $.app.GlobalController();
 
-/*
-  $.app.tagCollection  = new $.app.TagCollection();
+  $.app.projectCollection = new $.app.ProjectCollection();
+  $.app.projectCollection.fetch({async: false});
 
-  $.app.tagListView = new $.app.TagListView({
-    el: $('<div></div>').appendTo('#sidebar'),
-    collection: $.app.tagCollection
+  
+  $.app.navbarView = new $.app.NavbarView({
+    el: $('#navbar .grid_16')
   });
 
-  $.app.tagDragListView = new $.app.TagDragListView({
-    el: $('#tagdrag .tags'),
-    collection: $.app.tagCollection
+  $.app.projectNameView = new $.app.ProjectNameView({
+    el: $('#logo .project-name')
   });
 
-  // XXX: Kludge; for some reason the tag collection needs
-  //      to be fetched synchronously (and first), otherwise
-  //      the relationships won't work as expected.
-  $.app.tagCollection.fetch({async: false});
-*/
-
-  var app_router = new $.app.Router;
+  $.app.router = new $.app.Router;
   Backbone.history.start();
 
 });
