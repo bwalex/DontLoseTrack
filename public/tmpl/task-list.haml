@@ -2,8 +2,18 @@
   .tabmenu
     .ico
       %a.btn_addtag{ :title => "Toggle tagging mode" }
-    .ico
-      %a.fb_dropdown#task_sorter(data-items = '[{"label": "IntelliSort"}, {"label": "due date"}, {"label": "priority"}]' title = 'Choose sorting order' )
+    .ico.dropdown
+      %a.btn_sort{ :href => "javascript:void(0);", :title => "Choose sorting order" }
+      %ul.sorter
+        %li.sort-intellisort
+          %a
+            IntelliSort
+        %li.sort-duedate
+          %a
+            Due date
+        %li.sort-importance
+          %a
+            Importance
     .ico
       %a.btn_showcompleted{ :title => "Show completed tasks" }
     .clearer

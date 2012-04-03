@@ -2,7 +2,6 @@ require([
   "jquery.tools",
   "jquery-ui-1.8.18.custom.min",
   "jquery.magicedit2",
-  "jquery.jdropdown",
   "jquery.elastic",
   //"jquery.views",
   "require.text!/tmpl/test.tmpl",
@@ -19,8 +18,6 @@ require([
   "require.text!/tmpl/project-link.tmpl",
   "require.text!/tmpl/navbar.tmpl"
 ], function() {
-  //XXX: hardcoded project ID :(
-  projectId = 1;
 
   // Insert all templates
   // XXX: adjust >= according to number of non-templates in
@@ -221,6 +218,10 @@ require([
     },
 
     changeProject: function(newModel, oldModel) {
+      this.set('filter', false);
+      this.set('filter:tags', []);
+      this.set('filter:tag_ids', []);
+
       console.log("changeProject: ", newModel, oldModel);
       if (typeof(newModel) !== 'undefined')
 	$.app.tagCollection.fetch({async: false});
@@ -402,7 +403,7 @@ require([
 	return (a_dd === null && b_dd === null) ? 0 :
 	  (a_dd === null) ?  1 :
 	  (b_dd === null) ? -1 :
-	  (b_dd - a_dd);
+	  (a_dd - b_dd);
 
       return (b_pri - a_pri);
     },
@@ -423,7 +424,7 @@ require([
       return (a_dd === null && b_dd === null) ? 0 :
 	  (a_dd === null) ?  1 :
 	  (b_dd === null) ? -1 :
-	  (b_dd - a_dd);
+	  (a_dd - b_dd);
     },
 
 
@@ -431,19 +432,28 @@ require([
       return (b.iSortWeight - a.iSortWeight);
     },
 
-    initialize: function() {
-      var order = $.app.globalController.get('tasks:order');
+    updateComparator: function(order) {
+      if (typeof(order) === 'undefined')
+	order = $.app.globalController.get('tasks:order');
+
       if (order === 'intelligent')
 	this.comparator = this.sortIntelligent;
       else if (order === 'duedate')
 	this.comparator = this.sortDueDate;
-      else if (order === 'priority')
+      else if (order === 'importance')
 	this.comparator = this.sortPriority;
       else
 	/* Default sorter */
 	this.comparator = this.sortPriority;
 
       console.log("Setting comparator...", this.comparator);
+    },
+
+    initialize: function() {
+      _.bindAll(this, "updateComparator");
+      this.bind('change:tasks:order', this.updateComparator);
+      this.updateComparator();
+      $.app.globalController.register(this);
     },
 
     model: $.app.Task
@@ -1469,11 +1479,29 @@ require([
     showCompleted: false,
 
     events: {
+      "click .sorter .sort-intellisort"   : "sortIntelliSort",
+      "click .sorter .sort-importance"    : "sortImportance",
+      "click .sorter .sort-duedate"       : "sortDueDate",
       "click .tabmenu .btn_showcompleted" : "showCompletedBtn",
       "click .tabmenu .btn_addtag"        : "addTagBtn",
       "focus #newtasksummary"             : "newTaskFocus",
       "focusout #newtasksummary"          : "newTaskFocusOut",
       "keypress #newtasksummary"          : "newTaskKeypress"
+    },
+
+    sortDueDate: function(ev) {
+      $.app.globalController.set('tasks:order', 'duedate');
+      this.refreshSort();
+    },
+
+   sortImportance: function(ev) {
+      $.app.globalController.set('tasks:order', 'importance');
+      this.refreshSort();
+    },
+
+   sortIntelliSort: function(ev) {
+      $.app.globalController.set('tasks:order', 'intelligent');
+      this.refreshSort();
     },
 
     showCompletedBtn: function(ev) {
@@ -1529,6 +1557,7 @@ require([
     },
 
     refreshSort: function() {
+      $.app.globalController.trigger('tasks:refreshSort');
       this.collection.sort();
     },
 
@@ -1544,6 +1573,9 @@ require([
 		'newTaskFocusOut',
 		'showCompletedBtn',
 		'refreshSort',
+		'sortDueDate',
+		'sortImportance',
+		'sortIntelliSort',
 		'newTaskKeypress');
       //this.collection.bind('change', this.render);
       this.collection.bind('add', this.renderTaskTop);
@@ -1558,8 +1590,6 @@ require([
 
     render: function() {
       $(this.el).html(this.template.render({}));
-      $(this.el).find('#task_sorter')
-	  .jdropdown({ 'container': '#fb_menu', 'orientation': 'right' });
       this.collection.each(this.renderTask);
     },
 

@@ -7,6 +7,7 @@ $blackish:   #151515;
 $blueish:    #0055AA;
 $dark_blue:  #002B55;
 $light_red:  #EE8CA7;
+$yellowish:  #FFFFD5;
 
 $link_color:  $blueish;
 $link_hover_color:  $dark_blue;
@@ -728,11 +729,11 @@ $task_summary_height: 28px;
 }
 
 .ico {
-    display: block-inline;
+    display: inline-block;
     float: right;
 }
 
-.fb_dropdown {
+.btn_sort {
     width:40px;
     height:22px;
     text-decoration:none;
@@ -768,46 +769,72 @@ $task_summary_height: 28px;
     background-position: 0 0;
 }
 
+.dropdown ul {
+    background: #e6e6e6; /* for non-css3 browsers */
 
-.fb_dropdown:hover {
-    text-decoration: none;
-    //background-position: 0 0;
+    display: none;
+    margin: 0;
+    padding: 0;
+    width: 185px;
+    position: absolute;
+    top: 22px;
+    right: 0px;
+
+    border: 1px solid $dark_grey;
 }
 
-.fb_dropdown.jdropdown-active{
-    background-position:0 0;
+/* dropdown */
+.dropdown:hover > ul {
+    display: block;
+}
+.dropdown ul li {
+    list-style: none;
+    float: none;
+    margin: 0;
+    padding: 0;
+    &:hover {
+	background-color: $yellowish;
+	cursor: pointer;
+    }
 }
 
-.fb_menu{
-    background:#EEEEEE none repeat scroll 0 0; border:1px solid #656565; padding:3px 0;
+.dropdown ul a {
+    font-weight: normal;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, .9);
+    color: black;
+    padding-left: 5px;
+    font-size: 90%;
 }
 
-.fb_menu ul {
-    list-style:none;
-    margin: 0px 0px 0px 0px;
-    padding-left: 0px;
+/* clearfix */
+.dropdown:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+.dropdown {
+    display: inline-block;
+    position: relative;
 }
 
-.fb_menu a {
-    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
-    font-size: 11px;
-    display:block;
-    font-weight:normal;
-    width:137px;
-    text-align:left;
-    overflow:hidden;
-    padding:2px 4px 3px 19px;
-    color:#111111;
-    text-decoration:none;
-}
 
-.fb_menu a:hover {
-    background:#656565; color:white; text-decoration:none;
-}
 
-.fb_menu a:visited {
-    text-decoration:none;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #newtask {
     margin-bottom: 20px;
