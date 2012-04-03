@@ -1,0 +1,22 @@
+%script{ :type => "text/x-jsrender", :id => "project-link-tmpl" }
+  %td.name
+    %a{ :href => "#project/{{:id}}/notes" }
+      {{:name}}
+    .delproject
+      %span.rm-icon
+        %a.rm-button{ :href => "javascript:void(0);" }
+        .clearer
+      .clearer
+  %td
+    {{:task_stats.pending}}
+  %td
+    {{:task_stats.completed}}
+  %td
+    %a{ :href => "#project/{{:id}}/tasks" }
+      {{:task_stats.total}}
+  %td
+    %a{ :href => "#project/{{:id}}/notes" }
+      {{:note_stats.total}}
+  %td
+    %a{ :href => "#project/{{:id}}/wikis" }
+      {{:wiki_stats.total}}

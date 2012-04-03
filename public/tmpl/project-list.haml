@@ -1,0 +1,23 @@
+%script{ :type => "text/x-jsrender", :id => "project-list-tmpl" }
+  %table.projectList
+    %tr.top
+      %th.top.name
+      %th.visible{ :colspan => '3' }
+        Tasks
+      %th.visible{ :colspan => '1' }
+        Notes
+      %th.visible{ :colspan => '1' }
+        Wikis
+    %tr
+      %th.name
+        %input#newprojectname{ :type => "text", :value => "Add Project..." }
+      %th.visible
+        To do
+      %th.visible
+        Done
+      %th.visible
+        Total
+      %th.visible
+        Total
+      %th.visible
+        Total

@@ -85,7 +85,16 @@ end
 
 
 get '/api/project/:project_id/note' do
-  Note.where("project_id = ?", params[:project_id]).to_json
+  content_type :json
+
+  if params[:filter] != nil and params[:filter][:tags] != nil
+    Note.joins(:note_tags).where(
+      :project_id => params[:project_id],
+      :note_tags => { :tag_id => params[:filter][:tags] }
+    ).limit(:params[:limit]).offset(:params[:offset]).to_json
+  else
+    Note.where("project_id = ?", params[:project_id]).to_json
+  end
 end
 
 get '/api/project/:project_id/note/:note_id' do
@@ -209,17 +218,7 @@ end
 
 get '/api/project/:project_id/task' do
   content_type :json
-
-  puts params[:filter].to_json
-
-
-  if params[:filter] != nil
-    Task.joins(:task_tags).where(
-     :project_id => params[:project_id],
-     :task_tags => { :tag_id => params[:filter][:tags]}).to_json
-  else
-    Task.where("project_id = ?", params[:project_id]).to_json
-  end
+  Task.where("project_id = ?", params[:project_id]).to_json
 end
 
 get '/api/project/:project_id/task/:task_id' do

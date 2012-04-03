@@ -449,15 +449,26 @@ img.boring {
     display: inline;
 }
 
-/*.tag*/ .rm-icon {
+.rm-icon,
+.edit-icon{
     float: right;
     height: 15px;
     width: 15px;
 }
 
-/*.tag*/ .rm-icon .rm-button {
+.rm-icon .rm-button {
     float: right;
     background-image: url("/img/close_button.png");
+    background-color: transparent;
+    background-repeat: no-repeat;
+    height: 15px;
+    width: 15px;
+    opacity: 0;
+}
+
+.edit-icon .edit-button {
+    float: right;
+    background-image: url("/img/edit_button.png");
     background-color: transparent;
     background-repeat: no-repeat;
     height: 15px;
@@ -510,6 +521,7 @@ img.boring {
     position: relative;
 }
 
+.tag:hover .edit-icon .edit-button,
 .projectList tr:hover .rm-icon .rm-button,
 .meta:hover .top .rm-icon .rm-button,
 .tag:hover .rm-icon .rm-button,

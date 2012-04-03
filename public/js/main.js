@@ -40,6 +40,18 @@ require([
   };
 
 
+  $.views.helpers({
+    textcolor: function(bgcolor) {
+      // http://stackoverflow.com/questions/946544/good-text-foreground-color-for-a-given-background-color
+      var r = parseInt(bgcolor.substring(1,3), 16);
+      var g = parseInt(bgcolor.substring(3,5), 16);
+      var b = parseInt(bgcolor.substring(5,7), 16);
+      var gray = r*0.299 + g*0.587 + b*0.114;
+
+      return (gray > 150) ? "black" : "white";
+    }
+  });
+
 
 
   ////////////////////////////////////////////////////////
@@ -71,6 +83,7 @@ require([
       var opts = (typeof(options) === 'object') ? options : {};
 
       this.listeners.push({ obj: listener, opts: opts});
+      this.trigger('register', listener);
     },
 
     unregister: function(listener) {
@@ -163,17 +176,36 @@ require([
     events: {
       "change:projectId"    : "changeProjectId",
       "change:project"      : "changeProject",
-      "navigate"            : "navigate"
+      "navigate"            : "navigate",
+      "select:tag"          : "updateFilter",
+      "register"            : "registered"
     },
 
     attributes: {
+      filter: false
     },
 
     initialize: function() {
       _.bindAll(this,
 		'changeProjectId',
 		'changeProject',
+		'updateFilter',
+		'registered',
 		'navigate');
+    },
+
+    registered: function(listener) {
+    },
+
+    updateFilter: function(tag) {
+      var selTags = $.app.tagCollection.where({selected: true});
+      var selTagIds = _.pluck(selTags, "id");
+
+      console.log(selTagIds);
+
+      this.set('filter:tags', selTags);
+      this.set('filter:tag_ids', selTagIds);
+      this.set('filter', (selTags.length > 0) ? true : false);
     },
 
     navigate: function(item) {
@@ -190,6 +222,8 @@ require([
 
     changeProject: function(newModel, oldModel) {
       console.log("changeProject: ", newModel, oldModel);
+      if (typeof(newModel) !== 'undefined')
+	$.app.tagCollection.fetch({async: false});
     }
   });
 
@@ -234,15 +268,17 @@ require([
     initialize: function() {
       var dit = this;
       console.log("this.get('tag'):");
-      //console.log(this.get('tag'));
-      this.get('tag').on('destroy', function(model) {
-	dit.trigger('destroy:tag', model);
-	dit.get('task').trigger('destroy:tag', model);
+
+      this.on('destroy:tag', function(model) {
+	var task = dit.get('task');
+	if (typeof(task) !== 'undefined')
+	  task.trigger('destroy:tag', model);
       });
 
-      this.get('tag').on('change', function(model) {
-	dit.trigger('change:tag', model);
-        dit.get('task').trigger('change:tag', model);
+      this.on('change:tag', function(model) {
+	var task = dit.get('task');
+	if (typeof(task) !== 'undefined')
+          task.trigger('change:tag', model);
       });
     },
     toJSON: function() {
@@ -307,15 +343,17 @@ require([
     initialize: function() {
       var dit = this;
       console.log("this.get('tag'):");
-      //console.log(this.get('tag'));
-      this.get('tag').on('destroy', function(model) {
-	dit.trigger('destroy:tag', model);
-	dit.get('note').trigger('destroy:tag', model);
+
+      this.on('destroy:tag', function(model) {
+	var note = dit.get('note');
+	if (typeof(note) !== 'undefined')
+	  note.trigger('destroy:tag', model);
       });
 
-      this.get('tag').on('change', function(model) {
-	dit.trigger('change:tag', model);
-        dit.get('note').trigger('change:tag', model);
+      this.on('change:tag', function(model) {
+	var note = dit.get('note');
+        if (typeof(note) !== 'undefined')
+	  note.trigger('change:tag', model);
       });
     },
     toJSON: function() {
@@ -326,7 +364,7 @@ require([
 
   $.app.Tag  = Backbone.RelationalModel.extend({
     defaults: {
-      selected: true
+      selected: false
     },
     urlRoot: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/tag';
@@ -408,15 +446,18 @@ require([
       _.bindAll(this, 'render', 'removeMe', 'destroy');
       this.model.bind('change:tag', this.render);
       this.model.bind('change', this.render);
+      //this.model.bind('remove', this.destroy);
       this.model.bind('destroy', this.destroy);
       this.model.bind('destroy:tag', this.destroy);
     },
 
     removeMe: function(ev) {
+      console.log("AppliedTagView removeMe: %o", this);
       this.model.destroy();
     },
 
     destroy: function(ev) {
+      console.log("AppliedTagView destroy: %o", this);
       this.remove();
       this.unbind();
     },
@@ -424,6 +465,12 @@ require([
     template: $.templates('#tag-applied-tmpl'),
 
     render: function() {
+      console.log("AppliedTagView... %o", this.model);
+
+      if (this.model.get('tag') == null) {
+	console.log("AppliedTagView early return");
+	return;
+      }
       var ht = $(this.el).html(this.template.render(this.model.get('tag').toJSON()));
       console.log("AppliedTagView render: %o", ht);
       return ht;
@@ -584,17 +631,25 @@ require([
     className: 'tagView',
 
     events: {
-      "dblclick .tag"               : "editTag",
-      "click .rm-icon > .rm-button" : "removeMe"
+      "click .tag"                      : "toggleFilter",
+      "click .edit-icon > .edit-button" : "editTag",
+      "click .rm-icon > .rm-button"     : "removeMe"
+    },
+
+    toggleFilter: function(ev) {
+      this.model.set('selected', !this.model.get('selected'));
+      $.app.globalController.trigger('select:tag', this.model);
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'editTag', 'removeMe', 'remove');
+      _.bindAll(this, 'render', 'editTag', 'removeMe', 'remove', 'toggleFilter');
       this.model.bind('change', this.render);
+      this.model.bind('reset', this.render);
       this.model.bind('destroy', this.remove);
     },
 
     removeMe: function(ev) {
+      $.app.globalController.trigger('select:tag', this.model);
       this.model.destroy();
     },
 
@@ -605,7 +660,7 @@ require([
     editTag: function(ev) {
       var self = this;
 
-      $(ev.currentTarget).magicedit2(
+      $(ev.currentTarget).closest('.tag').magicedit2(
 	'tag', 'tag',
 	{
 	  text: this.model.get('name'),
@@ -616,6 +671,7 @@ require([
 	  self.model.save({ name: val.text, color: val.color },
             { wait: true, partialUpdate: true });
 	});
+      return false;
     },
 
     template: $.templates('#tag-tmpl'),
@@ -883,6 +939,8 @@ require([
     tagName: 'div',
     className: 'taskView',
     expanded: false,
+    filteredOut: false,
+    hideCompleted: true,
 
     events: {
       "click .deltask .rm-button"        : "deleteTask",
@@ -914,7 +972,11 @@ require([
 		'editComplete',
 		'editBlocked',
 		'dropTag',
-		'addDep'
+		'addDep',
+		'filterChange',
+		'refreshFilter',
+		'refreshFilterCompleted',
+		'actOnHide'
 	       );
 
       this.model.bind('change', this.render);
@@ -922,9 +984,57 @@ require([
       this.model.bind('error', this.error);
       this.model.bind('destroy', this.destroy);
       this.model.bind('add:task_deps', this.render);
+      this.model.bind('remove:task_tags', this.refreshFilter);
+      this.model.bind('destroy:tag', this.refreshFilter);
+      this.bind('btn:task:showCompleted', this.refreshFilterCompleted);
+      this.bind('change:filter', this.filterChange);
+
+      $.app.globalController.register(this);
     },
 
     template: $.templates('#task-tmpl'),
+
+    testFn: function(rm, rel) {
+      console.log("testFn: %o, %o", rm, rel);
+      console.log("testFn- ", rm, rel);
+    },
+
+    refreshFilter: function() {
+      this.filterChange($.app.globalController.get('filter'));
+    },
+
+    filterChange: function(filterEnable) {
+      if (filterEnable === false) {
+	this.filteredOut = false;
+	this.actOnHide();
+	return;
+      }
+
+      var seltags = $.app.globalController.get('filter:tags');
+
+      var tasktag = this.model.get('task_tags').detect(function(tt) {
+	var tag = tt.get('tag');
+	return (_.indexOf(seltags, tag) >= 0) ? true : false;
+      });
+
+      this.filteredOut = (typeof(tasktag) === 'undefined') ? true : false;
+      this.actOnHide();
+    },
+
+    refreshFilterCompleted: function(showCompleted) {
+      this.hideCompleted = !showCompleted;
+      console.log('refreshFilterCompleted: ', this.hideCompleted, showCompleted);
+      this.actOnHide();
+    },
+
+    actOnHide: function() {
+      console.log("actOnHide, completed? ", this.model.get('completed'));
+      if (this.filteredOut || (this.hideCompleted && this.model.get('completed')))
+	$(this.el).addClass('contracted');
+      else
+	$(this.el).removeClass('contracted');
+    },
+
 
     destroy: function() {
       this.remove();
@@ -1189,6 +1299,7 @@ require([
 	$(html).find('div.body').removeClass('contracted');
 
       console.log("app.TaskView.render: %o", this.model);
+      this.refreshFilter();
       return $(this.el).html(html);
     },
     renderDeps: function(dep) {
@@ -1201,12 +1312,22 @@ require([
   $.app.TaskListView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskListView',
+    showCompleted: false,
 
     events: {
-      "click .tabmenu .btn_addtag"     : "addTagBtn",
-      "focus #newtasksummary"          : "newTaskFocus",
-      "focusout #newtasksummary"       : "newTaskFocusOut",
-      "keypress #newtasksummary"       : "newTaskKeypress"
+      "click .tabmenu .btn_showcompleted" : "showCompletedBtn",
+      "click .tabmenu .btn_addtag"        : "addTagBtn",
+      "focus #newtasksummary"             : "newTaskFocus",
+      "focusout #newtasksummary"          : "newTaskFocusOut",
+      "keypress #newtasksummary"          : "newTaskKeypress"
+    },
+
+    showCompletedBtn: function(ev) {
+      $(this.el).find('.tabmenu .btn_showcompleted')
+	  .toggleClass('btn-selected');
+
+      this.showCompleted = !this.showCompleted;
+      $.app.globalController.trigger('btn:task:showCompleted', this.showCompleted);
     },
 
     addTagBtn: function(ev) {
@@ -1263,6 +1384,7 @@ require([
 		'tagbtn',
 		'newTaskFocus',
 		'newTaskFocusOut',
+		'showCompletedBtn',
 		'newTaskKeypress');
       //this.collection.bind('change', this.render);
       this.collection.bind('add', this.renderTaskTop);
@@ -1557,7 +1679,7 @@ require([
 
 
     showTags: function() {
-      $.app.tagCollection  = new $.app.TagCollection();
+      //$.app.tagCollection  = new $.app.TagCollection();
 
       this.currentSidebarView = $.app.tagListView = new $.app.TagListView({
 	el: $('<div></div>').appendTo('#sidebar'),
@@ -1569,10 +1691,13 @@ require([
 	collection: $.app.tagCollection
       });
 
+      this.currentSidebarView.render();
+      this.currentTagDragView.render();
+
       // XXX: Kludge; for some reason the tag collection needs
       //      to be fetched synchronously (and first), otherwise
       //      the relationships won't work as expected.
-      $.app.tagCollection.fetch({async: false});
+      //$.app.tagCollection.fetch({async: false});
     },
 
 
@@ -1592,6 +1717,7 @@ require([
 
     showNotes: function(proj) {
       this.cleanView();
+
       $.app.globalController.set('projectId', proj);
       $.app.globalController.trigger('navigate', 'notes');
 
@@ -1608,6 +1734,7 @@ require([
 
     showTasks: function(proj) {
       this.cleanView();
+
       $.app.globalController.set('projectId', proj);
       $.app.globalController.trigger('navigate', 'tasks');
 
@@ -1625,6 +1752,7 @@ require([
 
   $.app.globalController = new $.app.GlobalController();
 
+  $.app.tagCollection = new $.app.TagCollection();
   $.app.projectCollection = new $.app.ProjectCollection();
   $.app.projectCollection.fetch({async: false});
 

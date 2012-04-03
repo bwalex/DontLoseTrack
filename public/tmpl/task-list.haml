@@ -1,11 +1,11 @@
 %script{ :type => "text/x-jsrender", :id => "task-list-tmpl" }
   .tabmenu
     .ico
-      %a.btn_addtag
+      %a.btn_addtag{ :title => "Toggle tagging mode" }
     .ico
-      %a.fb_dropdown#task_sorter(data-items = '[{"label": "IntelliSort"}, {"label": "due date"}, {"label": "priority"}]' )
+      %a.fb_dropdown#task_sorter(data-items = '[{"label": "IntelliSort"}, {"label": "due date"}, {"label": "priority"}]' title = 'Choose sorting order' )
     .ico
-      %a.btn_showcompleted
+      %a.btn_showcompleted{ :title => "Show completed tasks" }
     .clearer
 
   #newtask
