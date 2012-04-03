@@ -253,6 +253,14 @@ class Task < ActiveRecord::Base
     return (self[:due_date] != nil) ? self[:due_date].strftime("%d/%m/%Y") : nil
   end
 
+  def raw_due_date
+    return (self[:due_date] != nil)? self[:due_date].to_time.to_i : nil
+  end
+
+  def raw_importance
+    return self[:importance]
+  end
+
   def due_date_class
     if self[:due_date] == nil
       return ''
@@ -301,6 +309,8 @@ class Task < ActiveRecord::Base
       :methods => [
                     :html_text,
                     :due_date_class,
+                    :raw_due_date,
+                    :raw_importance,
                     :status
                   ],
       :include => [

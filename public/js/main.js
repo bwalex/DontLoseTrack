@@ -287,11 +287,71 @@ require([
   });
 
   $.app.Task = Backbone.RelationalModel.extend({
+    iSortWeight: 0,
+
     defaults: {
       expanded: false
     },
     urlRoot: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/task';
+    },
+
+    calcISortWeight: function() {
+      console.log('calcISortWeight for ', this);
+      if (this.isNew())
+	return;
+
+      if (this.get('completed') === true) {
+	this.iSortWeight = -5;
+	return;
+      }
+
+      var today = Math.floor(Date.now()/1000/(3600*24));
+      var extraDays = 10;
+
+      function dd_diff_weight(m) {
+	var m_dd = m.get('raw_due_date');
+	var m_dd_diff = (m_dd != null) ? today + extraDays - m_dd/(3600*24) : 0;
+	var m_dd_weight = (m_dd_diff < 0) ? 0 : (m_dd_diff > 10) ? 10 : m_dd_diff; // range is 0 .. 10
+	return m_dd_weight;
+      }
+
+      var a_dd_weight = dd_diff_weight(this); // range is 0 .. 10
+
+      var a_pri = this.get('raw_importance') - 2; // normalize so range is -2 .. 1 (none .. high)
+      var a_blocked = this.get('blocked'); // true or false
+      var a_depends = this.get('task_deps').length; // number of tasks this task depends on
+      var a_depweight = 0; // weight of the sum of the tasks that depend on this one
+
+      function depweight(d) {
+	var d_dd_weight = dd_diff_weight(d); // range 0 .. 10
+	var d_pri = (typeof(d.get('raw_importance')) !== 'undefined') ? d.get('raw_importance') -2 : 0; // range -2 .. 1
+	var d_blocked = d.get('blocked'); // true or false
+	var d_completed = d.get('completed');
+	var d_ndeps = (typeof(d.get('dep_tasks')) !== 'undefined') ? d.get('dep_tasks').length : 0; // number of tasks that depend on this one
+
+	console.log('depweight. pri? %o, dd_weight? %o, ndeps? %o', d_pri, d_dd_weight, d_ndeps);
+	return (d_blocked || d_completed) ? 0 : 3*d_pri + d_dd_weight + d_ndeps;
+      }
+
+      this.get('dep_tasks').each(function(m) {
+	a_depweight += depweight(m);
+      });
+
+
+      console.log('blocked? %o, pri? %o, dd_weight? %o, dep_weight? %o, depends? %o',
+		  a_blocked, a_pri, a_dd_weight, a_depweight, a_depends);
+      var a_total_weight = (a_blocked) ? 0 : 3*a_pri + a_dd_weight + a_depweight/4 - a_depends;
+
+      this.iSortWeight = a_total_weight;
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'calcISortWeight');
+      this.bind('change', this.calcISortWeight);
+      this.bind('tasks:refreshSort', this.calcISortWeight);
+      $.app.globalController.register(this);
+      this.calcISortWeight();
     },
 
     idAttribute: 'id',
@@ -330,6 +390,62 @@ require([
     url: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/task';
     },
+
+
+    sortDueDate: function(a, b) {
+      var a_dd = a.get('raw_due_date');
+      var b_dd = b.get('raw_due_date');
+      var a_pri = a.get('raw_importance');
+      var b_pri = b.get('raw_importance');
+
+      if (a_dd != b_dd)
+	return (a_dd === null && b_dd === null) ? 0 :
+	  (a_dd === null) ?  1 :
+	  (b_dd === null) ? -1 :
+	  (b_dd - a_dd);
+
+      return (b_pri - a_pri);
+    },
+
+
+    sortPriority: function(a, b) {
+      console.log('sortPriorty!... ', a, b);
+      var a_dd = a.get('raw_due_date');
+      var b_dd = b.get('raw_due_date');
+      var a_pri = a.get('raw_importance');
+      var b_pri = b.get('raw_importance');
+
+      console.log('ab, pri: ', a_pri, b_pri);
+
+      if (a_pri != b_pri)
+	return (b_pri - a_pri);
+
+      return (a_dd === null && b_dd === null) ? 0 :
+	  (a_dd === null) ?  1 :
+	  (b_dd === null) ? -1 :
+	  (b_dd - a_dd);
+    },
+
+
+    sortIntelligent: function(a, b) {
+      return (b.iSortWeight - a.iSortWeight);
+    },
+
+    initialize: function() {
+      var order = $.app.globalController.get('tasks:order');
+      if (order === 'intelligent')
+	this.comparator = this.sortIntelligent;
+      else if (order === 'duedate')
+	this.comparator = this.sortDueDate;
+      else if (order === 'priority')
+	this.comparator = this.sortPriority;
+      else
+	/* Default sorter */
+	this.comparator = this.sortPriority;
+
+      console.log("Setting comparator...", this.comparator);
+    },
+
     model: $.app.Task
   });
 
@@ -1204,6 +1320,7 @@ require([
 	      partialUpdate: true,
 	      success: function(model, resp) {
 		self.model.set('duedate_class', resp.duedate_class);
+		$.app.globalController.trigger('tasks:sort');
 	      }
 	    });
 	});
@@ -1267,7 +1384,13 @@ require([
 	},
 	function(val) {
 	  self.model.save({ 'importance': val },
-	    { wait: true, partialUpdate: true });
+	    {
+	      wait: true,
+	      partialUpdate: true,
+	      success: function(model, resp) {
+		$.app.globalController.trigger('tasks:sort'); 
+	      }
+	    });
 	});
     },
 
@@ -1405,6 +1528,10 @@ require([
       }
     },
 
+    refreshSort: function() {
+      this.collection.sort();
+    },
+
     initialize: function() {
       _.bindAll(this,
 		'render',
@@ -1416,12 +1543,14 @@ require([
 		'newTaskFocus',
 		'newTaskFocusOut',
 		'showCompletedBtn',
+		'refreshSort',
 		'newTaskKeypress');
       //this.collection.bind('change', this.render);
       this.collection.bind('add', this.renderTaskTop);
       this.collection.bind('reset', this.render);
 
       this.bind('btn:addTags', this.tagbtn);
+      this.bind('tasks:sort', this.refreshSort);
       $.app.globalController.register(this);
     },
 
