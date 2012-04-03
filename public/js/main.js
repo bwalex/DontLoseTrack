@@ -1546,7 +1546,7 @@ require([
     },
 
     error: function(oldModel, resp) {
-      alert('error error!');
+      alert('error error!' + JSON.stringify(resp));
       console.log(oldModel === this.model);
       console.log(resp);
     },
