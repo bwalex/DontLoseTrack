@@ -1,0 +1,17 @@
+%script{ :type => "text/x-jsrender",:id => "wiki-tmpl"}
+  .wiki-main
+    .summary
+      .title
+        %h1.wiki-title
+          {{:title}}
+      %ul.buttons
+        %li
+          %a.edit-page{ :href => "javascript:void(0);" }
+            %span
+              Edit Page
+        %li
+          %a.view-history{ :href => "javascript:void(0);" }
+            %span
+              View History
+      .clearer
+  {{:html_text}}

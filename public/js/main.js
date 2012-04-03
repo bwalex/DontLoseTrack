@@ -18,7 +18,8 @@ require([
   "require.text!/tmpl/project-link.tmpl",
   "require.text!/tmpl/navbar.tmpl",
   "require.text!/tmpl/wiki-list.tmpl",
-  "require.text!/tmpl/wiki-overview.tmpl"
+  "require.text!/tmpl/wiki-overview.tmpl",
+  "require.text!/tmpl/wiki.tmpl"
 ], function() {
 
   // Insert all templates
@@ -1739,6 +1740,77 @@ require([
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+  $.app.WikiView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiView',
+
+    events: {
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteWiki: function() {
+      this.model.destroy();
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+    },
+
+    template: $.templates('#wiki-tmpl'),
+
+    render: function() {
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      return $(this.el).html(html);
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   $.app.WikiOverviewView = Backbone.View.extend({
     tagName: 'div',
     className: 'wikiOverviewView',
@@ -2199,10 +2271,11 @@ require([
 
   $.app.Router = Backbone.Router.extend({
     routes: {
-      "":                         "showProjects",
-      "project/:projectId/notes": "showNotes",
-      "project/:projectId/tasks": "showTasks",
-      "project/:projectId/wikis": "showWikis"
+      ""                                  : "showProjects",
+      "project/:projectId/notes"          : "showNotes",
+      "project/:projectId/tasks"          : "showTasks",
+      "project/:projectId/wikis"          : "showWikis",
+      "project/:projectId/wikis/:wiki"    : "showWiki"
     },
 
 
@@ -2303,6 +2376,22 @@ require([
     },
 
 
+    showWiki: function(proj, wiki) {
+      this.cleanView();
+
+      $.app.globalController.set('projectId', proj);
+      $.app.globalController.trigger('navigate', 'wiki');
+
+      //this.showTags();
+
+      $.app.wikiModel = new $.app.Wiki({id: wiki, project_id: proj});
+      this.currentView = $.app.wikiView   = new $.app.WikiView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        model: $.app.wikiModel
+      });
+
+      $.app.wikiModel.fetch();
+    },
 
 
 

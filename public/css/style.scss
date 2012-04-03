@@ -1112,3 +1112,39 @@ input#newprojectname {
     }
 }
 
+
+.wiki-main .summary {
+    .title {
+	float: left;
+    }
+    border-bottom: 1px dotted $light_grey;
+
+
+    ul.buttons {
+	display: block;
+	float: right;
+	list-style-type: none;
+	overflow: hidden;
+	padding: 0;
+
+	li {
+	    float: left;
+	    margin-left: 10px;
+
+	    a {
+		background-color: #999999;
+		border-radius: 5px 5px 5px 5px;
+		color: white;
+		font-size: 80%;
+		padding-bottom: 4px;
+		padding-top: 4px;
+		padding-right: 7px;
+		padding-left: 7px;
+
+		&:hover {
+		    background-color: $redish;
+		}
+	    }
+	}
+    }
+}
