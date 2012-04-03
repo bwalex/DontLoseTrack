@@ -521,6 +521,7 @@ require([
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
       this.model.bind('add:note_tags', this.render);
+      this.model.bind('remove:note_tags', this.render);
     },
 
     template: $.templates('#note-tmpl'),
@@ -540,6 +541,19 @@ require([
 
       $(html).children('.meta').tagDroppable({});
       console.log("app.NoteView.render: %o", this.model);
+
+      if ($.app.globalController.get('filter') === true) {
+	var seltags = $.app.globalController.get('filter:tags');
+
+	var notetag = this.model.get('note_tags').detect(function(nt) {
+	  var tag = nt.get('tag');
+	  return (_.indexOf(seltags, tag) >= 0) ? true : false;
+	});
+
+	if (typeof(notetag) === 'undefined')
+	  $(this.el).addClass('contracted');
+      }
+
       return $(this.el).html(html);
     },
     renderTags: function(tag) {
@@ -601,15 +615,28 @@ require([
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderNote', 'addTagBtn', 'destroy', 'tagbtn');
+      _.bindAll(this, 'render', 'renderNote', 'addTagBtn', 'destroy', 'tagbtn', 'filterChange', 'forceRefetch');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
       this.collection.bind('add', this.renderNote);
       this.bind('btn:addTags', this.tagbtn);
+      this.bind('change:filter:tag_ids', this.filterChange);
+      this.bind('note:force-refetch', this.forceRefetch);
       $.app.globalController.register(this);
     },
 
     template: $.templates('#note-list-tmpl'),
+
+    filterChange: function(ids) {
+      this.forceRefetch(ids);
+    },
+
+    forceRefetch: function(ids) {
+      if (typeof(ids) === undefined)
+	ids = $.app.globalController.get('filter:tag_ids');
+
+      this.collection.fetch({data: { limit: 100, offset: 0, filter: { tags: ids } }});
+    },
 
     render: function() {
       $(this.el).html(this.template.render({}));
@@ -1047,6 +1074,10 @@ require([
 
 
     toggleExpand: function(ev) {
+      if (ev.currentTarget != ev.target) {
+	return true;
+      }
+
       if ($(ev.target).is('input,textarea,select,option') === false)
 	$(this.el).find('div.body').toggleClass('contracted');
 
@@ -1728,7 +1759,7 @@ require([
         el: $('<div></div>').appendTo('#main-pane'),
         collection: $.app.noteCollection
       });
-      $.app.noteCollection.fetch();
+      $.app.noteCollection.fetch({data: { limit: 100, offset: 0, filter: { tags: $.app.globalController.get('filter:tag_ids') } }});
     },
 
 

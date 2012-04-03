@@ -87,11 +87,16 @@ end
 get '/api/project/:project_id/note' do
   content_type :json
 
-  if params[:filter] != nil and params[:filter][:tags] != nil
+  puts params.to_json
+
+  if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
+    puts "Limit: " << params[:limit]
+    puts "Offset: " << params[:offset]
+
     Note.joins(:note_tags).where(
       :project_id => params[:project_id],
       :note_tags => { :tag_id => params[:filter][:tags] }
-    ).limit(:params[:limit]).offset(:params[:offset]).to_json
+    ).limit(params[:limit]).offset(params[:offset]).to_json
   else
     Note.where("project_id = ?", params[:project_id]).to_json
   end

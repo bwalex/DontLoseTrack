@@ -148,7 +148,7 @@
     // (unless you're listening on `"all"`, which will cause your callback to
     // receive the true name of the event as the first argument).
     trigger: function(events) {
-      console.log('BackBone.Event.trigger: ', events, this);
+      //console.log('BackBone.Event.trigger: ', events, this);
       var event, node, calls, tail, args, all, rest;
       if (!(calls = this._callbacks)) return this;
       all = calls.all;
