@@ -1,0 +1,16 @@
+%script{ :type => "text/x-jsrender",:id => "wiki-overview-tmpl"}
+  .wiki
+    .summary
+      %span.title
+        %a{ :href => "#project/{{:project_id}}/wikis/{{:id}}" }
+          {{:title}}
+      .tags
+        .tag.placeholder-tag
+          &nbsp;
+      .delwiki
+        %span.rm-icon
+          %a.rm-button{ :href => "javascript:void(0);" }
+          .clearer
+        .clearer
+      %span.update_date
+        {{:last_updated_at}}

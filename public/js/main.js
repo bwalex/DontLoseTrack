@@ -16,7 +16,9 @@ require([
   "require.text!/tmpl/tag-applied.tmpl",
   "require.text!/tmpl/project-list.tmpl",
   "require.text!/tmpl/project-link.tmpl",
-  "require.text!/tmpl/navbar.tmpl"
+  "require.text!/tmpl/navbar.tmpl",
+  "require.text!/tmpl/wiki-list.tmpl",
+  "require.text!/tmpl/wiki-overview.tmpl"
 ], function() {
 
   // Insert all templates
@@ -219,8 +221,8 @@ require([
 
     changeProject: function(newModel, oldModel) {
       this.set('filter', false);
-      this.set('filter:tags', []);
-      this.set('filter:tag_ids', []);
+      //this.set('filter:tags', []);
+      //this.set('filter:tag_ids', []);
 
       console.log("changeProject: ", newModel, oldModel);
       if (typeof(newModel) !== 'undefined')
@@ -488,6 +490,112 @@ require([
   });
 
 
+
+
+
+
+
+
+
+
+
+ $.app.WikiTag = Backbone.RelationalModel.extend({
+    urlRoot:  function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/wikitag';
+    },
+
+    idAttribute: 'id',
+
+    initialize: function() {
+      var dit = this;
+      console.log("this.get('tag'):");
+
+      this.on('destroy:tag', function(model) {
+	var wiki = dit.get('wiki');
+	if (typeof(wiki) !== 'undefined')
+	  wiki.trigger('destroy:tag', model);
+      });
+
+      this.on('change:tag', function(model) {
+	var wiki = dit.get('wiki');
+        if (typeof(wiki) !== 'undefined')
+	  wiki.trigger('change:tag', model);
+      });
+    },
+    toJSON: function() {
+      return { wiki_id: this.get('wiki').get('id'), tag_id: this.get('tag').get('id') };
+    }
+  });
+
+
+  $.app.WikiContent = Backbone.RelationalModel.extend({
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') + 'wiki/' + this.get('wiki').get('id') +'/wikicontent';
+    },
+
+    idAttribute: 'id'
+  });
+
+  $.app.WikiContentCollection = Backbone.Collection.extend({
+    url: function(models) {
+      return '/api/project/'+ $.app.globalController.get('projectId') + '/wikicontent' + ( models ? '/' + _.pluck( models, 'id' ).join(';') : '' );
+    },
+    model: $.app.WikiContent
+  });
+
+
+  $.app.Wiki = Backbone.RelationalModel.extend({
+    defaults: {
+      visible: true
+    },
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/wiki';
+    },
+    idAttribute: 'id',
+    relations: [
+      {
+        type: Backbone.HasMany,
+        key:  'wiki_tags',
+        relatedModel: $.app.WikiTag,
+        reverseRelation: {
+          key: 'wiki',
+	  keySource: 'wiki_id'
+        }
+      },
+      {
+	type: Backbone.HasMany,
+	key:  'wiki_contents',
+	relatedModel: $.app.WikiContent,
+	collectionType: $.app.WikiContentCollection,
+	reverseRelation: {
+	  key: 'wiki',
+	  keySource: 'wiki_id'
+	}
+      }
+    ],
+    initialize: function() {
+    }
+  });
+
+  $.app.WikiCollection = Backbone.Collection.extend({
+    url: function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') +'/wiki';
+    },
+    model: $.app.Wiki
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
   $.app.Tag  = Backbone.RelationalModel.extend({
     defaults: {
       selected: false
@@ -511,6 +619,16 @@ require([
 	type: Backbone.HasMany,
 	key:  'task_tags',
 	relatedModel: $.app.TaskTag,
+	includeInJSON: false,
+	reverseRelation: {
+	  key: 'tag',
+	  keySource: 'tag_id'
+	}
+      },
+      {
+	type: Backbone.HasMany,
+	key:  'wiki_tags',
+	relatedModel: $.app.WikiTag,
 	includeInJSON: false,
 	reverseRelation: {
 	  key: 'tag',
@@ -1607,6 +1725,249 @@ require([
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  $.app.WikiOverviewView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiOverviewView',
+
+    events: {
+      "click .delwiki .rm-button"     : "deleteWiki",
+      "drop .summary"                 : "dropTag"
+    },
+
+    dropTag: function(ev, ui) {
+      var tagModel = ui.draggable.data('tagModel');
+      var found = false;
+      _.each(this.model.get('wiki_tags').pluck('tag'), function(tag) {
+	if (tag === tagModel)
+	  found = true;
+      });
+      if (!found) {
+	var m = new $.app.WikiTag({tag: tagModel, tag_id: tagModel.get('id'), wiki: this.model, wiki_id: this.model.get('id')});
+	this.model.get('wiki_tags').add(m);
+	console.log(m);
+	m.save();
+      }
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteWiki: function() {
+      this.model.destroy();
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'dropTag');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+      this.model.bind('add:wiki_tags', this.render);
+      this.model.bind('remove:wiki_tags', this.render);
+    },
+
+    template: $.templates('#wiki-overview-tmpl'),
+
+    render: function() {
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      this.model.get('wiki_tags').each(function(m) {
+
+        console.log("Each wiki_tags: %o", m);
+        console.log("---> %o", m.get('wiki'));
+        console.log("---> %o", m.get('tag'));
+        var tagView = new $.app.AppliedTagView({model: m });
+        $(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
+      });
+
+      $(html).find('.summary').tagDroppable({});
+
+      if ($.app.globalController.get('filter') === true) {
+	var seltags = $.app.globalController.get('filter:tags');
+
+	var wikitag = this.model.get('wiki_tags').detect(function(wt) {
+	  var tag = wt.get('tag');
+	  return (_.indexOf(seltags, tag) >= 0) ? true : false;
+	});
+
+	if (typeof(wikitag) === 'undefined')
+	  $(this.el).addClass('contracted');
+      }
+
+      return $(this.el).html(html);
+    }
+  });
+
+
+
+
+
+
+
+
+
+  $.app.WikiListView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiListView',
+    showCompleted: false,
+
+    events: {
+      "click .tabmenu .btn_addtag"      : "addTagBtn",
+      "focus #newwikititle"             : "newWikiFocus",
+      "focusout #newwikititle"          : "newWikiFocusOut",
+      "keypress #newwikititle"          : "newWikiKeypress"
+    },
+
+    addTagBtn: function(ev) {
+      $.app.globalController.trigger('btn:addTags');
+    },
+
+    tagbtn: function() {
+      $(this.el).find('.tabmenu .btn_addtag')
+	  .toggleClass('btn-selected');
+    },
+
+    destroy: function() {
+      $.app.globalController.unregister(this);
+      $.app.globalController.trigger('clean:addTags');
+      this.remove();
+      this.unbind();
+    },
+
+    newWikiFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Add Wiki...')
+	$(ev.currentTarget).val('');
+    },
+
+    newWikiFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Add Wiki...');
+    },
+
+    newWikiKeypress: function(ev) {
+      var self = this;
+
+      if (ev.keyCode === 13 /* ENTER */) {
+	var m = new $.app.Wiki({ title: $(ev.currentTarget).val() });
+	console.log("Moo, saving... ", m);
+	m.save({},{
+	  wait: true,
+	  success: function(model, resp) {
+	    console.log("Success: ", model, resp);
+	    self.collection.add(m);
+	    $(ev.currentTarget).val("");
+	    $(ev.currentTarget).blur();
+	  }
+	});
+      }
+    },
+
+
+    initialize: function() {
+      _.bindAll(this,
+		'render',
+		'renderWiki',
+		'addTagBtn',
+		'destroy',
+		'tagbtn',
+		'filterChange',
+		'forceRefetch',
+		'newWikiFocus',
+		'newWikiFocusOut',
+		'newWikiKeypress');
+
+      //this.collection.bind('change', this.render);
+      this.collection.bind('add', this.renderWiki);
+      this.collection.bind('reset', this.render);
+
+      this.bind('btn:addTags', this.tagbtn);
+      this.bind('change:filter:tag_ids', this.filterChange);
+      this.bind('wiki:force-refetch', this.forceRefetch);
+
+      $.app.globalController.register(this);
+    },
+
+    template: $.templates('#wiki-list-tmpl'),
+
+    filterChange: function(ids) {
+      this.forceRefetch(ids);
+    },
+
+    forceRefetch: function(ids) {
+      if (typeof(ids) === undefined)
+	ids = $.app.globalController.get('filter:tag_ids');
+
+      this.collection.fetch({data: { limit: 100, offset: 0, filter: { tags: ids } }});
+    },
+
+    render: function() {
+      $(this.el).html(this.template.render({}));
+      this.collection.each(this.renderWiki);
+    },
+
+    renderWiki: function(wiki) {
+      console.log("renderWiki: wiki=%o", wiki);
+      var wikiView = new $.app.WikiOverviewView({model: wiki});
+      $(this.el).find('#wikilist').append($(wikiView.render()));
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   $.app.ProjectNameView = Backbone.View.extend({
     initialize: function() {
       this.bind('change:project', this.render);
@@ -1840,7 +2201,8 @@ require([
     routes: {
       "":                         "showProjects",
       "project/:projectId/notes": "showNotes",
-      "project/:projectId/tasks": "showTasks"
+      "project/:projectId/tasks": "showTasks",
+      "project/:projectId/wikis": "showWikis"
     },
 
 
@@ -1920,6 +2282,28 @@ require([
       });
       $.app.noteCollection.fetch({data: { limit: 100, offset: 0, filter: { tags: $.app.globalController.get('filter:tag_ids') } }});
     },
+
+
+
+
+    showWikis: function(proj) {
+      this.cleanView();
+
+      $.app.globalController.set('projectId', proj);
+      $.app.globalController.trigger('navigate', 'wikis');
+
+      this.showTags();
+
+      $.app.wikiCollection = new $.app.WikiCollection();
+      this.currentView = $.app.wikiListView   = new $.app.WikiListView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        collection: $.app.wikiCollection
+      });
+      $.app.wikiCollection.fetch({data: { limit: 100, offset: 0, filter: { tags: $.app.globalController.get('filter:tag_ids') } }});
+    },
+
+
+
 
 
     showTasks: function(proj) {

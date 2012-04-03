@@ -15,3 +15,5 @@ all:
 	haml -f $(FORMAT) -t $(STYLE) navbar.haml | tr -d '\n' > navbar.tmpl
 	haml -f $(FORMAT) -t $(STYLE) project-list.haml | tr -d '\n' > project-list.tmpl
 	haml -f $(FORMAT) -t $(STYLE) project-link.haml | tr -d '\n' > project-link.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-list.haml | tr -d '\n' > wiki-list.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-overview.haml | tr -d '\n' > wiki-overview.tmpl

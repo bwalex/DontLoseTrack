@@ -51,6 +51,9 @@ class Note < ActiveRecord::Base
                         :uniq => true
 
   validates :text, :length => { :minimum => 1 }
+  validates_presence_of :project
+  validates_associated  :project
+
 
   def html_text
     if text == nil
@@ -62,6 +65,10 @@ class Note < ActiveRecord::Base
 
   def created_at
     return (self[:created_at] != nil) ? self[:created_at].strftime("%d/%m/%Y - %H:%M") : nil
+  end
+
+  def updated_at
+    return (self[:updated_at] != nil) ? self[:updated_at].strftime("%d/%m/%Y - %H:%M") : nil
   end
 
 
@@ -79,6 +86,11 @@ end
 class WikiContent < ActiveRecord::Base
   belongs_to :wiki,     :inverse_of => :wiki_contents
 
+  validates_presence_of :wiki
+  validates_associated  :wiki
+  validates :comment, :length => { :minimum => 1 }
+
+
   def html_text
     if text == nil
       return ''
@@ -86,10 +98,26 @@ class WikiContent < ActiveRecord::Base
       return $markdown.render(text)
     end
   end
+
+  def created_at
+    return (self[:created_at] != nil) ? self[:created_at].strftime("%d/%m/%Y - %H:%M") : nil
+  end
+
+  def updated_at
+    return (self[:updated_at] != nil) ? self[:updated_at].strftime("%d/%m/%Y - %H:%M") : nil
+  end
+
+  def as_json(options={})
+    super(
+      :methods => :html_text
+    )
+  end
 end
 
 
 class Wiki < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :wikis
+
   has_many :wiki_tags
   has_many :tags,       :through => :wiki_tags,
                         :uniq => true
@@ -97,6 +125,12 @@ class Wiki < ActiveRecord::Base
   has_many :wiki_contents
 
   validates :title, :length => { :in => 1..200 }
+  validates_uniqueness_of :title,  :scope => :project_id,
+                                   :case_sensitive => false
+
+  validates_presence_of :project
+  validates_associated  :project
+
 
   def html_text
     text = ''
@@ -109,10 +143,23 @@ class Wiki < ActiveRecord::Base
     return $markdown.render(text)
   end
 
+
+  def last_updated_at
+    updated_at = self[:updated_at].strftime("%d/%m/%Y - %H:%M")
+
+    newestContent = wiki_contents.order('created_at DESC').first
+    if newestContent != nil
+      updated_at = newestContent.updated_at
+    end
+
+    return updated_at
+  end
+
+
   def as_json(options={})
     super(
-      :methods => :html_text,
-      :include => :tags
+      :methods => [ :html_text, :last_updated_at ],
+      :include => { :wiki_tags => {}, :wiki_contents => { :only => [:wiki, :id] } }
     )
   end
 end

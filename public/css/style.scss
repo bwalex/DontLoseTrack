@@ -505,6 +505,7 @@ img.boring {
     padding: 0px;
 }
 
+.delwiki,
 .delproject,
 .deltask,
 .delnote {
@@ -515,6 +516,7 @@ img.boring {
 }
 
 
+.delwiki .rm-icon,
 .delproject .rm-icon,
 .delnote .rm-icon,
 .deltask .rm-icon {
@@ -523,6 +525,7 @@ img.boring {
 }
 
 .tag:hover .edit-icon .edit-button,
+.wiki:hover .delwiki .rm-icon .rm-button,
 .projectList tr:hover .rm-icon .rm-button,
 .meta:hover .top .rm-icon .rm-button,
 .tag:hover .rm-icon .rm-button,
@@ -1077,3 +1080,35 @@ textarea {
 input#newprojectname {
     width: 80%;
 }
+
+
+
+#newwiki {
+    margin-bottom: 20px;
+}
+
+.wiki .update_date {
+    font-size: 80%;
+    //font-style: italic;
+    color: $light_grey;
+    display: inline;
+    float: right;
+}
+
+.wiki .summary {
+    &:hover {
+	background-color: $yellowish;
+    }
+
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px dotted $light_grey;
+
+    .title a {
+	color: black;
+	&:hover {
+	    color: $redish;
+	}
+    }
+}
+
