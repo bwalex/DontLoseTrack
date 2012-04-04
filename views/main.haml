@@ -15,9 +15,9 @@
     %script{ :src => '/js/jquery-1.7.2.js' }
     -#%script{ :src => "http://cdn.jquerytools.org/1.2.6/all/jquery.tools.min.js" }
     %script{ :src => "/js/jsrender.js" }
-    %script{ :src => "/js/jquery.observable.myraw.js" }
+    -#%script{ :src => "/js/jquery.observable.myraw.js" }
     %script{ :src => "/js/jquery.colorpicker.js" }    
-    %script{ :src => "/js/jquery.views.myraw.js" }
+    -#%script{ :src => "/js/jquery.views.myraw.js" }
     %script{ :src => "/js/underscore.js" }
     %script{ :src => "/js/backbone.js" }
     %script{ :src => "/js/backbone-relational.js" }
@@ -45,6 +45,7 @@
 
     .container_16.clearfix#content
       .grid_12
+        .errors.hide
         .panes
           #main-pane
           -# timeline
@@ -57,6 +58,10 @@
 
       .grid_4.clearfix
         #sidebar
+
+    .overlay#cheat-overlay
+      .content-wrap
+    #mask
 
     .container_16.spacer.clearfix
 

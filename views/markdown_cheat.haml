@@ -1,0 +1,126 @@
+#cheatsheet
+  %h2 Markdown Cheat Sheet
+  .arr
+    .col
+      %span.section-title
+        Headers
+      %pre
+        :preserve
+          # This is an &lt;h1&gt; tag
+          ## This is an &lt;h2&gt; tag
+          ###### This is an &lt;h6&gt; tag
+          
+          This is also an &lt;h1&gt; tag
+          =============
+
+          This is also an &lt;h2&gt; tag
+          -------------
+
+      %span.section-title
+        Text styles
+      %pre
+        :preserve
+          *text is italic*
+          _text is italic_
+          ~~strike through~~
+           **text is bold**
+           __text is bold__
+           *Combined **bold** and italic*
+
+      %span.section-title
+        Block quotes
+      %pre
+        :preserve
+          As Batty said:
+
+          > I've seen things you people
+          > wouldn't believe. Attack
+          > ships on fire off the
+          > shoulder of Orion.
+
+    .col
+      %span.section-title
+        Unordered list
+      %pre
+        :preserve
+          * item 1
+          * item 2
+            * nested item 1
+            * nested item 2
+          
+          - item 1
+          - item 2
+
+      %span.section-title
+        Ordered list
+      %pre
+        :preserve
+          1. item 1
+          2. item 2
+             * nested item 1
+             * nested item 2
+
+      %span.section-title
+        Tables
+      %pre
+        :preserve
+          Item   | Value
+          -------|------
+          PC     | 600$
+          Tablet | 400$
+
+      %span.section-title
+        Tables with alignment
+      %pre
+        :preserve
+          | Item      | Value |
+          | --------- | -----:|
+          | Computer  | $1600 |
+          | Pipe      |    $1 |
+
+    .col
+      %span.section-title
+        Images
+      %pre
+        :preserve
+          ![Alt Text](http://image/url)
+
+      %span.section-title
+        Links
+      %pre
+        :preserve
+          http://github.com - automatic!
+          [Google](http://www.google.com)
+
+      %span.section-title
+        Inline HTML
+      %pre
+        :preserve
+          &lt;strong&gt;You can use regular
+          HTML tags in markdown&lt;/strong&gt;
+
+          &lt;pre&gt;int main(void);&lt;/pre&gt;
+
+      %span.section-title
+        Inline comments
+      %pre
+        :preserve
+          Don't use `&lt;table&gt;` for layout!
+
+    .col
+      %span.section-title
+        Code
+      %pre
+        :preserve
+              puts 'indent with 4 spaces'
+              puts 'also treated as code'
+       
+      %span.section-title
+        Syntax highlighting
+      %pre
+        :preserve
+          ```ruby
+          def hello
+            puts 'hi guys!'
+          end
+          ```

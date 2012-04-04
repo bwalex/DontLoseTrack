@@ -1,0 +1,15 @@
+%script{ :type => "text/x-jsrender",:id => "error-tmpl"}
+  .status
+    Error&nbsp;
+    %span.status-code
+      {{:statusCode}}
+    &nbsp;on&nbsp;
+    %span.model-name
+      {{:modelName}}
+    :plain
+      :
+  .error-list
+    {{for errors}}
+    .error
+      {{:#data}}
+    {{/for}}

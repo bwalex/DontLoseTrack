@@ -516,6 +516,7 @@ img.boring {
 }
 
 
+.delwiki .edit-icon,
 .delwiki .rm-icon,
 .delproject .rm-icon,
 .delnote .rm-icon,
@@ -529,6 +530,7 @@ img.boring {
 .projectList tr:hover .rm-icon .rm-button,
 .meta:hover .top .rm-icon .rm-button,
 .tag:hover .rm-icon .rm-button,
+.wiki:hover .delwiki .edit-icon .edit-button,
 .task:hover .deltask .rm-icon .rm-button {
     opacity: 1;
 }
@@ -1162,12 +1164,13 @@ input#newwikititle {
     .comment {
 	input {
 	    margin-top: 20px;
+	    margin-bottom: 20px;
 	    width: 99%;
 	}
     }
 
     textarea {
-	margin-top: 20px;
+	//margin-top: 20px;
 	min-height: 40em;
     }
 }
@@ -1228,3 +1231,107 @@ blockquote {
 .diff ins strong{font-weight:normal;background:#9f9;}
 .diff li.diff-comment { display: none; }
 .diff li.diff-block-info { background: none repeat scroll 0 0 gray; }
+
+
+
+
+
+
+/* the overlayed element */
+.overlay {
+     display:none;
+    z-index:10000;
+    background-color: white;
+ 
+    width:970px;
+    min-height:200px;
+    border: 1px solid lighten($light_grey, 20%);
+ 
+    /* CSS3 styling for latest browsers */
+    -moz-box-shadow:0 0 3px 3px lighten($light_grey, 20%);
+    -webkit-box-shadow: 0 0 3px lighten($light_grey, 20%);
+
+    border-radius: 5px;
+
+
+    /* some padding to layout nested elements nicely  */
+    padding: 0;
+
+    /* a little styling */
+}
+
+
+div.content-wrap {
+    height: 600px;
+    overflow-y:auto;
+}
+
+
+div#mask {
+    background-color: white;
+}
+
+
+#cheatsheet {
+    text-align: left;
+    padding-left: 10px;
+
+    .section-title {
+	font-size: 85%;
+	font-weight: bold;
+	color: $redish;
+    }
+
+    pre {
+	margin-top: 2px;
+	margin-bottom: 6px;
+	background: none repeat scroll 0 0 #EEEEEE;
+	border: 1px solid #DDDDDD;
+	padding: 5px;
+	white-space: pre-wrap;
+    }
+
+    h2 {
+	color: $redish;
+	font-weight: bold;
+	font-size: 110%;
+	text-align: left;
+	margin-top: 0;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid lighten($light_grey, 20%);
+    }
+
+    .col {
+	float: left;
+	margin-right: 10px;
+	width: 230px;
+    }
+}
+
+.btn {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+}
+
+.magic-tarea-input input {
+    margin-right: 10px;
+}
+
+
+.errors {
+    font-size: 90%;
+    color: $redish;
+    background-color: $yellowish;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin-bottom: 20px;
+    border: 1px solid #BFBF00;//$redish;
+    border-radius: 5px;
+
+    .status {
+    }
+}

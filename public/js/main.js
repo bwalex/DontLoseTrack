@@ -23,7 +23,8 @@ require([
   "require.text!/tmpl/wiki-edit.tmpl",
   "require.text!/tmpl/wiki-history.tmpl",
   "require.text!/tmpl/wiki-history-entry.tmpl",
-  "require.text!/tmpl/wiki-historic.tmpl"
+  "require.text!/tmpl/wiki-historic.tmpl",
+  "require.text!/tmpl/error.tmpl"
 ], function() {
 
   // Insert all templates
@@ -242,17 +243,20 @@ require([
 
 
   $.app.Project = Backbone.Model.extend({
+    modelName: 'Project',
     urlRoot: '/api/project',
     idAttribute: 'id'
   });
 
   $.app.ProjectCollection = Backbone.Collection.extend({
+    modelName: 'Projects',
     url: '/api/project',
     model: $.app.Project
   });
 
 
   $.app.TaskDep = Backbone.RelationalModel.extend({
+    modelName: 'Task Dependency',
     urlRoot: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/taskdep';
     },
@@ -273,6 +277,7 @@ require([
   });
 
   $.app.TaskTag = Backbone.RelationalModel.extend({
+    modelName: 'Task Tag',
     urlRoot:  function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/tasktag';
     },
@@ -299,6 +304,7 @@ require([
   });
 
   $.app.Task = Backbone.RelationalModel.extend({
+    modelName: 'Task',
     iSortWeight: 0,
 
     defaults: {
@@ -399,6 +405,7 @@ require([
   });
 
   $.app.TaskCollection = Backbone.Collection.extend({
+    modelName: 'Tasks',
     url: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/task';
     },
@@ -471,6 +478,8 @@ require([
   });
 
   $.app.NoteTag = Backbone.RelationalModel.extend({
+    modelName: 'Note Tag',
+
     urlRoot:  function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/notetag';
     },
@@ -508,7 +517,9 @@ require([
 
 
 
- $.app.WikiTag = Backbone.RelationalModel.extend({
+  $.app.WikiTag = Backbone.RelationalModel.extend({
+    modelName: 'Wiki Tag',
+
     urlRoot:  function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/wikitag';
     },
@@ -538,6 +549,8 @@ require([
 
 
   $.app.WikiContent = Backbone.RelationalModel.extend({
+    modelName: 'Wiki',
+
     defaults: {
       selected: false,
       displayRaw: false
@@ -575,6 +588,8 @@ require([
   });
 
   $.app.WikiContentCollection = Backbone.Collection.extend({
+    modelName: 'Wiki',
+
     url: function(models) {
       return '/api/project/'+ $.app.globalController.get('projectId') + '/wikicontent' + ( models ? '/' + _.pluck( models, 'id' ).join(';') : '' );
     },
@@ -583,6 +598,8 @@ require([
 
 
   $.app.Wiki = Backbone.RelationalModel.extend({
+    modelName: 'Wiki',
+
     defaults: {
       visible: true
     },
@@ -616,6 +633,8 @@ require([
   });
 
   $.app.WikiCollection = Backbone.Collection.extend({
+    modelName: 'Wikis',
+
     url: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/wiki';
     },
@@ -635,6 +654,8 @@ require([
 
 
   $.app.Tag  = Backbone.RelationalModel.extend({
+    modelName: 'Tag',
+
     defaults: {
       selected: false
     },
@@ -677,6 +698,8 @@ require([
   });
 
   $.app.TagCollection = Backbone.Collection.extend({
+    modelName: 'Tags',
+
     url: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/tag';
     },
@@ -684,6 +707,8 @@ require([
   });
 
   $.app.Note = Backbone.RelationalModel.extend({
+    modelName: 'Note',
+
     defaults: {
       visible: true
     },
@@ -710,11 +735,36 @@ require([
   });
 
   $.app.NoteCollection = Backbone.Collection.extend({
+    modelName: 'Notes',
+
     url: function() {
       return '/api/project/'+ $.app.globalController.get('projectId') +'/note';
     },
     model: $.app.Note
   });
+
+
+
+
+
+  Backbone.wrapError = function(onError, originalModel, options) {
+    return function(model, resp) {
+      resp = model === originalModel ? resp : model;
+      if (onError) {
+        onError(originalModel, resp, options);
+      } else {
+        originalModel.trigger('error', originalModel, resp, options);
+      }
+
+      $.app.globalController.trigger('backbone:error', resp, originalModel);
+    };
+  };
+
+
+
+
+
+
 
   $.app.AppliedTagView = Backbone.View.extend({
     tagName: 'div',
@@ -923,6 +973,7 @@ require([
     render: function() {
       $(this.el).html(this.template.render({}));
       $(this.el).find('#newnotetext').elastic();
+      $(this.el).find('a[rel]').customOverlay();
       this.collection.each(this.renderNote);
     },
 
@@ -1160,8 +1211,20 @@ require([
 
 
 
-
-
+  $.fn.customOverlay = function() {
+    $(this).overlay({
+      mask: {
+	color: null,
+	opacity: 0.6,
+	maskId: 'mask'
+      },
+      onBeforeLoad: function() {
+	this.getOverlay()
+	    .find(".content-wrap")
+	    .load(this.getTrigger().attr("href"));
+      }
+    });
+  };
 
 
 
@@ -1270,7 +1333,6 @@ require([
       _.bindAll(this,
 		'render',
 		'renderDeps',
-		'error',
 		'destroy',
 		'deleteTask',
 		'toggleExpand',
@@ -1290,7 +1352,6 @@ require([
 
       this.model.bind('change', this.render);
       this.model.bind('add:task_tags', this.render);
-      this.model.bind('error', this.error);
       this.model.bind('destroy', this.destroy);
       this.model.bind('add:task_deps', this.render);
       this.model.bind('remove:task_tags', this.refreshFilter);
@@ -1584,13 +1645,6 @@ require([
 	});
     },
 
-    error: function(oldModel, resp) {
-      throw "MIAAAAAAAAAAAAAAAAU";
-      alert('error error!' + JSON.stringify(resp));
-      console.log(oldModel === this.model);
-      console.log(resp);
-    },
-
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
       var self = this;
@@ -1617,6 +1671,7 @@ require([
       });
 
       $(html).children('.summary').tagDroppable({});
+      $(html).find('a[rel]').customOverlay();
 
       if (this.expanded)
 	$(html).find('div.body').removeClass('contracted');
@@ -1917,13 +1972,19 @@ require([
 
     events: {
       "click .buttons .save-changes"         : "saveChanges",
+      "click .buttons .preview"              : "showPreview",
       "focus .comment input"                 : "commentFocus",
-      "focusout .comment input"              : "commentFocusOut"
+      "focusout .comment input"              : "commentFocusOut",
+      "focus textarea"                       : "removePreview"
     },
 
     destroy: function() {
       this.remove();
       this.unbind();
+    },
+
+    removePreview: function(ev) {
+      $(this.el).find('.preview-content .container').empty();
     },
 
     deleteWiki: function() {
@@ -1940,6 +2001,12 @@ require([
 	$(ev.currentTarget).val('Required comment about this change...');
     },
 
+    showPreview: function(ev) {
+      $(this.el).find('.preview-content .container').load('/api/preview', {
+	text: $(this.el).find('textarea').val()
+      });
+      return false;
+    },
 
     saveChanges: function(ev) {
       var self = this;
@@ -1967,19 +2034,12 @@ require([
       return false;
     },
 
-    error: function(oldModel, resp) {
-      alert('error error!' + JSON.stringify(resp));
-      console.log(oldModel === this.model);
-      console.log(resp);
-    },
-
 
     initialize: function() {
-      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'saveChanges', 'error', 'commentFocus', 'commentFocusOut');
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'saveChanges', 'error', 'commentFocus', 'commentFocusOut', 'removePreview', 'showPreview');
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
-      this.model.bind('error:content', this.error);
     },
 
     template: $.templates('#wiki-edit-tmpl'),
@@ -1989,7 +2049,7 @@ require([
       var self = this;
 
       var ret = $(this.el).html(html);
-      console.log("moo....", $(this.el).find('textarea'));
+      $(this.el).find('a[rel]').customOverlay();
       $(this.el).find('.elastic').elastic();
       return ret;
     }
@@ -2040,7 +2100,6 @@ require([
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
-      this.model.bind('error:content', this.error);
     },
 
     template: $.templates('#wiki-history-entry-tmpl'),
@@ -2124,7 +2183,6 @@ require([
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
-      this.model.bind('error:content', this.error);
       this.model.fetchRelated('wiki_contents');
     },
 
@@ -2195,6 +2253,7 @@ require([
     className: 'wikiOverviewView',
 
     events: {
+      "click .delwiki .edit-button"   : "editTitle",
       "click .delwiki .rm-button"     : "deleteWiki",
       "drop .summary"                 : "dropTag"
     },
@@ -2223,8 +2282,25 @@ require([
       this.model.destroy();
     },
 
+    editTitle: function(ev) {
+      var self = this;
+
+      $(this.el).find('.title').magicedit2(
+	'summary', 'text',
+	{
+	  val: this.model.get('title')
+	},
+	function(val) {
+	  console.log('change!: ', val);
+	  self.model.save({ 'title': val },
+	    { wait: true, partialUpdate: true });
+	});
+    },
+
+
+
     initialize: function() {
-      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'dropTag');
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'editTitle', 'dropTag');
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
@@ -2328,6 +2404,7 @@ require([
 	});
       }
     },
+
 
 
     initialize: function() {
@@ -2638,6 +2715,70 @@ require([
 
 
 
+  $.app.ErrorView = Backbone.View.extend({
+    events: {
+    },
+
+    error: function(resp, originalModel) {
+      console.log('Error: resp: %o, origModel: %o', resp, originalModel);
+      // resp.status => 500, 404, etc
+      // resp.readyState => 4???
+      // resp.statusText => "Internal Server Error"
+      // resp.responseText => the json in string format
+      //    	"{"errors":["Title has already been taken"]}"
+      // originalModel instanceof $.app.Tag , ...
+
+      var errors = [];
+
+      try {
+	var respObj = $.parseJSON(resp.responseText);
+	errors = respObj.errors;
+      } catch(err) {
+      }
+
+      var obj = {
+	statusCode: resp.status,
+	statusText: resp.statusText,
+	errors: errors,
+	modelName: originalModel.modelName
+      };
+
+      this.render(obj);
+    },
+
+    clear: function() {
+      console.log('ErrorView: clear()');
+      $(this.el).empty().addClass('hide');
+    },
+
+
+    deferClear: function() {
+      _.delay(this.clear, 60*1000);
+    },
+
+
+    initialize: function() {
+      _.bindAll(this,
+		'render',
+		'clear',
+		'deferClear',
+		'error');
+
+      this.bind('backbone:error', this.error);
+      this.bind('backbone:sync', this.clear);
+
+      $.app.globalController.register(this);
+    },
+
+    template: $.templates('#error-tmpl'),
+
+    render: function(obj) {
+      $(this.el).html(this.template.render(obj)).removeClass('hide');
+
+      window.scrollTo(0, 0);
+      this.deferClear();
+    }
+  });
 
 
 
@@ -2856,6 +2997,10 @@ require([
 
   $.app.globalController = new $.app.GlobalController();
 
+  $.app.errorView = new $.app.ErrorView({
+    el: $('#content .errors')
+  });
+
   $.app.tagCollection = new $.app.TagCollection();
   $.app.projectCollection = new $.app.ProjectCollection();
   $.app.projectCollection.fetch({async: false});
@@ -2864,6 +3009,7 @@ require([
   $.app.navbarView = new $.app.NavbarView({
     el: $('#navbar .grid_16')
   });
+
 
   $.app.projectNameView = new $.app.ProjectNameView({
     el: $('#logo .project-name')

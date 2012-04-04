@@ -150,14 +150,7 @@ class Wiki < ActiveRecord::Base
 
 
   def last_updated_at
-    updated_at = self[:updated_at].strftime("%d/%m/%Y - %H:%M")
-
-    newestContent = wiki_contents.order('created_at DESC').first
-    if newestContent != nil
-      updated_at = newestContent.updated_at
-    end
-
-    return updated_at
+    return updated_at = self[:updated_at].strftime("%d/%m/%Y - %H:%M")
   end
 
 

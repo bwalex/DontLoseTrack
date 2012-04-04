@@ -29,7 +29,7 @@
 
 
     'textarea': {
-      template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:val}}</textarea></div><div class='magic-tarea-input'><input type='submit' value='Save'></div></form>"),
+      template: $.templates(null, "<form><div class='magic-tarea-tarea'><textarea class='magic-tarea'>{{:val}}</textarea></div><div class='magic-tarea-input'><input type='submit' value='Save'><a target='_blank' rel='#cheat-overlay' href='/markdown-cheatsheet'>Markdown cheatsheet</a></div></form>"),
 
       render: function(el, opts, change) {
 	$(this.template.render(opts))
@@ -39,6 +39,7 @@
 	    })
 	    .find('textarea')
 	    .elastic();
+	$(el).find('a[rel]').customOverlay();
       }
     },
 

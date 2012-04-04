@@ -21,7 +21,11 @@
               Preview
 
       .clearer
+    .preview-content
+      .container
     .comment
-      %input{ :type => "text", :value => "Required comment about this change..." }      
+      %input{ :type => "text", :value => "Required comment about this change..." }
+    %a{ :target => "_blank", :rel => "#cheat-overlay", :href => "/markdown-cheatsheet" }
+      Markdown cheatsheet
     %textarea.elastic
       {{:raw_text}}

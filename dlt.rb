@@ -54,6 +54,9 @@ get '/' do
   haml :main, :format => :html5
 end
 
+get '/markdown-cheatsheet' do
+  haml :markdown_cheat, :format => :html5
+end
 
 
 
@@ -149,7 +152,7 @@ get '/api/project/:project_id/wiki' do
       :wiki_tags => { :tag_id => params[:filter][:tags] }
     ).limit(params[:limit]).offset(params[:offset]).to_json
   else
-    Wiki.where("project_id = ?", params[:project_id]).to_json
+    Wiki.where("project_id = ?", params[:project_id]).order("updated_at DESC").to_json
   end
 end
 
@@ -158,6 +161,11 @@ get '/api/project/:project_id/wiki/:wiki_id' do
 end
 
 put '/api/project/:project_id/wiki/:wiki_id' do
+  content_type :json
+  w = Wiki.find(params[:wiki_id])
+  JSON.parse(request.body.read).each { |p, v| w.send(p + "=", v) }
+  w.save!
+  w.to_json
 end
 
 post '/api/project/:project_id/wiki' do
@@ -280,16 +288,10 @@ post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   data = JSON.parse(request.body.read)
   wiki = Wiki.find(params[:wiki_id])
   wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
+  wiki.touch
   wc.to_json
 end
 
-post '/api/project/:project_id/wikicontent' do
-  content_type :json
-  data = JSON.parse(request.body.read)
-  wiki = Wiki.find(data['wiki_id'])
-  wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
-  wc.to_json
-end
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   WikiContent.where("wiki_id = ?", params[:wiki_id]).to_json
@@ -309,18 +311,6 @@ end
 
 
 
-get '/api/project/:project_id/wikicontent/:wc_id' do
-  wc_ids = 0;
-
-  if params[:wc_id].include? ';'
-    wc_ids = params[:wc_id].split(';')
-  else
-    wc_ids = params[:wc_id]
-  end
-
-  WikiContent.find(wc_ids).to_json
-end
-
 
 
 
@@ -339,6 +329,11 @@ end
 
 
 
+
+post '/api/preview' do
+  content_type :html
+  $markdown.render(params[:text])
+end
 
 
 
