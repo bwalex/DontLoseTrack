@@ -2,7 +2,7 @@
    http://flowplayer.org/tools/dateinput/index.html#skinning */
 
 /* the input field */
-.date {
+input.date {
     border:1px solid #ccc;
     font-size:18px;
     padding:4px;

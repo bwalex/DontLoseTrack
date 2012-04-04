@@ -1044,7 +1044,8 @@ textarea {
     width: 100%;
 }
 
-.projectList th,td {
+.projectList th,
+.projectList td {
     border-color: $redish;
 }
 
@@ -1087,6 +1088,10 @@ input#newprojectname {
     margin-bottom: 20px;
 }
 
+input#newwikititle {
+    width: 50%;
+}
+
 .wiki .update_date {
     font-size: 80%;
     //font-style: italic;
@@ -1114,11 +1119,15 @@ input#newprojectname {
 
 
 .wiki-main .summary {
+    .revid {
+	color: darken($light_grey, 20%);
+	font-size: 80%;
+    }
+
     .title {
 	float: left;
     }
     border-bottom: 1px dotted $light_grey;
-
 
     ul.buttons {
 	display: block;
@@ -1148,3 +1157,74 @@ input#newprojectname {
 	}
     }
 }
+
+.wiki-main {
+    .comment {
+	input {
+	    margin-top: 20px;
+	    width: 99%;
+	}
+    }
+
+    textarea {
+	margin-top: 20px;
+	min-height: 40em;
+    }
+}
+
+blockquote {
+    border-left: 4px solid #DDDDDD;
+    color: #777777;
+    padding: 0 15px;
+}
+
+
+.history-entries {
+    margin-top: 20px;
+    width: 100%;
+
+    tr.wikiHistoryEntryView {
+	td.checkbox {
+	    width: 1em;
+	}
+	td.date {
+	    text-align: center;
+	    //width: 100%;
+	    color: darken($light_grey, 20%);
+	    font-size: 90%;
+	    width: 10em;
+	}
+	td.comment {
+	    a {
+		color: black;
+		&:hover {
+		    color: $redish;
+		}
+	    }
+
+	    .history-id {
+		margin-right: 1em;
+		color: darken($light_grey, 20%);
+		font-size: 80%;
+	    }
+	}
+    }
+}
+
+
+
+
+
+
+.diff{overflow:auto;}
+.diff ul{background:#fff;overflow:auto;font-size:13px;list-style:none;margin:0;padding:0;display:table;width:100%;}
+.diff del, .diff ins{display:block;text-decoration:none;}
+.diff li{padding:0; display:table-row;margin: 0;height:1em;}
+.diff li.ins{background:#dfd; color:#080}
+.diff li.del{background:#fee; color:#b00}
+/* try 'whitespace:pre;' if you don't want lines to wrap */
+.diff del, .diff ins, .diff span{white-space:pre-wrap;font-family:courier;}
+.diff del strong{font-weight:normal;background:#fcc;}
+.diff ins strong{font-weight:normal;background:#9f9;}
+.diff li.diff-comment { display: none; }
+.diff li.diff-block-info { background: none repeat scroll 0 0 gray; }

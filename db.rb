@@ -132,7 +132,7 @@ class Wiki < ActiveRecord::Base
   validates_associated  :project
 
 
-  def html_text
+  def raw_text
     text = ''
 
     newestContent = wiki_contents.order('created_at DESC').first
@@ -140,7 +140,12 @@ class Wiki < ActiveRecord::Base
       text = newestContent.text
     end
 
-    return $markdown.render(text)
+    return text
+  end
+
+
+  def html_text
+    return $markdown.render(raw_text)
   end
 
 
@@ -158,7 +163,7 @@ class Wiki < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :methods => [ :html_text, :last_updated_at ],
+      :methods => [ :html_text, :last_updated_at, :raw_text ],
       :include => { :wiki_tags => {}, :wiki_contents => { :only => [:wiki, :id] } }
     )
   end

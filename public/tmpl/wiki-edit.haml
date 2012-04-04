@@ -1,0 +1,27 @@
+%script{ :type => "text/x-jsrender",:id => "wiki-edit-tmpl"}
+  .wiki-main
+    .summary
+      .title
+        %h1.wiki-title
+          Edit&nbsp;
+          %a{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            {{:title}}
+      %ul.buttons
+        %li
+          %a.save-changes{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            %span
+              Save
+        %li
+          %a.cancel-changes{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            %span
+              Cancel
+        %li
+          %a.preview{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            %span
+              Preview
+
+      .clearer
+    .comment
+      %input{ :type => "text", :value => "Required comment about this change..." }      
+    %textarea.elastic
+      {{:raw_text}}

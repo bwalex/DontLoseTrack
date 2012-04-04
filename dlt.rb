@@ -7,12 +7,14 @@ require 'foreigner'
 require 'redcarpet'
 require 'pygments'
 
+require 'diffy'
+
 require 'sinatra'
 require 'logger'
 
 require 'haml'
 
-require 'db'
+require './db.rb'
 
 
 class HTMLwithPygments < Redcarpet::Render::HTML
@@ -27,7 +29,7 @@ configure do
     HTMLwithPygments.new(:hard_wrap => true), {
       :autolink => true,
       :tables => true,
-      :no_intra_empahsis => true,
+      :no_intra_emphasis => true,
       :strikethrough => true,
       :lax_html_blocks => true,
       :fenced_code_blocks => true,
@@ -277,7 +279,7 @@ post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   content_type :json
   data = JSON.parse(request.body.read)
   wiki = Wiki.find(params[:wiki_id])
-  wc = WikiContent.create!(:wiki => wiki, :text => data['text'])
+  wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
   wc.to_json
 end
 
@@ -285,13 +287,27 @@ post '/api/project/:project_id/wikicontent' do
   content_type :json
   data = JSON.parse(request.body.read)
   wiki = Wiki.find(data['wiki_id'])
-  wc = WikiContent.create!(:wiki => wiki, :text => data['text'])
+  wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
   wc.to_json
 end
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   WikiContent.where("wiki_id = ?", params[:wiki_id]).to_json
 end
+
+get '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
+  wc_ids = 0;
+
+  if params[:wc_id].include? ';'
+    wc_ids = params[:wc_id].split(';')
+  else
+    wc_ids = params[:wc_id]
+  end
+
+  WikiContent.find(wc_ids).to_json
+end
+
+
 
 get '/api/project/:project_id/wikicontent/:wc_id' do
   wc_ids = 0;
@@ -304,6 +320,28 @@ get '/api/project/:project_id/wikicontent/:wc_id' do
 
   WikiContent.find(wc_ids).to_json
 end
+
+
+
+
+
+
+
+
+post '/api/project/:project_id/wiki/:wiki_id/diff' do
+  content_type :html
+  wiki = Wiki.find(params[:wiki_id])
+  wc1 = WikiContent.find(params[:ids][0])
+  wc2 = WikiContent.find(params[:ids][1])
+
+  Diffy::Diff.new(wc1.text, wc2.text).to_s(:html)
+end
+
+
+
+
+
+
 
 
 

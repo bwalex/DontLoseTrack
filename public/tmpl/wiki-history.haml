@@ -1,0 +1,22 @@
+%script{ :type => "text/x-jsrender",:id => "wiki-history-tmpl"}
+  .wiki-main
+    .summary
+      .title
+        %h1.wiki-title
+          History for&nbsp;
+          %a{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            {{:title}}
+      %ul.buttons
+        %li
+          %a.restore-wiki{ :href => "#/project/{{:project_id}}/wikis/{{:id}}" }
+            %span
+              Restore
+        %li
+          %a.diff-wiki{ :href => "#/project/{{:project_id}}/wikis/{{:id}}/diff" }
+            %span
+              Diff
+
+      .clearer
+    %table.history-entries
+    .diffView
+      .content

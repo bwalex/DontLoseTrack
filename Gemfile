@@ -11,6 +11,7 @@ gem "sinatra"
 gem "logger"
 gem "redcarpet"
 gem "pygments.rb"
+gem "diffy"
 gem "haml"
 gem "sass"
 

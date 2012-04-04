@@ -6,11 +6,11 @@
           {{:title}}
       %ul.buttons
         %li
-          %a.edit-page{ :href => "javascript:void(0);" }
+          %a.edit-page{ :href => "#/project/{{:project_id}}/wikis/{{:id}}/edit" }
             %span
               Edit Page
         %li
-          %a.view-history{ :href => "javascript:void(0);" }
+          %a.view-history{ :href => "#/project/{{:project_id}}/wikis/{{:id}}/history" }
             %span
               View History
       .clearer

@@ -1,0 +1,21 @@
+%script{ :type => "text/x-jsrender",:id => "wiki-historic-tmpl"}
+  .wiki-main
+    .summary
+      .title
+        %h1.wiki-title
+          Historic view of&nbsp;
+          %a{ :href => "#project/{{:project_id}}/wikis/{{:id}}" }
+            {{:title}}&nbsp;
+          %span.revid
+            [at revision {{:wcId}}]
+      %ul.buttons
+        %li
+          %a.toggle-view{ :href => "#/project/{{:project_id}}/wikis/{{:id}}/edit" }
+            %span
+              Toggle View
+        %li
+          %a.view-history{ :href => "#/project/{{:project_id}}/wikis/{{:id}}/history" }
+            %span
+              View History
+      .clearer
+    .content

@@ -18,3 +18,7 @@ all:
 	haml -f $(FORMAT) -t $(STYLE) wiki-list.haml | tr -d '\n' > wiki-list.tmpl
 	haml -f $(FORMAT) -t $(STYLE) wiki-overview.haml | tr -d '\n' > wiki-overview.tmpl
 	haml -f $(FORMAT) -t $(STYLE) wiki.haml | tr -d '\n' > wiki.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-edit.haml | tr -d '\n' > wiki-edit.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-history.haml | tr -d '\n' > wiki-history.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-history-entry.haml | tr -d '\n' > wiki-history-entry.tmpl
+	haml -f $(FORMAT) -t $(STYLE) wiki-historic.haml | tr -d '\n' > wiki-historic.tmpl

@@ -19,7 +19,11 @@ require([
   "require.text!/tmpl/navbar.tmpl",
   "require.text!/tmpl/wiki-list.tmpl",
   "require.text!/tmpl/wiki-overview.tmpl",
-  "require.text!/tmpl/wiki.tmpl"
+  "require.text!/tmpl/wiki.tmpl",
+  "require.text!/tmpl/wiki-edit.tmpl",
+  "require.text!/tmpl/wiki-history.tmpl",
+  "require.text!/tmpl/wiki-history-entry.tmpl",
+  "require.text!/tmpl/wiki-historic.tmpl"
 ], function() {
 
   // Insert all templates
@@ -41,6 +45,10 @@ require([
 
 
   $.views.helpers({
+    projectId: function() {
+      return $.app.globalController.get('projectId');
+    },
+
     textcolor: function(bgcolor) {
       // http://stackoverflow.com/questions/946544/good-text-foreground-color-for-a-given-background-color
       var r = parseInt(bgcolor.substring(1,3), 16);
@@ -530,11 +538,40 @@ require([
 
 
   $.app.WikiContent = Backbone.RelationalModel.extend({
-    urlRoot: function() {
-      return '/api/project/'+ $.app.globalController.get('projectId') + 'wiki/' + this.get('wiki').get('id') +'/wikicontent';
+    defaults: {
+      selected: false,
+      displayRaw: false
     },
 
-    idAttribute: 'id'
+    urlRoot: function() {
+      return '/api/project/'+ $.app.globalController.get('projectId') + '/wiki/' + this.get('wiki').get('id') +'/wikicontent';
+    },
+
+    idAttribute: 'id',
+
+    initialize: function() {
+      var self = this;
+
+      this.on('error', function(model, resp) {
+	var wiki = self.get('wiki');
+	if (typeof(wiki) !== 'undefined')
+	  wiki.trigger('error:content', model, resp);
+      });
+    },
+
+    toJSON: function() {
+      return {
+	wiki_id: this.get('wiki').get('id'),
+	text: this.get('text'),
+	comment: this.get('comment'),
+	updated_at: this.get('updated_at'),
+	id: this.get('id'),
+	selected: this.get('selected'),
+	displayRaw: this.get('displayRaw'),
+	html_text: this.get('html_text')
+      };
+    }
+
   });
 
   $.app.WikiContentCollection = Backbone.Collection.extend({
@@ -567,7 +604,7 @@ require([
 	type: Backbone.HasMany,
 	key:  'wiki_contents',
 	relatedModel: $.app.WikiContent,
-	collectionType: $.app.WikiContentCollection,
+	collectionType: '$.app.WikiContentCollection',
 	reverseRelation: {
 	  key: 'wiki',
 	  keySource: 'wiki_id'
@@ -1533,6 +1570,8 @@ require([
 	  val: this.model.get('text')
 	},
 	function(val) {
+	  console.log('mIAUUUUUUUUUUUUUUUUU!');
+	  console.log("editText!: %o, %o - ", self, self.model, self, self.model);
 	  self.model.save({ 'text': val },
 	    {
 	      wait: true,
@@ -1546,6 +1585,7 @@ require([
     },
 
     error: function(oldModel, resp) {
+      throw "MIAAAAAAAAAAAAAAAAU";
       alert('error error!' + JSON.stringify(resp));
       console.log(oldModel === this.model);
       console.log(resp);
@@ -1731,12 +1771,91 @@ require([
 
 
 
+  $.app.WikiContentView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiHistoricContentView',
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+    },
+
+    template: $.templates('{{if displayRaw link=false}}<pre>{{>text}}</pre>{{else}}{{:html_text}}{{/if}}'),
+
+    render: function() {
+      console.log('WCV render: ', this.model.toJSON(), this.template.render(this.model.toJSON()));
+      return $(this.el).html(this.template.render(this.model.toJSON()));
+    }
+  });
 
 
 
 
 
+  $.app.WikiHistoricView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiHistoricView',
 
+    events: {
+      "click .buttons .toggle-view"   : "toggleView"
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteWiki: function() {
+      this.model.destroy();
+    },
+
+    toggleView: function(ev) {
+      if (typeof(this.cmodel) === 'undefined')
+	return false;
+
+      this.cmodel.set('displayRaw', !this.cmodel.get('displayRaw'));
+      return false;
+    },
+
+    initialize: function(opts) {
+      this.wcId = opts.wcId;
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'toggleView');
+      this.model.set('wcId', this.wcId);
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+    },
+
+    template: $.templates('#wiki-historic-tmpl'),
+
+    render: function() {
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      $(this.el).html(html);
+
+      console.log(this.model);
+      console.log(this.wcId);
+      console.log(this.model.get('wiki_contents'));
+
+      if (typeof(this.cmodel) === 'undefined') {
+	this.cmodel = this.model.get('wiki_contents').get(this.wcId);
+	this.cmodel.fetch();
+      }
+
+      var cview = new $.app.WikiContentView({model: this.cmodel });
+      $(this.el).find('.content').html(cview.render());
+
+      return $(this.el);
+    }
+  });
 
 
 
@@ -1783,6 +1902,266 @@ require([
       return $(this.el).html(html);
     }
   });
+
+
+
+
+
+
+
+
+
+  $.app.WikiEditView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiEditView',
+
+    events: {
+      "click .buttons .save-changes"         : "saveChanges",
+      "focus .comment input"                 : "commentFocus",
+      "focusout .comment input"              : "commentFocusOut"
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteWiki: function() {
+      this.model.destroy();
+    },
+
+    commentFocus: function(ev) {
+      if ($(ev.currentTarget).val() == 'Required comment about this change...')
+	$(ev.currentTarget).val('');
+    },
+
+    commentFocusOut: function(ev) {
+      if ($(ev.currentTarget).val() == '')
+	$(ev.currentTarget).val('Required comment about this change...');
+    },
+
+
+    saveChanges: function(ev) {
+      var self = this;
+      var tarea = $(this.el).find('textarea');
+      var cinput = $(this.el).find('.comment input');
+      var icomment = cinput.val();
+
+      if (icomment === 'Required comment about this change...')
+	icomment = '';
+
+      var m = new $.app.WikiContent({
+	wiki: this.model,
+	wiki_id: this.model.get('id'),
+	text: tarea.val(),
+	comment: icomment
+      });
+
+      m.save({},{
+	success: function(model, resp) {
+	  cinput.val('Required comment about this change...');
+	  alert('Changes saved');
+	}
+      });
+
+      return false;
+    },
+
+    error: function(oldModel, resp) {
+      alert('error error!' + JSON.stringify(resp));
+      console.log(oldModel === this.model);
+      console.log(resp);
+    },
+
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'saveChanges', 'error', 'commentFocus', 'commentFocusOut');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+      this.model.bind('error:content', this.error);
+    },
+
+    template: $.templates('#wiki-edit-tmpl'),
+
+    render: function() {
+      var html = $(this.template.render(this.model.toJSON()));
+      var self = this;
+
+      var ret = $(this.el).html(html);
+      console.log("moo....", $(this.el).find('textarea'));
+      $(this.el).find('.elastic').elastic();
+      return ret;
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  $.app.WikiHistoryEntryView = Backbone.View.extend({
+    tagName: 'tr',
+    className: 'wikiHistoryEntryView',
+
+    events: {
+      "change input:checkbox"                 : "markSelected",
+    },
+
+    markSelected: function(ev) {
+      this.model.set('selected', $(ev.currentTarget).prop('checked')?true:false );
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    error: function(oldModel, resp) {
+      alert('error error!' + JSON.stringify(resp));
+      console.log(oldModel === this.model);
+      console.log(resp);
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy', 'error', 'markSelected');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+      this.model.bind('error:content', this.error);
+    },
+
+    template: $.templates('#wiki-history-entry-tmpl'),
+
+    render: function() {
+      console.log('WikiHistoryEntryView: %o', this.model.toJSON());
+      return $(this.el).html($(this.template.render(this.model.toJSON())));
+    }
+  });
+
+
+
+
+
+  $.app.WikiHistoryView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'wikiHistoryView',
+
+    events: {
+      "click .buttons a.diff-wiki"           : "diffWikis",
+      "click .buttons a.restore-wiki"        : "restoreWiki"
+    },
+
+    restoreWiki: function(ev) {
+      var self = this;
+      var models = this.model.get('wiki_contents').where({selected: true});
+
+      console.log('restoreWiki: ', models);
+      if (models.length !== 1) {
+	alert('You need to select exactly one history entry to restore');
+	return false;
+      }
+
+      var m = new $.app.WikiContent({
+	wiki: this.model,
+	wiki_id: this.model.get('id'),
+	text: models[0].get('text'),
+	comment: 'Restore revision ' + models[0].get('id')
+      });
+
+      m.save({},{
+	wait: true,
+	success: function(model, resp) {
+	}
+      });
+    },
+
+    diffWikis: function(ev) {
+      var self = this;
+
+      console.log('diffWikis!');
+      var models = _.pluck(this.model.get('wiki_contents').where({selected: true}), 'id');
+
+      console.log('models: %o', models);
+
+      if (models.length !== 2) {
+	alert('You need to select exactly two history entries for diff');
+	return false;
+      }
+
+      $(this.el).find('.diffView .content').load('/api/project/' + this.model.get('project_id') + '/wiki/' + this.model.get('id') + '/diff', {
+	ids: models
+      });
+
+      return false;
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    error: function(oldModel, resp) {
+      alert('error error!' + JSON.stringify(resp));
+      console.log(oldModel === this.model);
+      console.log(resp);
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderHistoryEntry', 'destroy', 'error', 'diffWikis', 'restoreWiki');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+      this.model.bind('error:content', this.error);
+      this.model.fetchRelated('wiki_contents');
+    },
+
+    template: $.templates('#wiki-history-tmpl'),
+
+    render: function() {
+      var self = this;
+      var html = $(this.template.render(this.model.toJSON()));
+      $(this.el).html(html);
+
+      this.model.get('wiki_contents').each(this.renderHistoryEntry);
+    },
+
+    renderHistoryEntry: function(m) {
+      m.fetch();
+      console.log('renderHistoryEntry: %o', m);
+      var hview = new $.app.WikiHistoryEntryView({model: m});
+      $(this.el).find('.history-entries').prepend($(hview.render()));
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2271,11 +2650,15 @@ require([
 
   $.app.Router = Backbone.Router.extend({
     routes: {
-      ""                                  : "showProjects",
-      "project/:projectId/notes"          : "showNotes",
-      "project/:projectId/tasks"          : "showTasks",
-      "project/:projectId/wikis"          : "showWikis",
-      "project/:projectId/wikis/:wiki"    : "showWiki"
+      ""                                        : "showProjects",
+      "project/:projectId/notes"                : "showNotes",
+      "project/:projectId/tasks"                : "showTasks",
+      "project/:projectId/wikis"                : "showWikis",
+      "project/:projectId/wikis/:wiki"          : "showWiki",
+      "project/:projectId/wikis/:wiki/edit"     : "showWikiEdit",
+      "project/:projectId/wikis/:wiki/history"  : "showWikiHistory",
+      "project/:projectId/wikis/:wiki/history/:wc"  : "showWikiHistoric"
+
     },
 
 
@@ -2380,7 +2763,7 @@ require([
       this.cleanView();
 
       $.app.globalController.set('projectId', proj);
-      $.app.globalController.trigger('navigate', 'wiki');
+      $.app.globalController.trigger('navigate', 'wikis');
 
       //this.showTags();
 
@@ -2392,6 +2775,64 @@ require([
 
       $.app.wikiModel.fetch();
     },
+
+
+    showWikiHistoric: function(proj, wiki, wc) {
+      this.cleanView();
+
+      $.app.globalController.set('projectId', proj);
+      $.app.globalController.trigger('navigate', 'wikis');
+
+      //this.showTags();
+
+      $.app.wikiModel = new $.app.Wiki({id: wiki, project_id: proj});
+      this.currentView = $.app.wikiHistoricView   = new $.app.WikiHistoricView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        model: $.app.wikiModel,
+	wcId: wc
+      });
+
+      $.app.wikiModel.fetch();
+    },
+
+
+
+    showWikiEdit: function(proj, wiki) {
+      this.cleanView();
+
+      $.app.globalController.set('projectId', proj);
+      $.app.globalController.trigger('navigate', 'wikis');
+
+      //this.showTags();
+
+      $.app.wikiModel = new $.app.Wiki({id: wiki, project_id: proj});
+      this.currentView = $.app.wikiEditView   = new $.app.WikiEditView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        model: $.app.wikiModel
+      });
+
+      $.app.wikiModel.fetch();
+    },
+
+
+
+    showWikiHistory: function(proj, wiki) {
+      this.cleanView();
+
+      $.app.globalController.set('projectId', proj);
+      $.app.globalController.trigger('navigate', 'wikis');
+
+      //this.showTags();
+
+      $.app.wikiModel = new $.app.Wiki({id: wiki, project_id: proj});
+      this.currentView = $.app.wikiHistoryView   = new $.app.WikiHistoryView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        model: $.app.wikiModel
+      });
+
+      $.app.wikiModel.fetch();
+    },
+
 
 
 

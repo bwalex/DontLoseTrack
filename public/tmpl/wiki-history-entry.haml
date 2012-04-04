@@ -1,0 +1,11 @@
+%script{ :type => "text/x-jsrender", :id => "wiki-history-entry-tmpl" }
+  %td.checkbox
+    :plain
+      <input type="checkbox" {{: selected ? "checked" : "" }}/>
+  %td.date
+    {{:updated_at}}
+  %td.comment
+    %a{ :href => "#project/{{:~projectId()}}/wikis/{{:wiki_id}}/history/{{:id}}" }
+      %span.history-id
+        [{{:id}}]
+      {{:comment}}
