@@ -2286,7 +2286,7 @@ require([
       var self = this;
 
       $(this.el).find('.title').magicedit2(
-	'summary', 'text',
+	'title', 'text',
 	{
 	  val: this.model.get('title')
 	},
