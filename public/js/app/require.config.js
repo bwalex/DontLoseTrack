@@ -23,7 +23,6 @@ require.config({
     'jsrender',
     'underscore',
     'jquery',
-    'text',
-    'order'
+    'text'
   ]
 });
