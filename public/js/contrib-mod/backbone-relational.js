@@ -1,3 +1,4 @@
+define(['underscore', 'backbone'], function(_, Backbone) {
 /**	
  * Backbone-relational.js 0.5.0
  * (c) 2011 Paul Uithol
@@ -6,21 +7,22 @@
  * For details and documentation: https://github.com/PaulUithol/Backbone-relational.
  * Depends on (as in, compeletely useless without) Backbone: https://github.com/documentcloud/backbone.
  */
-( function( undefined ) {
 	/**
 	 * CommonJS shim
 	 **/
-	var _, Backbone, exports;
-	if ( typeof window === 'undefined' ) {
-		_ = require( 'underscore' );
-		Backbone = require( 'backbone' );
-		exports = module.exports = Backbone;
-	}
-	else {
-		var _ = window._;
-		Backbone = window.Backbone;
-		exports = window;
-	}
+//	var _, Backbone, exports;
+//	if ( typeof window === 'undefined' ) {
+//		_ = require( 'underscore' );
+//		Backbone = require( 'backbone' );
+//		exports = module.exports = Backbone;
+//	}
+//	else {
+//		var _ = window._;
+//		Backbone = window.Backbone;
+//		exports = window;
+//	}
+
+  var exports = window;
 	
 	Backbone.Relational = {
 		showWarnings: true
@@ -1337,4 +1339,4 @@
 		return child;
 	};
 
-})();
+});

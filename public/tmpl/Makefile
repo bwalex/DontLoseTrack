@@ -1,7 +1,10 @@
 FORMAT?= html5
 STYLE?= ugly
 
-all:
+all: templates
+	cat *.tmpl > all.templates
+
+templates:
 	haml -f $(FORMAT) -t $(STYLE) foo.haml  | tr -d '\n' > test.tmpl
 	haml -f $(FORMAT) -t $(STYLE) error.haml  | tr -d '\n' > error.tmpl
 	haml -f $(FORMAT) -t $(STYLE) note.haml | tr -d '\n' > note.tmpl
@@ -23,3 +26,7 @@ all:
 	haml -f $(FORMAT) -t $(STYLE) wiki-history.haml | tr -d '\n' > wiki-history.tmpl
 	haml -f $(FORMAT) -t $(STYLE) wiki-history-entry.haml | tr -d '\n' > wiki-history-entry.tmpl
 	haml -f $(FORMAT) -t $(STYLE) wiki-historic.haml | tr -d '\n' > wiki-historic.tmpl
+
+clean:
+	rm -f *.tmpl
+	rm -f all.templates

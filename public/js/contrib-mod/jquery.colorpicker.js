@@ -1,3 +1,4 @@
+define(['jquery'], function(jQuery) {
 /**
  *
  * Color picker
@@ -481,4 +482,5 @@
 		ColorPickerShow: ColorPicker.showPicker,
 		ColorPickerSetColor: ColorPicker.setColor
 	});
-})(jQuery)
+})(jQuery);
+});

@@ -52,7 +52,7 @@ class Setup < ActiveRecord::Migration
     add_foreign_key(:tags, :projects, :dependent => :delete)
 
 
-    create_table :files, :force => true do |t|
+    create_table :documents, :force => true do |t|
       t.references    :project
       t.string        :name
       t.string        :mimetype
@@ -60,7 +60,7 @@ class Setup < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_foreign_key(:files, :projects, :dependent => :delete)
+    add_foreign_key(:documents, :projects, :dependent => :delete)
 
 
     create_table :mails, :force => true do |t|
@@ -174,14 +174,14 @@ class Setup < ActiveRecord::Migration
 
 
 
-    create_table :file_tags, :force => true do |t|
-      t.references    :file
+    create_table :document_tags, :force => true do |t|
+      t.references    :document
       t.references    :tag
     end
 
-    add_foreign_key(:file_tags, :files, :dependent => :delete)
-    add_foreign_key(:file_tags, :tags, :dependent => :delete)
-    add_index :file_tags, [:file_id, :tag_id], :unique => true
+    add_foreign_key(:document_tags, :documents, :dependent => :delete)
+    add_foreign_key(:document_tags, :tags, :dependent => :delete)
+    add_index :document_tags, [:document_id, :tag_id], :unique => true
 
 
 
@@ -192,7 +192,7 @@ class Setup < ActiveRecord::Migration
     drop_table :projects
     drop_table :ext_resources
     drop_table :settings
-    drop_table :files
+    drop_table :documents
     drop_table :mails
     drop_table :notes
     drop_table :tags
@@ -204,6 +204,6 @@ class Setup < ActiveRecord::Migration
     drop_table :note_tags
     drop_table :wiki_tags
     drop_table :mail_tags
-    drop_table :file_tags
+    drop_table :document_tags
   end
 end

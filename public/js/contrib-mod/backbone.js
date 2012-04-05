@@ -5,14 +5,33 @@
 //     For all details and documentation:
 //     http://backbonejs.org
 
-(function(){
+(function(root, factory) {
+  // Set up Backbone appropriately for the environment.
+  if (typeof exports !== 'undefined') {
+    // Node/CommonJS, no need for jQuery in that case.
+    factory(root, exports, require('underscore'));
+  } else if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['appns', 'underscore', 'jquery', 'exports'], function(App, _, $, exports) {
+      // Export global even in AMD case in case this script is loaded with
+      // others that may still expect a global Backbone.
+      root.Backbone = factory(root, exports, _, $, App);
+      return root.Backbone;
+    });
+  } else {
+    // Browser globals
+    root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender));
+  }
+}(this, function(root, Backbone, _, $, App) {
+
+
 
   // Initial Setup
   // -------------
 
   // Save a reference to the global object (`window` in the browser, `global`
   // on the server).
-  var root = this;
+  //var root = this;
 
   // Save the previous value of the `Backbone` variable, so that it can be
   // restored later on, if `noConflict` is used.
@@ -1319,7 +1338,7 @@
   // Useful when interfacing with server-side languages like **PHP** that make
   // it difficult to read the body of `PUT` requests.
   Backbone.sync = function(method, model, options) {
-    $.app.globalController.trigger('backbone:sync');
+    App.globalController.trigger('backbone:sync');
 
     var type = methodMap[method];
 
@@ -1438,4 +1457,5 @@
     throw new Error('A "url" property or function must be specified');
   };
 
-}).call(this);
+  return Backbone;
+}));

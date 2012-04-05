@@ -2,7 +2,6 @@
 
 %html
   %head
-    -#%link{ :type => "text/css", :href => "/css/smoothness/jquery-ui-1.8.18.custom.css", :rel => "stylesheet" }
     -#%link{ :type => "text/css", :href => "http://fonts.googleapis.com/css?family=Nunito", :rel => "stylesheet" }
 
     %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
@@ -10,22 +9,10 @@
     %link{ :type => "text/css", :href => "/css/colorpicker.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/pyg_github.css", :rel => "stylesheet" }
-    %script{ :src => "/js/require.js" }
-    -#%script{ :src => 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js' }
-    %script{ :src => '/js/jquery-1.7.2.js' }
-    -#%script{ :src => "http://cdn.jquerytools.org/1.2.6/all/jquery.tools.min.js" }
-    %script{ :src => "/js/jsrender.js" }
-    -#%script{ :src => "/js/jquery.observable.myraw.js" }
-    %script{ :src => "/js/jquery.colorpicker.js" }    
-    -#%script{ :src => "/js/jquery.views.myraw.js" }
-    %script{ :src => "/js/underscore.js" }
-    %script{ :src => "/js/backbone.js" }
-    %script{ :src => "/js/backbone-relational.js" }
-    %script{ :src => "/js/require.config.js" }
+    %script{ :src => "/js/contrib/require.js" }
+    %script{ :src => "/js/app/require.config.js" }
     :javascript
-      require(["/js/require.text.js"]);
-      require(["/js/require.order.js"]);
-      require(['main']);
+      require(['app']);
 
   %body
     .container_16

@@ -1,3 +1,4 @@
+
 class Setting < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
@@ -43,17 +44,16 @@ class Mail < ActiveRecord::Base
 end
 
 
-class File < ActiveRecord::Base
+class Document < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
-  has_many :file_tags
-  has_many :tags,       :through => :file_tags,
+  has_many :document_tags
+  has_many :tags,       :through => :document_tags,
                         :uniq => true
 
 
   validates_presence_of :project
   validates_associated  :project
-
 end
 
 
@@ -65,7 +65,7 @@ class Project < ActiveRecord::Base
   has_many :tasks,        :dependent => :delete_all
   has_many :mails,        :dependent => :delete_all
   has_many :wikis,        :dependent => :delete_all
-  has_many :files,        :dependent => :delete_all
+  has_many :documents,    :dependent => :delete_all
 
   has_many :settings,     :dependent => :delete_all
   has_many :ext_resource, :dependent => :delete_all
@@ -277,12 +277,12 @@ end
 
 
 
-class FileTag < ActiveRecord::Base
-  belongs_to :file
+class DocumentTag < ActiveRecord::Base
+  belongs_to :document
   belongs_to :tag
 
-  validates_uniqueness_of  :tag_id, :scope => :file_id,
-                                    :message => "already applied to that File"
+  validates_uniqueness_of  :tag_id, :scope => :document_id,
+                                    :message => "already applied to that Document"
 end
 
 
@@ -299,8 +299,8 @@ class Tag < ActiveRecord::Base
   has_many :wiki_tags
   has_many :wikis,        :through => :wiki_tags
 
-  has_many :file_tags
-  has_many :files,        :through => :file_tags
+  has_many :document_tags
+  has_many :documents,    :through => :document_tags
 
   has_many :mail_tags
   has_many :mails,        :through => :mail_tags

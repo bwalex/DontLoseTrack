@@ -1,3 +1,4 @@
+define(['jquery', 'jsrender', 'jquery.tools', 'jquery-ui', 'jquery.elastic', 'jquery.colorpicker'], function(jQuery) {
 (function( $ ) {
   var inputTypes = {
     'text': {
@@ -144,4 +145,49 @@
     });
   };
 
+
+  $.fn.customOverlay = function() {
+    $(this).overlay({
+      mask: {
+	color: null,
+	opacity: 0.6,
+	maskId: 'mask'
+      },
+      onBeforeLoad: function() {
+	this.getOverlay()
+	    .find(".content-wrap")
+	    .load(this.getTrigger().attr("href"));
+      }
+    });
+  };
+
+
+
+  $.fn.tagDroppable = function(opts) {
+    $(this).droppable(_.defaults(opts, {
+      accept: '#tagdrag .tags > .tagDragView > .tag',
+      activate: function(ev, ui) {
+        $(this).find('.placeholder-tag')
+	    .width(ui.draggable.width())
+	    .addClass('show');
+      },
+      deactivate: function(ev, ui) {
+        $(this).find('.placeholder-tag')
+	    .removeClass('show');
+      },
+      over: function(ev, ui) {
+        $(this).find('.placeholder-tag')
+	    .addClass('placeholder-tag-highlight');
+      },
+      out: function(ev, ui) {
+        $(this).find('.placeholder-tag')
+	    .removeClass('placeholder-tag-highlight');
+      },
+    }));
+  };
+
+
+
 })(jQuery);
+
+});

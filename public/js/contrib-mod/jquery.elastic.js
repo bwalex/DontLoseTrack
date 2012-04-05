@@ -1,3 +1,4 @@
+define(['jquery'], function(jQuery) {
 /**
 *	@name							Elastic
 *	@descripton						Elastic is jQuery plugin that grow and shrink your textareas automatically
@@ -160,3 +161,4 @@
         } 
     }); 
 })(jQuery);
+});

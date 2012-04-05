@@ -8,7 +8,7 @@
  */
 // informal pre beta commit counter: 2
 
-this.jsviews || this.jQuery && jQuery.views || (function( window, undefined ) {
+define(['jquery'], function(jQuery, undefined) {
 
 //========================== Top-level vars ==========================
 
@@ -17,7 +17,7 @@ var versionNumber = "v1.0pre",
 	$, rTag, rTmplString, extend,
 	sub = {},
 	FALSE = false, TRUE = true,
-	jQuery = window.jQuery,
+	//jQuery = window.jQuery,
 
 	rPath = /^(?:true|false|\d[\d.]*|(null)|([\w$]+|~([\w$]+)|#(view|([\w$]+))?)([\w$.]*?)(?:[.[]([\w$]+)\]?)?|(['"]).*\8)$/g,
 	//                                 nil    object   helper    view  viewProperty pathTokens   leafToken     string
@@ -844,4 +844,4 @@ converters({
 //========================== Define default delimiters ==========================
 setDelimiters( "{{", "}}" );
 
-})( this );
+});
