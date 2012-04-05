@@ -23,12 +23,38 @@ class Event < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
-  validates :location, :length => { :minimum => 1 }
+  validates :summary, :length => { :minimum => 1 }
   validates_presence_of :project
   validates_associated  :project
 end
 
 
+class Mail < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :settings
+
+  has_many :mail_tags
+  has_many :tags,       :through => :mail_tags,
+                        :uniq => true
+
+
+  validates_presence_of :project
+  validates_associated  :project
+
+end
+
+
+class File < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :settings
+
+  has_many :file_tags
+  has_many :tags,       :through => :file_tags,
+                        :uniq => true
+
+
+  validates_presence_of :project
+  validates_associated  :project
+
+end
 
 
 
@@ -37,9 +63,9 @@ class Project < ActiveRecord::Base
 
   has_many :notes,        :dependent => :delete_all
   has_many :tasks,        :dependent => :delete_all
-  #has_many :emails,   :dependent => :delete_all
+  has_many :mails,        :dependent => :delete_all
   has_many :wikis,        :dependent => :delete_all
-  #has_many :files,    :dependent => :delete_all
+  has_many :files,        :dependent => :delete_all
 
   has_many :settings,     :dependent => :delete_all
   has_many :ext_resource, :dependent => :delete_all
@@ -240,6 +266,28 @@ class WikiTag < ActiveRecord::Base
 end
 
 
+
+class MailTag < ActiveRecord::Base
+  belongs_to :mail
+  belongs_to :tag
+
+  validates_uniqueness_of  :tag_id, :scope => :mail_id,
+                                    :message => "already applied to that Mail"
+end
+
+
+
+class FileTag < ActiveRecord::Base
+  belongs_to :file
+  belongs_to :tag
+
+  validates_uniqueness_of  :tag_id, :scope => :file_id,
+                                    :message => "already applied to that File"
+end
+
+
+
+
 class Tag < ActiveRecord::Base
   belongs_to :project,    :inverse_of => :tags
   has_many :note_tags
@@ -250,6 +298,12 @@ class Tag < ActiveRecord::Base
 
   has_many :wiki_tags
   has_many :wikis,        :through => :wiki_tags
+
+  has_many :file_tags
+  has_many :files,        :through => :file_tags
+
+  has_many :mail_tags
+  has_many :mails,        :through => :mail_tags
 
   validates :name,        :length => { :in => 1..32 }
   validates_uniqueness_of :name,  :scope => :project_id,

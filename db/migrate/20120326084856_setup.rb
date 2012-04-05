@@ -52,6 +52,30 @@ class Setup < ActiveRecord::Migration
     add_foreign_key(:tags, :projects, :dependent => :delete)
 
 
+    create_table :files, :force => true do |t|
+      t.references    :project
+      t.string        :name
+      t.string        :mimetype
+      t.text          :path
+      t.timestamps
+    end
+
+    add_foreign_key(:files, :projects, :dependent => :delete)
+
+
+    create_table :mails, :force => true do |t|
+      t.references    :project
+      t.string        :from
+      t.string        :to
+      t.string        :cc
+      t.string        :subject
+      t.text          :body
+      t.timestamps
+    end
+
+    add_foreign_key(:mails, :projects, :dependent => :delete)
+
+
     create_table :notes, :force => true do |t|
       t.references    :project
       t.text          :text
@@ -139,10 +163,37 @@ class Setup < ActiveRecord::Migration
 
 
 
+    create_table :mail_tags, :force => true do |t|
+      t.references    :mail
+      t.references    :tag
+    end
+
+    add_foreign_key(:mail_tags, :mails, :dependent => :delete)
+    add_foreign_key(:mail_tags, :tags, :dependent => :delete)
+    add_index :mail_tags, [:mail_id, :tag_id], :unique => true
+
+
+
+    create_table :file_tags, :force => true do |t|
+      t.references    :file
+      t.references    :tag
+    end
+
+    add_foreign_key(:file_tags, :files, :dependent => :delete)
+    add_foreign_key(:file_tags, :tags, :dependent => :delete)
+    add_index :file_tags, [:file_id, :tag_id], :unique => true
+
+
+
+
   end
 
   def self.down
     drop_table :projects
+    drop_table :ext_resources
+    drop_table :settings
+    drop_table :files
+    drop_table :mails
     drop_table :notes
     drop_table :tags
     drop_table :tasks
@@ -152,5 +203,7 @@ class Setup < ActiveRecord::Migration
     drop_table :task_tags
     drop_table :note_tags
     drop_table :wiki_tags
+    drop_table :mail_tags
+    drop_table :file_tags
   end
 end
