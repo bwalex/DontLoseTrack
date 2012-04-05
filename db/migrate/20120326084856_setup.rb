@@ -4,9 +4,43 @@ class Setup < ActiveRecord::Migration
   def self.up
     create_table :projects, :force => true do |t|
       t.string        :name
-      t.string        :github_repo
       t.timestamps 
     end
+
+
+    create_table :settings :force => true do |t|
+      t.references     :project
+      t.string         :key
+      t.string         :value
+      t.timestamps
+    end
+
+    add_foreign_key(:settings, :projects, :dependent => :delete)
+    add_index :settings, :key, :unique => true
+
+
+    create_table :ext_resources :force => true do |t|
+      t.references     :project
+      t.string         :type
+      t.string         :location
+      t.timestamps
+    end
+
+    add_foreign_key(:ext_resources, :projects, :dependent => :delete)
+
+
+    create_table :events :force => true do |t|
+      t.references     :project
+      t.string         :type
+      t.string         :summary
+      t.string         :body
+      t.datetime       :occurred_at
+      t.timestamps
+    end
+
+    add_foreign_key(:events, :projects, :dependent => :delete)
+    add_index :events, :type, :unique => false
+    add_index :events, :occurred_at, :unique => false
 
 
     create_table :tags, :force => true do |t|

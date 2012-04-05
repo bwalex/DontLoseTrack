@@ -1,11 +1,49 @@
-class Project < ActiveRecord::Base
-  has_many :tags,     :dependent => :delete_all
+class Setting < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :settings
 
-  has_many :notes,    :dependent => :delete_all
-  has_many :tasks,    :dependent => :delete_all
+  validates :key, :length => { :in => 1..200 }
+  validates_uniqueness_of :key
+  validates_presence_of :project
+  validates_associated  :project
+end
+
+
+class ExtResource < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :settings
+
+  validates :type, :length => { :in => 1..200 }
+  validates :location, :length => { :minimum => 1 }
+  validates_presence_of :project
+  validates_associated  :project
+end
+
+
+
+class Event < ActiveRecord::Base
+  belongs_to :project,  :inverse_of => :settings
+
+  validates :type, :length => { :in => 1..200 }
+  validates :location, :length => { :minimum => 1 }
+  validates_presence_of :project
+  validates_associated  :project
+end
+
+
+
+
+
+class Project < ActiveRecord::Base
+  has_many :tags,         :dependent => :delete_all
+
+  has_many :notes,        :dependent => :delete_all
+  has_many :tasks,        :dependent => :delete_all
   #has_many :emails,   :dependent => :delete_all
-  has_many :wikis,    :dependent => :delete_all
+  has_many :wikis,        :dependent => :delete_all
   #has_many :files,    :dependent => :delete_all
+
+  has_many :settings,     :dependent => :delete_all
+  has_many :ext_resource, :dependent => :delete_all
+  has_many :events,       :dependent => :delete_all
 
   validates :name, :length => { :in => 1..50 }
   validates :name, :uniqueness => true
