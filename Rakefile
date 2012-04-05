@@ -1,6 +1,6 @@
 require 'active_record'
 require 'fileutils'
-require 'dlt'
+require './dlt.rb'
 require 'foreigner'
 
 Foreigner.load

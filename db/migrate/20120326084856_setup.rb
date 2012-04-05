@@ -8,7 +8,7 @@ class Setup < ActiveRecord::Migration
     end
 
 
-    create_table :settings :force => true do |t|
+    create_table :settings, :force => true do |t|
       t.references     :project
       t.string         :key
       t.string         :value
@@ -19,7 +19,7 @@ class Setup < ActiveRecord::Migration
     add_index :settings, :key, :unique => true
 
 
-    create_table :ext_resources :force => true do |t|
+    create_table :ext_resources, :force => true do |t|
       t.references     :project
       t.string         :type
       t.string         :location
@@ -29,7 +29,7 @@ class Setup < ActiveRecord::Migration
     add_foreign_key(:ext_resources, :projects, :dependent => :delete)
 
 
-    create_table :events :force => true do |t|
+    create_table :events, :force => true do |t|
       t.references     :project
       t.string         :type
       t.string         :summary
