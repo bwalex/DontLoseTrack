@@ -1,5 +1,12 @@
-require.config({
-  baseUrl: '/js',
+({
+  appDir: './',
+  baseUrl: 'js',
+  dir: 'build',
+  modules: [
+    {
+      name: "app"
+    }
+  ],
   paths: {
     'app'                 : 'app/main',
     'appns'               : 'app/appns',
@@ -18,11 +25,5 @@ require.config({
     'backbone-relational' : 'contrib-mod/backbone-relational',
     'models'              : 'app/models',
     'views'               : 'app/views'
-  },
-  priority: [
-//    'jsrender',
-//    'underscore',
-//    'jquery',
-//    'text'
-  ]
-});
+  }
+})
