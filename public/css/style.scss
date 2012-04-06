@@ -1359,3 +1359,59 @@ div#mask {
     .status {
     }
 }
+
+
+.visible-events {
+    div.row {
+	margin-left: 0em;
+    }
+}
+
+
+.options .setting-label {
+    margin-right: 2em;
+    font-weight: bold;
+}
+
+
+.extres-type {
+    display: inline-block;
+    width: 9em;
+}
+
+.extres-location {
+    display: inline-block;
+    width: 400px;
+    input {
+	width: 350px;
+    }
+}
+
+.extres-new {
+    margin-bottom: 10px;
+}
+
+.delete-project button {
+}
+
+
+.project-knobs button {
+    margin: 15px;
+}
+
+.project-knobs h2 {
+    color: $redish;
+}
+
+.project-knobs input {
+    margin-right: 15px;
+}
+
+.section {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.section div {
+    margin-bottom: 10px;
+}

@@ -20,7 +20,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     initialize: function() {
       _.bindAll(this, 'render');
 
-      this.model.bind('change'.this.render);
+      this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
     },
 

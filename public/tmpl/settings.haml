@@ -1,8 +1,10 @@
 %script{ :type => "text/x-jsrender",:id => "settings-tmpl"}
   .options
-    .timeline
+    
+    .timeline.section
+      %h2 Timeline
       .visible-events
-        %span.setting-label Events visible in the Timeline
+        %span.setting-label Events to show
         .row
           :plain
             <input type="checkbox" name="events" value="notes" {{: ~settingArrayContains(settings, 'timeline:events', 'notes') ? 'checked="yes"' : '' }} >
@@ -15,19 +17,27 @@
           :plain
             <input type="checkbox" name="events" value="wikis" {{: ~settingArrayContains(settings, 'timeline:events', 'wikis') ? 'checked="yes"' : '' }} >
           &nbsp;Wikis
-    .tasks
+
+    .section
+      %h2 External Resources
+      .ext-resources
+
+        
+    .tasks.section
+      %h2 Tasks
       .sorting
-        %span.setting-label Default task sort order
+        %span.setting-label Default ordering
         %select
-          {{for ~settingToMapArray(settings, 'tasks:valid_default_sort') }}
-          %option{ :value => "{{:value}}" } {{:key}}
-          {{/for}}
-  .project-knobs
-    .rename-project
+          %option{ :value => "intelligent" } Intelligent
+          %option{ :value => "duedate" } Due date
+          %option{ :value => "importance" } Importance
+
+    
+  .project-knobs.section
+    %h2 Project Management
+    %div
       %input{ :type => "text", :value => "{{:project.name}}" }
       %button.rename-project
         Rename Project
-    .delete-project
       %button.delete-project
         Delete Project
-  .ext-resources

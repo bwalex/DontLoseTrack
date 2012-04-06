@@ -1,4 +1,3 @@
-
 class Setting < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
@@ -10,6 +9,8 @@ end
 
 
 class ExtResource < ActiveRecord::Base
+  self.inheritance_column = :inheritance_type
+
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
@@ -21,6 +22,8 @@ end
 
 
 class Event < ActiveRecord::Base
+  self.inheritance_column = :inheritance_type
+
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
@@ -45,6 +48,8 @@ end
 
 
 class Document < ActiveRecord::Base
+  self.inheritance_column = :inheritance_type
+
   belongs_to :project,  :inverse_of => :settings
 
   has_many :document_tags

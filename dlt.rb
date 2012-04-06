@@ -191,10 +191,31 @@ get '/api/project/:project_id/settings' do
   Setting.where("project_id = ?", params[:project_id]).to_json
 end
 
+put '/api/project/:project_id/settings/:setting_id' do
+  content_type :json
+  s = Setting.find(params[:setting_id])
+  JSON.parse(request.body.read).each { |p, v| w.send(p + "=", v) }
+  s.save!
+  s.to_json
+end
+
+
 get '/api/project/:project_id/extresource' do
   ExtResource.where("project_id = ?", params[:project_id]).to_json
 end
 
+post '/api/project/:project_id/extresource' do
+  content_type :json
+  p = Project.find(params[:project_id])
+  data = JSON.parse(request.body.read)
+  e = ExtResource.create!(:type => data['type'], :location => data['location'], :project => p)
+  e.to_json
+end
+
+delete '/api/project/:project_id/extresource/:extres_id' do
+  e = ExtResource.find(params[:extres_id])
+  ExtResource.destroy(e)
+end
 
 
 

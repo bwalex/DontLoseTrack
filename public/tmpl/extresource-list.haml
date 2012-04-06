@@ -1,0 +1,13 @@
+%script{ :type => "text/x-jsrender",:id => "extresource-list-tmpl"}
+  .extres-new
+    .extres-type
+      %select
+        %option{ :value => "github" } github
+        %option{ :value => "bazaar" } bzr
+        %option{ :value => "launchpad-bugs" } launchpad
+    .extres-location
+      %input{ :type => "text" }
+    %button
+      Add
+  .ext-resource-list    
+  
