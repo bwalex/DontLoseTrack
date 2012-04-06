@@ -64,6 +64,40 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
   App.SettingsView = Backbone.View.extend({
     events: {
+      "click .save-events"                : 'saveEvents',
+      "click button.rename-project"       : 'renameProject',
+      "click button.delete-project"       : 'deleteProject',
+      "change .tasks .sorting select"     : 'saveTaskOrdering'
+    },
+
+    saveEvents: function(ev) {
+      var cbs = $(this.el).find('.visible-events :checked');
+      var v = [];
+
+      cbs.each(function() {
+	v.push($(this).val());
+      });
+
+      var m = this.collection.where({key : 'timeline:events'});
+      m = m[0];
+
+      m.save({value: v.join(',')}, { partialUpdate: true, wait: true });
+    },
+
+    saveTaskOrdering: function(ev) {
+      var m = this.collection.where({key : 'tasks:default_sort'});
+      m = m[0];
+
+      m.save({value: $(this.el).find('.tasks .sorting select').val()}, { partialUpdate: true, wait:true });
+    },
+
+
+    renameProject: function(ev) {
+      this.projectModel.save({name: $(this.el).find('project-knobs input').val() }, {partialUpdate: true, wait: true });
+    },
+
+
+    deleteProject: function(ev) {
     },
 
     destroy: function() {
@@ -72,7 +106,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function(params) {
-      _.bindAll(this, 'render');
+      _.bindAll(this, 'render', 'saveEvents', 'saveTaskOrdering', 'renameProject', 'deleteProject');
 
       this.projectModel = params.projectModel;
       this.extResourceCollection = params.extResourceCollection;

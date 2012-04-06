@@ -5,6 +5,8 @@
       %h2 Timeline
       .visible-events
         %span.setting-label Events to show
+        %button.save-events
+          Save
         .row
           :plain
             <input type="checkbox" name="events" value="notes" {{: ~settingArrayContains(settings, 'timeline:events', 'notes') ? 'checked="yes"' : '' }} >
