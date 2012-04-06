@@ -187,7 +187,13 @@ end
 
 
 
+get '/api/project/:project_id/settings' do
+  Setting.where("project_id = ?", params[:project_id]).to_json
+end
 
+get '/api/project/:project_id/extresource' do
+  ExtResource.where("project_id = ?", params[:project_id]).to_json
+end
 
 
 

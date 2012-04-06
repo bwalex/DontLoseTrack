@@ -57,6 +57,31 @@ require([
       var gray = r*0.299 + g*0.587 + b*0.114;
 
       return (gray > 150) ? "black" : "white";
+    },
+
+    access: function(obj, key) {
+      return obj[key];
+    },
+
+    settingArrayContains: function(settings, key, needle) {
+      var t = settings[key].split(',');
+      console.log('settings array %o', t);
+      return (_.indexOf(t, needle) >= 0) ? true : false;
+    },
+
+    settingToArray: function(settings, key) {
+      return settings[key].split(',');
+    },
+
+    settingToMapArray: function(settings, key) {
+      var mapArr = [];
+
+      _.each(settings[key].split(','), function(e) {
+	var s = e.split(':');
+	mapArr.push({key: s[0], value: s[1]});
+      });
+
+      return mapArr;
     }
   });
 
@@ -149,6 +174,7 @@ require([
   App.Router = Backbone.Router.extend({
     routes: {
       ""                                        : "showProjects",
+      "project/:projectId/settings"             : "showSettings",
       "project/:projectId/notes"                : "showNotes",
       "project/:projectId/tasks"                : "showTasks",
       "project/:projectId/wikis"                : "showWikis",
@@ -219,6 +245,33 @@ require([
 
       App.projectListView.render();
     },
+
+
+
+
+    showSettings: function(proj) {
+      this.cleanView();
+
+      App.globalController.set('projectId', proj);
+      App.globalController.trigger('navigate', 'settings');
+
+      this.showTags();
+
+      App.settingsCollection = new App.SettingsCollection();
+      App.extResourceCollection = new App.ExtResourceCollection();
+
+      this.currentView = App.settingsView   = new App.SettingsView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        collection: App.settingsCollection,
+	projectModel: App.globalController.get('project'),
+	extResourceCollection: App.extResourceCollection
+      });
+
+      App.settingsCollection.fetch();
+      App.extResourceCollection.fetch();
+    },
+
+
 
 
     showNotes: function(proj) {

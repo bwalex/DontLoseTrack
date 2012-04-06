@@ -1,4 +1,4 @@
-define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App, _, Backbone) {
+define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_link'], function(App, _, Backbone) {
   App.Note = Backbone.RelationalModel.extend({
     modelName: 'Note',
 

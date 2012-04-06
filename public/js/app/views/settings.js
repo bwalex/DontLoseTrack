@@ -66,6 +66,11 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     events: {
     },
 
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
     initialize: function(params) {
       _.bindAll(this, 'render');
 

@@ -1132,33 +1132,57 @@ input#newwikititle {
     border-bottom: 1px dotted $light_grey;
 
     ul.buttons {
-	display: block;
 	float: right;
-	list-style-type: none;
-	overflow: hidden;
-	padding: 0;
+    }
+}
 
-	li {
-	    float: left;
-	    margin-left: 10px;
+ul.buttons {
+    display: block;
+    //float: right;
+    list-style-type: none;
+    overflow: hidden;
+    padding: 0;
 
-	    a {
-		background-color: #999999;
-		border-radius: 5px 5px 5px 5px;
-		color: white;
-		font-size: 80%;
-		padding-bottom: 4px;
-		padding-top: 4px;
-		padding-right: 7px;
-		padding-left: 7px;
+    li {
+	float: left;
+	margin-left: 10px;
 
-		&:hover {
-		    background-color: $redish;
-		}
+	a {
+	    background-color: #999999;
+	    border-radius: 5px 5px 5px 5px;
+	    color: white;
+	    font-size: 80%;
+	    padding-bottom: 4px;
+	    padding-top: 4px;
+	    padding-right: 7px;
+	    padding-left: 7px;
+
+	    &:hover {
+		background-color: $redish;
 	    }
 	}
     }
 }
+
+button {
+    background-color: #999999;
+    border-radius: 5px;
+    color: white;
+    font-size: 80%;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    padding-right: 7px;
+    padding-left: 7px;
+    border: none;
+    font-family: Helvetica,Verdana,Arial,Clean,sans-serif;
+
+    &:hover {
+	cursor: pointer;
+	-moz-transition: all 0.3s ease 0s;
+	background-color: $redish;
+    }
+}
+
 
 .wiki-main {
     .comment {
