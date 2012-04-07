@@ -92,7 +92,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       "click .tabmenu .btn_addtag"      : "addTagBtn",
       "focus #newnotetext"              : "newNoteFocus",
       "focusout #newnotetext"           : "newNoteFocusOut",
-      "submit #newnote"                 : "newNoteSubmit"
+      "click #newnote button"           : "newNoteSubmit"
     },
 
     addTagBtn: function(ev) {
@@ -124,15 +124,15 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     newNoteSubmit: function(ev) {
       var self = this;
 
-      var m = new App.Note({ text: $(ev.currentTarget).find('#newnotetext').val() });
+      var m = new App.Note({ text: $(this.el).find('#newnotetext').val() });
       console.log("Moo, saving... ", m);
       m.save({},{
 	wait: true,
 	success: function(model, resp) {
 	  console.log("Success: ", model, resp);
 	  self.collection.add(m);
-	  $(ev.currentTarget).find('#newnotetext').val("");
-	  $(ev.currentTarget).find('#newnotetext').blur();
+	  $(self.el).find('#newnotetext').val("");
+	  $(self.el).find('#newnotetext').blur();
 	}
       });
     },

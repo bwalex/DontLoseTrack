@@ -8,14 +8,13 @@
     .left15
       &nbsp;
     .right85
-      %form
-        .tarea
-          %textarea#newnotetext
-            Add Note...
-        .btn
-          %input{ :type => "submit", :value => "Save" }
-        %a{ :target => "_blank", :rel => "#cheat-overlay", :href => "/markdown-cheatsheet" }
-          Markdown cheatsheet
+      .tarea
+        %textarea#newnotetext
+          Add Note...
+      %button
+        Save
+      %a{ :target => "_blank", :rel => "#cheat-overlay", :href => "/markdown-cheatsheet" }
+        Markdown cheatsheet
 
     .clearer
 
