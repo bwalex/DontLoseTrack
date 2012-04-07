@@ -16,7 +16,7 @@ class Setup < ActiveRecord::Migration
     end
 
     add_foreign_key(:settings, :projects, :dependent => :delete)
-    add_index :settings, :key, :unique => true
+    add_index :settings, [:key, :project_id], :unique => true
 
 
     create_table :ext_resources, :force => true do |t|
@@ -33,7 +33,7 @@ class Setup < ActiveRecord::Migration
       t.references     :project
       t.string         :type
       t.string         :summary
-      t.string         :body
+      t.text           :body
       t.datetime       :occurred_at
       t.timestamps
     end

@@ -23,7 +23,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'ProjectLinkView',
 
     events: {
-      "click .delproject .rm-button"        : "deleteProject",
     },
 
     destroy: function() {
@@ -31,12 +30,8 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.unbind();
     },
 
-    deleteProject: function(ev) {
-      this.model.destroy();
-    },
-
     initialize: function(params) {
-      _.bindAll(this, 'render', 'deleteProject', 'destroy');
+      _.bindAll(this, 'render', 'destroy');
       this.model.bind('destroy', this.destroy);
 
       this.extraClass = params['extraClass'];

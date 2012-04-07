@@ -189,7 +189,8 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
     initialize: function() {
       _.bindAll(this, "updateComparator");
       this.bind('change:tasks:order', this.updateComparator);
-      this.updateComparator();
+
+      this.updateComparator(undefined);
       App.globalController.register(this);
     },
 

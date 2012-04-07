@@ -198,7 +198,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
 
     initialize: function() {
-      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'saveChanges', 'error', 'commentFocus', 'commentFocusOut', 'removePreview', 'showPreview');
+      _.bindAll(this, 'render', 'destroy', 'deleteWiki', 'saveChanges', 'commentFocus', 'commentFocusOut', 'removePreview', 'showPreview');
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);

@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender', 'jquery.tools'], function(App, $, _, Backbone) {
 
 
   App.ExtResourceView = Backbone.View.extend({
@@ -64,41 +64,54 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
   App.SettingsView = Backbone.View.extend({
     events: {
-      "click .save-events"                : 'saveEvents',
-      "click button.rename-project"       : 'renameProject',
-      "click button.delete-project"       : 'deleteProject',
-      "change .tasks .sorting select"     : 'saveTaskOrdering'
+      "click .save-events"                  : 'saveEvents',
+      "click button.rename-project"         : 'renameProject',
+      "click .modal button.delete-project"  : 'deleteProject',
+      "change .tasks .sorting select"       : 'saveTaskOrdering'
+    },
+
+    updateConfig: function(key, value) {
+      var m = this.collection.where({key : key});
+      if (m.length > 0) {
+	m[0].save({ value: value }, { partialUpdate: true, wait: true });
+      } else {
+	m = new App.Setting({key: key, value: value});
+	m.save({}, { wait: true });
+	this.collection.add(m);
+      }
     },
 
     saveEvents: function(ev) {
       var cbs = $(this.el).find('.visible-events :checked');
+      console.log('cbs: %o', cbs);
       var v = [];
 
-      cbs.each(function() {
-	v.push($(this).val());
+      _.each(cbs, function(c) {
+	v.push($(c).val());
       });
 
-      var m = this.collection.where({key : 'timeline:events'});
-      m = m[0];
-
-      m.save({value: v.join(',')}, { partialUpdate: true, wait: true });
+      console.log('cbs val: %o, %o', v, v.join(','));
+      this.updateConfig('timeline:events', v.join(','));
     },
 
     saveTaskOrdering: function(ev) {
-      var m = this.collection.where({key : 'tasks:default_sort'});
-      m = m[0];
-
-      m.save({value: $(this.el).find('.tasks .sorting select').val()}, { partialUpdate: true, wait:true });
+      this.updateConfig('tasks:default_sort',
+			$(this.el).find('.tasks .sorting select').val());
+      App.globalController.trigger('reload:settings');
     },
 
 
     renameProject: function(ev) {
-      this.projectModel.save({name: $(this.el).find('project-knobs input').val() }, {partialUpdate: true, wait: true });
+      console.log('renameProject: ', $(this.el).find('.project-knobs input'), $(this.el).find('.project-knobs input').val());
+      this.projectModel.save({name: $(this.el).find('.project-knobs input').val() }, {partialUpdate: true, wait: true });
     },
 
 
     deleteProject: function(ev) {
+      this.projectModel.destroy();
+      App.router.navigate("/", {trigger: true});
     },
+
 
     destroy: function() {
       this.remove();
@@ -106,7 +119,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function(params) {
-      _.bindAll(this, 'render', 'saveEvents', 'saveTaskOrdering', 'renameProject', 'deleteProject');
+      _.bindAll(this, 'render', 'saveEvents', 'saveTaskOrdering', 'renameProject', 'deleteProject', 'updateConfig');
 
       this.projectModel = params.projectModel;
       this.extResourceCollection = params.extResourceCollection;
@@ -129,6 +142,13 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       };
 
       $(this.el).html($(this.template.render(obj)));
+      $(this.el).find('.project-knobs > div > button.delete-project').overlay({
+	mask: {
+	  color: '#99173C',
+	  opacity: 0.8
+	},
+	closeOnClick: false
+      });
 
       var eView = new App.ExtResourceListView({collection: this.extResourceCollection});
       $(this.el).find('.ext-resources').html($(eView.render()));

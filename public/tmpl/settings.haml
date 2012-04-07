@@ -30,16 +30,31 @@
       .sorting
         %span.setting-label Default ordering
         %select
-          %option{ :value => "intelligent" } Intelligent
-          %option{ :value => "duedate" } Due date
-          %option{ :value => "importance" } Importance
+          :plain
+            <option value="intelligent" {{if settings['tasks:default_sort'] === 'intelligent' }}selected="selected" {{/if}}>Intelligent</option>
+            <option value="duedate" {{if settings['tasks:default_sort'] === 'duedate' }}selected="selected" {{/if}}>Due date</option>
+            <option value="importance" {{if settings['tasks:default_sort'] === 'importance' }}selected="selected" {{/if}}>Importance</option>
 
+            
     
   .project-knobs.section
     %h2 Project Management
     %div
-      %input{ :type => "text", :value => "{{:project.name}}" }
+      :plain
+        <input type="text" value="{{> project.name}}">
       %button.rename-project
         Rename Project
-      %button.delete-project
+      %button.delete-project{ :rel => "#delete-project-modal" }
         Delete Project
+    .modal#delete-project-modal
+      %h2
+        Danger!
+      %p
+        Are you sure you want to delete this project?&nbsp;
+        %strong
+          All project related information will be deleted.
+      %p.buttons
+        %button.close.delete-project
+          Yes
+        %button.close
+          No

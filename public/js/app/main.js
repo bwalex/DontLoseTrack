@@ -64,13 +64,21 @@ require([
     },
 
     settingArrayContains: function(settings, key, needle) {
-      var t = settings[key].split(',');
+      var t = settings[key];
+      if (typeof(t) === 'undefined')
+	return false;
+      else 
+	t = t.split(',');
       console.log('settings array %o', t);
       return (_.indexOf(t, needle) >= 0) ? true : false;
     },
 
     settingToArray: function(settings, key) {
-      return settings[key].split(',');
+      var t = settings[key];
+      if (typeof(t) === 'undefined')
+	return [];
+      else
+	return t.split(',');
     },
 
     settingToMapArray: function(settings, key) {
@@ -97,7 +105,8 @@ require([
       "change:project"      : "changeProject",
       "navigate"            : "navigate",
       "select:tag"          : "updateFilter",
-      "register"            : "registered"
+      "register"            : "registered",
+      "reload:settings"     : "loadKnownSettings"
     },
 
     attributes: {
@@ -110,6 +119,7 @@ require([
 		'changeProject',
 		'updateFilter',
 		'registered',
+		'loadKnownSettings',
 		'navigate');
     },
 
@@ -139,14 +149,24 @@ require([
       this.set('project', projectModel);
     },
 
+
+    loadKnownSettings: function() {
+      var s = App.settingsCollection.where({ key: 'tasks:default_sort' });
+      if (s.length > 0)
+	this.set('tasks:order', s[0].get('value'));
+    },
+
+
     changeProject: function(newModel, oldModel) {
       this.set('filter', false);
-      //this.set('filter:tags', []);
-      //this.set('filter:tag_ids', []);
 
       console.log("changeProject: ", newModel, oldModel);
-      if (typeof(newModel) !== 'undefined')
+      if (typeof(newModel) !== 'undefined') {
+	App.settingsCollection.fetch({async: false});
 	App.tagCollection.fetch({async: false});
+
+	this.trigger('reload:settings');
+      }
     }
   });
 
@@ -257,7 +277,6 @@ require([
 
       this.showTags();
 
-      App.settingsCollection = new App.SettingsCollection();
       App.extResourceCollection = new App.ExtResourceCollection();
 
       this.currentView = App.settingsView   = new App.SettingsView({
@@ -267,7 +286,7 @@ require([
 	extResourceCollection: App.extResourceCollection
       });
 
-      App.settingsCollection.fetch();
+      App.settingsView.render();
       App.extResourceCollection.fetch();
     },
 
@@ -411,6 +430,7 @@ require([
     el: $('#content .errors')
   });
 
+  App.settingsCollection = new App.SettingsCollection();
   App.tagCollection = new App.TagCollection();
   App.projectCollection = new App.ProjectCollection();
   App.projectCollection.fetch({async: false});

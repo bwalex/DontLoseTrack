@@ -2,7 +2,7 @@ class Setting < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
   validates :key, :length => { :in => 1..200 }
-  validates_uniqueness_of :key
+  validates_uniqueness_of :key,  :scope => :project_id
   validates_presence_of :project
   validates_associated  :project
 end

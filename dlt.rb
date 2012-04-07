@@ -69,7 +69,12 @@ get '/api/project/:project_id' do
 end
 
 put '/api/project/:project_id' do
-  status 500
+  content_type :json
+  p = Project.find(params[:project_id])
+  JSON.parse(request.body.read).each { |k, v| p.send(k + "=", v) }
+  p.save!
+  p.to_json
+
 end
 
 post '/api/project' do
@@ -194,10 +199,20 @@ end
 put '/api/project/:project_id/settings/:setting_id' do
   content_type :json
   s = Setting.find(params[:setting_id])
-  JSON.parse(request.body.read).each { |p, v| w.send(p + "=", v) }
+  JSON.parse(request.body.read).each { |p, v| s.send(p + "=", v) }
   s.save!
   s.to_json
 end
+
+post '/api/project/:project_id/settings' do
+  content_type :json
+  p = Project.find(params[:project_id])
+  data = JSON.parse(request.body.read)
+  s = Setting.create!(:key => data['key'], :value => data['value'], :project => p)
+  s.to_json
+end
+
+
 
 
 get '/api/project/:project_id/extresource' do
