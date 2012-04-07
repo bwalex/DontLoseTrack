@@ -18,6 +18,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
 	var respObj = $.parseJSON(resp.responseText);
 	errors = respObj.errors;
       } catch(err) {
+        errors.push(resp.responseText);
       }
 
       var obj = {

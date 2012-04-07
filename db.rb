@@ -30,6 +30,11 @@ class Event < ActiveRecord::Base
   validates :summary, :length => { :minimum => 1 }
   validates_presence_of :project
   validates_associated  :project
+
+  def occurred_at
+    return (self[:occurred_at] != nil) ? self[:occurred_at].strftime("%d/%m/%Y - %H:%M") : nil
+  end
+
 end
 
 

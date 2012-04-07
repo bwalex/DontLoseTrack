@@ -189,7 +189,8 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       m.save({},{
 	success: function(model, resp) {
 	  cinput.val('Required comment about this change...');
-	  alert('Changes saved');
+	  $(self.el).find('.modal').data('overlay').load();
+	  //alert('Changes saved');
 	}
       });
 
@@ -213,6 +214,14 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       var ret = $(this.el).html(html);
       $(this.el).find('a[rel]').customOverlay();
       $(this.el).find('.elastic').elastic();
+      $(this.el).find('.modal').overlay({
+	mask: {
+	  color: 'white',
+	  opacity: 0.6
+	},
+	closeOnClick: true
+      });
+
       return ret;
     }
   });

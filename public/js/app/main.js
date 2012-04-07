@@ -9,6 +9,7 @@ require([
   "models/tag",
   "models/project",
   "models/settings",
+  "models/events",
   "models/note",
   "models/task",
   "models/wiki",
@@ -16,6 +17,7 @@ require([
   "views/navbar",
   "views/project",
   "views/settings",
+  "views/events",
   "views/applied_tag",
   "views/tag_drag",
   "views/tag",
@@ -195,6 +197,7 @@ require([
     routes: {
       ""                                        : "showProjects",
       "project/:projectId/settings"             : "showSettings",
+      "project/:projectId/timeline"             : "showTimeline",
       "project/:projectId/notes"                : "showNotes",
       "project/:projectId/tasks"                : "showTasks",
       "project/:projectId/wikis"                : "showWikis",
@@ -290,6 +293,23 @@ require([
       App.extResourceCollection.fetch();
     },
 
+
+
+    showTimeline: function(proj) {
+      this.cleanView();
+
+      App.globalController.set('projectId', proj);
+      App.globalController.trigger('navigate', 'timeline');
+
+      this.showTags();
+
+      App.eventCollection = new App.EventCollection();
+      this.currentView = App.eventListView = new App.EventListView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        collection: App.eventCollection
+      });
+      App.eventCollection.fetch({data: { limit: 100, offset: 0 }});
+    },
 
 
 

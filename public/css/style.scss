@@ -9,8 +9,8 @@ $dark_blue:  #002B55;
 $light_red:  #EE8CA7;
 $yellowish:  #FFFFD5;
 
-$link_color:  $blueish;
-$link_hover_color:  $dark_blue;
+$link_color:  $redish;//$blueish;
+$link_hover_color:  black;//$dark_blue;
 $h2_color:  $dark_blue;
 
 body {
@@ -296,7 +296,7 @@ th, td.theader {
 }
 
 a:link, a:visited {
-    -moz-transition: all 0.3s ease 0s;
+    -moz-transition: all 0.5s ease 0s;
 }
 
 a:hover {
@@ -1449,4 +1449,61 @@ div#mask {
     button {
 	margin-right: 0;
     }
+}
+
+
+.eventView {
+    a {
+	color: $redish;
+
+	&:hover {
+	    color: black;
+	}
+    }
+    .summary {
+	
+    }
+
+    .timeline-task {
+	//font-weight: bold;
+	font-style: italic;
+	color: $redish;
+    }
+
+    .meta {
+	width: 15%;
+	display: inline;
+	float: left;
+
+	.date-created {
+	    float: left;
+	    display: inline;
+	    border: none;
+	    box-shadow: none;
+	    font-size: normal;
+	    //font-weight: bold;
+	    padding: 0;
+	    text-align: left;
+	    //width: 100%;
+	    color: darken($light_grey, 20%);
+	    font-size: 90%;
+	}
+    }
+
+    .text {
+	width: 85%;
+	display: inline;
+	float: right;
+	font-family: 'Nunito',sans-serif;
+	font-size: 90%;
+
+	p {
+	    margin-top: 0px;
+	    margin-bottom: 0px;
+	}
+    }
+
+    border-bottom: 1px dotted $light_grey;
+    margin-top: 10px;
+    padding-bottom: 10px;
 }

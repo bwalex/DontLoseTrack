@@ -94,14 +94,14 @@ end
 get '/api/project/:project_id/events' do
   content_type :json
 
-  s = Setting.where(:key => 'timeline:events')
-  if s == nil
+  s = Setting.where(:project_id => params[:project_id], :key => 'timeline:events')
+  if s.empty?
     return [].to_json
   end
 
-  filters = s.value.split(',')
+  filters = s[0].value.split(',')
   Event.where(:project_id => params[:project_id],
-    :type => filters).to_json
+    :type => filters).order('occurred_at DESC').to_json
 end
 
 
@@ -141,7 +141,7 @@ post '/api/project/:project_id/note' do
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note added",
-      :body => "<span class='timeline-note'>" + snippet(n.text) + "</span>"
+      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(n.text)) + "</blockquote></span>"
   );
   n.to_json
 end
@@ -153,15 +153,14 @@ delete '/api/project/:project_id/note/:note_id' do
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note deleted",
-      :body => "<span class='timeline-note'>" + snippet(n.text) + "</span>"
+      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(n.text)) + "</blockquote></span>"
   );
   Note.destroy(n)
 end
 
 
 def snippet(thought)
-  wordcount = 30
-  thought.split[0..(wordcount-1)].join(" ") + (thought.split.size > wordcount ? "..." : "")
+  thought[0..140]
 end 
 
 
@@ -206,7 +205,7 @@ put '/api/project/:project_id/wiki/:wiki_id' do
         :project => Project.find(params[:project_id]),
         :type => 'wikis',
         :occurred_at => DateTime.now,
-        :summary => "Wiki <span class='timeline-wiki'>" + oldTitle + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span>"
+        :summary => "Wiki <span class='timeline-wiki'>" + old_title + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span>"
     );
 
   end
@@ -550,9 +549,15 @@ error ActiveRecord::RecordNotUnique do
 end
 
 
+error ActiveRecord::RecordNotFound do
+  status 404
+  { "errors" => ["Resource is not available"] }.to_json
+end
+
+
 
 
 not_found do
-  "This is not the web page you are looking for."
+  "Resource not found"
 end
 
