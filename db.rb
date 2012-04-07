@@ -319,7 +319,7 @@ class Tag < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :include => [ :note_tags, :task_tags ]
+      :include => [ :note_tags, :task_tags, :wiki_tags ]
     )
   end
 end

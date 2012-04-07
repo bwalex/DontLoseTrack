@@ -91,6 +91,18 @@ end
 
 
 
+get '/api/project/:project_id/events' do
+  content_type :json
+
+  s = Setting.where(:key => 'timeline:events')
+  if s == nil
+    return [].to_json
+  end
+
+  filters = s.value.split(',')
+  Event.where(:project_id => params[:project_id],
+    :type => filters).to_json
+end
 
 
 
@@ -124,16 +136,33 @@ post '/api/project/:project_id/note' do
   p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
   n = Note.create!(:text => data['text'], :project => p)
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'notes',
+      :occurred_at => DateTime.now,
+      :summary => "Note added",
+      :body => "<span class='timeline-note'>" + snippet(n.text) + "</span>"
+  );
   n.to_json
 end
 
 delete '/api/project/:project_id/note/:note_id' do
   n = Note.find(params[:note_id])
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'notes',
+      :occurred_at => DateTime.now,
+      :summary => "Note deleted",
+      :body => "<span class='timeline-note'>" + snippet(n.text) + "</span>"
+  );
   Note.destroy(n)
 end
 
 
-
+def snippet(thought)
+  wordcount = 30
+  thought.split[0..(wordcount-1)].join(" ") + (thought.split.size > wordcount ? "..." : "")
+end 
 
 
 
@@ -168,8 +197,20 @@ end
 put '/api/project/:project_id/wiki/:wiki_id' do
   content_type :json
   w = Wiki.find(params[:wiki_id])
+  old_title = w.title
   JSON.parse(request.body.read).each { |p, v| w.send(p + "=", v) }
   w.save!
+
+  if w.title != old_title
+    e = Event.create!(
+        :project => Project.find(params[:project_id]),
+        :type => 'wikis',
+        :occurred_at => DateTime.now,
+        :summary => "Wiki <span class='timeline-wiki'>" + oldTitle + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span>"
+    );
+
+  end
+
   w.to_json
 end
 
@@ -178,11 +219,23 @@ post '/api/project/:project_id/wiki' do
   p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
   w = Wiki.create!(:title => data['title'], :project => p)
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'wikis',
+      :occurred_at => DateTime.now,
+      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> added"
+  );
   w.to_json
 end
 
 delete '/api/project/:project_id/wiki/:wiki_id' do
   w = Wiki.find(params[:wiki_id])
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'wikis',
+      :occurred_at => DateTime.now,
+      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> deleted"
+  );
   Wiki.destroy(w)
 end
 
@@ -331,6 +384,12 @@ post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   wiki = Wiki.find(params[:wiki_id])
   wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
   wiki.touch
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'wikis',
+      :occurred_at => DateTime.now,
+      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{wiki.id}'>" + wiki.title + "</a></span> updated"
+  );
   wc.to_json
 end
 
@@ -421,19 +480,51 @@ post '/api/project/:project_id/task' do
   p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
   t = Task.create!(:summary => data['summary'], :project => p)
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'tasks',
+      :occurred_at => DateTime.now,
+      :summary => "Task <span class='timeline-task'>" + t.summary + "</span> added"
+  );
   t.to_json
 end
 
 put '/api/project/:project_id/task/:task_id' do
   content_type :json
   t = Task.find(params[:task_id])
+  completed = t.completed
   JSON.parse(request.body.read).each { |p, v| t.send(p + "=", v) }
   t.save!
+
+  if t.completed and not completed
+    e = Event.create!(
+        :project => Project.find(params[:project_id]),
+        :type => 'tasks',
+        :occurred_at => DateTime.now,
+        :summary => "Task <span class='timeline-task'>" + t.summary + "</span> completed"
+    );
+  elsif not t.completed and completed
+    e = Event.create!(
+        :project => Project.find(params[:project_id]),
+        :type => 'tasks',
+        :occurred_at => DateTime.now,
+        :summary => "Task <span class='timeline-task'>" + t.summary + "</span> back in the game"
+    );
+  end
+
   t.to_json
 end
 
 delete '/api/project/:project_id/task/:task_id' do
   t = Task.find(params[:task_id])
+
+  e = Event.create!(
+      :project => Project.find(params[:project_id]),
+      :type => 'tasks',
+      :occurred_at => DateTime.now,
+      :summary => "Task <span class='timeline-task'>" + t.summary + "</span> deleted"
+  );
+
   Task.destroy(t)
 end
 
@@ -459,65 +550,9 @@ error ActiveRecord::RecordNotUnique do
 end
 
 
-get '/db_populate' do
-  p = Project.create(:name => 'mrf24j40-driver', :github_repo => 'bwalex/mrf24j40-driver')
-  tag1 = p.tags.create(:color => '#00ff00', :name => 'Tag1')
-  tag2 = p.tags.create(:color => '#0000ff', :name => 'Tag2')
-  tag3 = p.tags.create(:color => '#00ffff', :name => 'Tag3')
-  tag4 = p.tags.create(:color => '#ffff00', :name => 'Tag4')
-  tag5 = p.tags.create(:color => '#ff00ff', :name => 'Tag5')
-  p.tags.create(:color => '#eebbcc', :name => 'Tag Master 6')
-  p.tags.create(:color => '#F3918F', :name => 'Long Tag Number 7')
-  p.tags.create(:color => '#391AAA', :name => 'Another long tag 8')
-  p.tags.create(:color => '#13dfa9', :name => 'taggi tag')
-  p.tags.create(:color => '#316131', :name => 'moo tag')
-  p.tags.create(:color => '#986301', :name => 'meh tag')
-  p.tags.create(:color => '#750931', :name => 'foo tag')
-  p.tags.create(:color => '#865dfa', :name => 'Very, very, extremely long, tag')
-
-  n = p.notes.create(:text => 'Next time I need to revise the initial PCB layout')
-  n.tags << tag1
-  n.tags << tag5
-  n.save
-
-  n = p.notes.create(:text => 'Last time I tried to debug some SPI issue with some italian guy')
-  n.tags << tag1
-  n.tags << tag2
-  n.tags << tag3
-  n.save
-
-  t1 = p.tasks.create(:summary => 'Take garbage out')
-  t1.tags << tag2
-  t1.tags << tag4
-  t1.save
-
-
-  t2 = p.tasks.create(:summary => 'Finish this web app', :importance => 'high')
-  t2.tags << tag1
-  t2.tags << tag3
-  t2.tags << tag4
-  t2.tags << tag5
-  t2.save
-
-  t = p.tasks.create(:summary => 'Pick up parcels', :importance => 'low')
-  t.tags << tag3
-  dep = TaskDep.create(:task => t, :dependency => t1)
-  t.task_deps << dep
-  dep = TaskDep.create(:task => t, :dependency => t2)
-  t.task_deps << dep
-  t.save
-
-  p = Project.create(:name => 'tc-play', :github_repo => 'bwalex/tc-play')
-  p = Project.create(:name => 'sniff802154')
-end
 
 
 not_found do
   "This is not the web page you are looking for."
 end
 
-
-
-
-#error do
-#end

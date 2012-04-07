@@ -6,6 +6,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'extResourceView',
 
     events: {
+      "click button"           : "deleteResource",
     },
 
     destroy: function() {
@@ -18,7 +19,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function() {
-      _.bindAll(this, 'render');
+      _.bindAll(this, 'render', 'destroy', 'deleteResource');
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
@@ -37,10 +38,22 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'extResourceListView',
 
     events: {
+      "click .extres-new button"            : "addNewRes"
+    },
+
+    addNewRes: function(ev) {
+      var e = new App.ExtResource({
+	type: $(this.el).find('.extres-type select').val(),
+	location: $(this.el).find('.extres-location input').val()
+      });
+
+      e.save({}, {wait: true});
+
+      this.collection.add(e);
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderExtResource');
+      _.bindAll(this, 'render', 'renderExtResource', 'addNewRes');
 
       this.collection.bind('add', this.renderExtResource);
       this.collection.bind('reset', this.render);
