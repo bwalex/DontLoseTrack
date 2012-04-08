@@ -1,0 +1,94 @@
+!!!
+
+%html
+  %head
+    -#%link{ :type => "text/css", :href => "http://fonts.googleapis.com/css?family=Nunito", :rel => "stylesheet" }
+
+    %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
+    %link{ :type => "text/css", :href => "/css/dateinput.css", :rel => "stylesheet" }
+    %link{ :type => "text/css", :href => "/css/colorpicker.css", :rel => "stylesheet" }
+    %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet" }
+    %link{ :type => "text/css", :href => "/css/pyg_github.css", :rel => "stylesheet" }
+
+  %body
+    .container_16
+      .grid_16#logo
+        .project-name
+        .logo
+          %h3.logo
+            %a{ :href => "/" }
+              Don't Lose Track!
+        .clearer
+
+    .container_16#header
+      .container_16#navbar.clearfix
+        .grid_16
+
+    .container_16.spacer.clearfix
+
+    .container_16.clearfix#content
+      .grid_12
+        - if defined? errors and errors != nil
+          .errors
+            - errors.each do |error|
+              .error
+                .p= error
+        .panes
+          #main-pane
+            .login
+              %h2
+                Login
+              %form{ :method => 'post', :action => '/login' }
+                .row
+                  %label{ :for => 'username' }
+                    Email
+                  %input{ :type => "text", :id => 'username', :name => 'username' }
+                .row
+                  %label{ :for => 'password' }
+                    Password
+                  %input{ :type => 'password', :id => 'password', :name => 'password' }
+                .row
+                  %input{ :type => 'submit', :value => 'Login' }
+                  
+            .registration
+              %h2
+                Register
+              %form{ :method => 'post', :action => '/register' }
+                .row
+                  %label{ :for => 'name' }
+                    Name
+                  %input{ :type => 'text', :id => 'name', :name => 'name' }
+
+                .row
+                  %label{ :for => 'email' }
+                    Email
+                  %input{ :type => 'text', :id => 'email', :name => 'email' }
+          
+                .row
+                  %label{ :for => 'password' }
+                    Password
+                  %input{ :type => 'password', :id => 'password', :name => 'password' }
+                .row
+                  %label{ :for => 'password-confirmation' }
+                    Password (again)
+                  %input{ :type => 'password', :id => 'password-confirmation', :name => 'password_confirmation' }
+                .row
+                  %input{ :type => 'submit', :value => 'Register' }
+            .clearer
+      
+
+
+      .grid_4.clearfix
+        #sidebar
+
+    .overlay#cheat-overlay
+      .content-wrap
+    #mask
+
+    .container_16.spacer.clearfix
+
+    .container_16.clearfix#footer
+      .grid_16
+        Copyright (C) 2012, Alex Hornung, Gema Gomez
+
+    #tagdrag

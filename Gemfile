@@ -16,3 +16,4 @@ gem "haml"
 gem "sass"
 
 gem "json"
+gem "bcrypt-ruby"

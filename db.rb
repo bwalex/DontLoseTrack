@@ -1,3 +1,91 @@
+require 'digest/md5'
+require 'bcrypt'
+
+class EmailValidator < ActiveModel::EachValidator
+  def validate_each(record, attribute, value)
+    unless value =~ /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i
+      record.errors[attribute] << (options[:message] || "is not an email")
+    end
+  end
+end
+
+
+class User < ActiveRecord::Base
+  attr_accessor :new_password, :new_password_confirmation
+
+  has_many :project_users
+
+  has_many :projects,     :through => :project_users,
+                          :uniq => true
+
+
+  validates :name, :length => { :in => 2..40 }
+  validates_confirmation_of :new_password, :if=>:password_changed?
+  validates :email, :presence => true, :uniqueness => true, :email => true
+
+  before_save :hash_new_password, :if=>:password_changed?
+  before_save :hash_mail
+
+  def email=(mail)
+    self[:email] = mail.strip.downcase
+  end
+
+  def password_changed?
+    !@new_password.blank?
+  end
+
+  def as_json(options={})
+    super(
+      :only => [
+                :email,
+                :email_hashed,
+                :name
+               ]
+    )
+  end
+
+  def self.authenticate(email, password)
+    # Because we use bcrypt we can't do this query in one part, first
+    # we need to fetch the potential user
+    if user = find_by_email(email)
+      # Then compare the provided password against the hashed one in the db.
+      if BCrypt::Password.new(user.password).is_password? password
+        # If they match we return the user 
+        return user
+      end
+    end
+    # If we get here it means either there's no user with that email, or the wrong
+    # password was provided.  But we don't want to let an attacker know which. 
+    return nil
+  end
+
+
+  private
+
+  def hash_mail
+    self[:email_hashed] = Digest::MD5.hexdigest(self[:email].strip.downcase)
+  end
+
+  def hash_new_password
+    self[:password] = BCrypt::Password.create(@new_password)
+  end
+end
+
+
+class ProjectUser < ActiveRecord::Base
+  belongs_to :user
+  belongs_to :project
+
+  validates_uniqueness_of  :user_id, :scope => :project_id,
+                                     :message => "already on that project"
+  validates_presence_of :project
+  validates_associated  :project
+  validates_presence_of :user
+  validates_associated  :user
+
+end
+
+
 class Setting < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
@@ -24,6 +112,7 @@ end
 class Event < ActiveRecord::Base
   self.inheritance_column = :inheritance_type
 
+  has_one :user
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
@@ -78,8 +167,12 @@ class Project < ActiveRecord::Base
   has_many :documents,    :dependent => :delete_all
 
   has_many :settings,     :dependent => :delete_all
-  has_many :ext_resource, :dependent => :delete_all
+  has_many :ext_resources, :dependent => :delete_all
   has_many :events,       :dependent => :delete_all
+
+  has_many :project_users
+  has_many :users,        :through => :project_users,
+                          :uniq => true
 
   validates :name, :length => { :in => 1..50 }
   validates :name, :uniqueness => true
@@ -120,6 +213,8 @@ end
 class Note < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :notes
 
+  has_one  :user
+
   has_many :note_tags
   has_many :tags,       :through => :note_tags,
                         :uniq => true
@@ -159,6 +254,8 @@ end
 
 class WikiContent < ActiveRecord::Base
   belongs_to :wiki,     :inverse_of => :wiki_contents
+
+  has_one :user
 
   validates_presence_of :wiki
   validates_associated  :wiki

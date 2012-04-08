@@ -1515,3 +1515,28 @@ div#mask {
     margin-top: 10px;
     padding-bottom: 10px;
 }
+
+.login,
+.registration  {
+    float: left;
+    display: block;
+    margin-right: 100px;
+
+    h2 {
+	color: $redish;
+    }
+
+    label {
+	display: inline-block;
+	width: 10em;
+    }
+
+    input {
+	display: inline-block;
+    }
+
+    input[type=submit] {
+	margin-top: 10px;
+	float: right;
+    }
+}

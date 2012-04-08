@@ -42,6 +42,8 @@ configure do
   ActiveRecord::Base.establish_connection(dbconfig)
 
   ActiveRecord::Base.include_root_in_json = false
+
+  enable :sessions
 end
 
 
@@ -50,7 +52,55 @@ after do
 end
 
 
+get '/login' do
+  haml :login, :format => :html5
+end
+
+post '/login' do
+  "User: " + params[:username] + ", password: " + params[:password]
+  u = User.authenticate(params[:username], params[:password])
+
+  redirect '/login' unless u != nil
+
+  session[:user] = u.id
+  redirect '/'
+end
+
+get '/logout' do
+  session[:user] = nil
+  redirect '/'
+end
+
+get '/register' do
+  haml :login, :format => :html5
+end
+
+post '/register' do
+  begin
+    u = User.create!(
+      :name => params[:name],
+      :email => params[:email],
+      :new_password => params[:password],
+      :new_password_confirmation => params[:password_confirmation]
+    )
+
+    session[:user] = u.id
+    redirect '/'
+  rescue ActiveRecord::RecordInvalid => invalid
+    errors = []
+
+    invalid.record.errors.each do |k, v|
+      errors.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
+    end
+
+    haml :login, :format => :html5, :locals => {:errors => errors }
+  end
+end
+
+
+
 get '/' do
+  redirect '/login' unless session[:user]
   haml :main, :format => :html5
 end
 
@@ -60,8 +110,75 @@ end
 
 
 
+#before '/api/project' do
+#  redirect '/login' unless session[:user]
+#end
+
+before '/api/*' do
+  @user = User.find(session[:user])
+end
+
+before '/api/project/:project_id*' do
+  @project = @user.projects.find(params[:project_id])
+  status 404 unless @project != nil
+end
+
+before '/api/project/:project_id/note/:note_id*' do
+  @note = @project.notes.find(params[:note_id])
+  status 404 unless @note != nil
+end
+
+before '/api/project/:project_id/task/:task_id*' do
+  @task = @project.tasks.find(params[:task_id])
+  status 404 unless @task != nil
+end
+
+before '/api/project/:project_id/wiki/:wiki_id*' do
+  @wiki = @project.wikis.find(params[:wiki_id])
+  status 404 unless @wiki != nil
+end
+
+before '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
+  @wikicontent = @wiki.find(params[:wc_id])
+  status 404 unless @wikicontent != nil
+end
+
+before '/api/project/:project_id/settings/:setting_id*' do
+  @setting = @project.settings.find(params[:setting_id])
+  status 404 unless @setting != nil
+end
+
+before '/api/project/:project_id/extresource/:extres_id*' do
+  @extres = @project.ext_resources.find(params[:extres_id])
+  status 404 unless @extres != nil
+end
+
+before '/api/project/:project_id/tag/:tag_id*' do
+  @tag = @project.tags.find(params[:tag_id])
+  status 404 unless @tag != nil
+end
+
+before '/api/project/:project_id/taskdep/:tdep_id' do
+  # @tasktag = @project.tags.find(params[:tag_id])
+end
+
+before '/api/project/:project_id/tasktag/:tag_id' do
+  # @tasktag = @project.tags.find(params[:tag_id])
+end
+
+before '/api/project/:project_id/notetag/:tag_id' do
+  # @notetag = @project.tags.find(params[:tag_id])
+end
+
+before '/api/project/:project_id/wikitag/:tag_id' do
+  # @wikitag = @project.tags.find(params[:tag_id])
+end
+
+
+
 get '/api/project' do
-  Project.all.to_json
+  User.find(session[:user]).projects.to_json
+  #Project.all.to_json
 end
 
 get '/api/project/:project_id' do
@@ -103,6 +220,26 @@ get '/api/project/:project_id/events' do
   Event.where(:project_id => params[:project_id],
     :type => filters).order('occurred_at DESC').to_json
 end
+
+
+
+
+get '/api/user' do
+  User.all.to_json
+end
+
+put '/api/user/:user_id' do
+end
+
+delete '/api/user/:user_id' do
+end
+
+get '/api/project/:project_id/user' do
+  p = Project.find(params[:project_id])
+  p.users.to_json
+end
+
+
 
 
 
