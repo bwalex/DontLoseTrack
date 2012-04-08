@@ -8,7 +8,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
   });
 
   App.EventCollection = Backbone.Collection.extend({
-    modelName: 'TImeline Events',
+    modelName: 'Timeline Events',
     url: function() {
       return '/api/project/'+ App.globalController.get('projectId') +'/events';
     },
