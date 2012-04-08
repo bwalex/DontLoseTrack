@@ -159,51 +159,44 @@ before '/api/project/:project_id/tag/:tag_id*' do
 end
 
 before '/api/project/:project_id/taskdep/:tdep_id' do
-  # @tasktag = @project.tags.find(params[:tag_id])
 end
 
 before '/api/project/:project_id/tasktag/:tag_id' do
-  # @tasktag = @project.tags.find(params[:tag_id])
 end
 
 before '/api/project/:project_id/notetag/:tag_id' do
-  # @notetag = @project.tags.find(params[:tag_id])
 end
 
 before '/api/project/:project_id/wikitag/:tag_id' do
-  # @wikitag = @project.tags.find(params[:tag_id])
 end
 
 
 
 get '/api/project' do
-  User.find(session[:user]).projects.to_json
-  #Project.all.to_json
+  @user.projects.to_json
 end
 
 get '/api/project/:project_id' do
-  Project.find(params[:project_id]).to_json
+  @project.to_json
 end
 
 put '/api/project/:project_id' do
   content_type :json
-  p = Project.find(params[:project_id])
-  JSON.parse(request.body.read).each { |k, v| p.send(k + "=", v) }
-  p.save!
-  p.to_json
+  JSON.parse(request.body.read).each { |k, v| @project.send(k + "=", v) }
+  @project.save!
+  @project.to_json
 
 end
 
 post '/api/project' do
   content_type :json
   data = JSON.parse(request.body.read)
-  p = Project.create!(:name => data['name'])
-  p.to_json
+  @project = @user.projects.create!(:name => data['name'])
+  @project.to_json
 end
 
 delete '/api/project/:project_id' do
-  p = Project.find(params[:project_id])
-  Project.destroy(p)
+  Project.destroy(@project)
 end
 
 
@@ -211,21 +204,20 @@ end
 get '/api/project/:project_id/events' do
   content_type :json
 
-  s = Setting.where(:project_id => params[:project_id], :key => 'timeline:events')
+  s = @project.settings.where(:key => 'timeline:events')
   if s.empty?
     return [].to_json
   end
 
   filters = s[0].value.split(',')
-  Event.where(:project_id => params[:project_id],
-    :type => filters).order('occurred_at DESC').to_json
+  @project.events.where(:type => filters).order('occurred_at DESC').to_json
 end
 
 
 
 
-get '/api/user' do
-  User.all.to_json
+get '/api/project/:project_id/user' do
+  @project.users.to_json
 end
 
 put '/api/user/:user_id' do
@@ -234,19 +226,11 @@ end
 delete '/api/user/:user_id' do
 end
 
-get '/api/project/:project_id/user' do
-  p = Project.find(params[:project_id])
-  p.users.to_json
-end
-
-
 
 
 
 get '/api/project/:project_id/note' do
   content_type :json
-
-  puts params.to_json
 
   if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
     puts "Limit: " << params[:limit]
@@ -262,19 +246,19 @@ get '/api/project/:project_id/note' do
 end
 
 get '/api/project/:project_id/note/:note_id' do
-  Note.find(params[:note_id]).to_json
+  @note.to_json
 end
 
 put '/api/project/:project_id/note/:note_id' do
+  status 500
 end
 
 post '/api/project/:project_id/note' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  n = Note.create!(:text => data['text'], :project => p)
+  n = @project.notes.create!(:text => data['text'])
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note added",
@@ -284,15 +268,14 @@ post '/api/project/:project_id/note' do
 end
 
 delete '/api/project/:project_id/note/:note_id' do
-  n = Note.find(params[:note_id])
   e = Event.create!(
       :project => Project.find(params[:project_id]),
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note deleted",
-      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(n.text)) + "</blockquote></span>"
+      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(@note.text)) + "</blockquote></span>"
   );
-  Note.destroy(n)
+  Note.destroy(@note)
 end
 
 
@@ -311,8 +294,6 @@ end
 get '/api/project/:project_id/wiki' do
   content_type :json
 
-  puts params.to_json
-
   if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
     puts "Limit: " << params[:limit]
     puts "Offset: " << params[:offset]
@@ -322,41 +303,39 @@ get '/api/project/:project_id/wiki' do
       :wiki_tags => { :tag_id => params[:filter][:tags] }
     ).limit(params[:limit]).offset(params[:offset]).to_json
   else
-    Wiki.where("project_id = ?", params[:project_id]).order("updated_at DESC").to_json
+    @project.wikis.order("updated_at DESC").to_json
   end
 end
 
 get '/api/project/:project_id/wiki/:wiki_id' do
-  Wiki.find(params[:wiki_id]).to_json
+  @wiki.to_json
 end
 
 put '/api/project/:project_id/wiki/:wiki_id' do
   content_type :json
-  w = Wiki.find(params[:wiki_id])
-  old_title = w.title
-  JSON.parse(request.body.read).each { |p, v| w.send(p + "=", v) }
-  w.save!
+  old_title = @wiki.title
+  JSON.parse(request.body.read).each { |p, v| @wiki.send(p + "=", v) }
+  @wiki.save!
 
-  if w.title != old_title
+  if @wiki.title != old_title
     e = Event.create!(
-        :project => Project.find(params[:project_id]),
+        :project => @project,
         :type => 'wikis',
         :occurred_at => DateTime.now,
-        :summary => "Wiki <span class='timeline-wiki'>" + old_title + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span>"
+        :summary => "Wiki <span class='timeline-wiki'>" + old_title + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span>"
     );
 
   end
 
-  w.to_json
+  @wiki.to_json
 end
 
 post '/api/project/:project_id/wiki' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  w = Wiki.create!(:title => data['title'], :project => p)
+  w = Wiki.create!(:title => data['title'], :project => @project)
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> added"
@@ -365,14 +344,13 @@ post '/api/project/:project_id/wiki' do
 end
 
 delete '/api/project/:project_id/wiki/:wiki_id' do
-  w = Wiki.find(params[:wiki_id])
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'wikis',
       :occurred_at => DateTime.now,
-      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> deleted"
+      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> deleted"
   );
-  Wiki.destroy(w)
+  Wiki.destroy(@wiki)
 end
 
 
@@ -382,22 +360,20 @@ end
 
 
 get '/api/project/:project_id/settings' do
-  Setting.where("project_id = ?", params[:project_id]).to_json
+  @project.settings.to_json
 end
 
 put '/api/project/:project_id/settings/:setting_id' do
   content_type :json
-  s = Setting.find(params[:setting_id])
-  JSON.parse(request.body.read).each { |p, v| s.send(p + "=", v) }
-  s.save!
-  s.to_json
+  JSON.parse(request.body.read).each { |p, v| @setting.send(p + "=", v) }
+  @setting.save!
+  @setting.to_json
 end
 
 post '/api/project/:project_id/settings' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  s = Setting.create!(:key => data['key'], :value => data['value'], :project => p)
+  s = Setting.create!(:key => data['key'], :value => data['value'], :project => @project)
   s.to_json
 end
 
@@ -405,20 +381,18 @@ end
 
 
 get '/api/project/:project_id/extresource' do
-  ExtResource.where("project_id = ?", params[:project_id]).to_json
+  @project.ext_resources.to_json
 end
 
 post '/api/project/:project_id/extresource' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  e = ExtResource.create!(:type => data['type'], :location => data['location'], :project => p)
+  e = ExtResource.create!(:type => data['type'], :location => data['location'], :project => @project)
   e.to_json
 end
 
 delete '/api/project/:project_id/extresource/:extres_id' do
-  e = ExtResource.find(params[:extres_id])
-  ExtResource.destroy(e)
+  ExtResource.destroy(@extres)
 end
 
 
@@ -426,32 +400,29 @@ end
 
 
 get '/api/project/:project_id/tag' do
-  Tag.where("project_id = ?", params[:project_id]).to_json
+  @project.tags.to_json
 end
 
 get '/api/project/:project_id/tag/:tag_id' do
-  Tag.find(params[:tag_id]).to_json
+  @tag.to_json
 end
 
 put '/api/project/:project_id/tag/:tag_id' do
   content_type :json
-  t = Tag.find(params[:tag_id])
-  JSON.parse(request.body.read).each { |p, v| t.send(p + "=", v) }
-  t.save!
-  t.to_json
+  JSON.parse(request.body.read).each { |p, v| @tag.send(p + "=", v) }
+  @tag.save!
+  @tag.to_json
 end
 
 post '/api/project/:project_id/tag' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  t = Tag.create!(:name => data['name'], :project => p)
+  t = Tag.create!(:name => data['name'], :project => @project)
   t.to_json
 end
 
 delete '/api/project/:project_id/tag/:tag_id' do
-  t = Tag.find(params[:tag_id])
-  Tag.destroy(t)
+  Tag.destroy(@tag)
 end
 
 
@@ -460,8 +431,8 @@ end
 post '/api/project/:project_id/tasktag' do
   content_type :json
   data = JSON.parse(request.body.read)
-  task = Task.find(data['task_id'])
-  tag = Tag.find(data['tag_id'])
+  task = @project.tasks.find(data['task_id'])
+  tag = @project.tags.find(data['tag_id'])
   tt = TaskTag.create!(:task => task, :tag => tag)
   tt.to_json
 end
@@ -469,6 +440,10 @@ end
 
 delete '/api/project/:project_id/tasktag/:tasktag_id' do
   tt = TaskTag.find(params[:tasktag_id])
+
+  t = @project.tasks.find(tt.task_id)
+  status 404 unless t != nil
+
   TaskTag.destroy(tt)
 end
 
@@ -478,8 +453,8 @@ end
 post '/api/project/:project_id/notetag' do
   content_type :json
   data = JSON.parse(request.body.read)
-  note = Note.find(data['note_id'])
-  tag = Tag.find(data['tag_id'])
+  note = @project.notes.find(data['note_id'])
+  tag = @project.tags.find(data['tag_id'])
   nt = NoteTag.create!(:note => note, :tag => tag)
   nt.to_json
 end
@@ -487,6 +462,10 @@ end
 
 delete '/api/project/:project_id/notetag/:notetag_id' do
   nt = NoteTag.find(params[:notetag_id])
+
+  n = @project.notes.find(nt.note_id)
+  status 404 unless n != nil
+
   NoteTag.destroy(nt)
 end
 
@@ -499,8 +478,8 @@ end
 post '/api/project/:project_id/wikitag' do
   content_type :json
   data = JSON.parse(request.body.read)
-  wiki = Wiki.find(data['wiki_id'])
-  tag = Tag.find(data['tag_id'])
+  wiki = @project.wikis.find(data['wiki_id'])
+  tag = @project.tags.find(data['tag_id'])
   wt = WikiTag.create!(:wiki => wiki, :tag => tag)
   wt.to_json
 end
@@ -508,6 +487,10 @@ end
 
 delete '/api/project/:project_id/wikitag/:wikitag_id' do
   wt = WikiTag.find(params[:wikitag_id])
+
+  w = @project.wikis.find(wt.wiki_id)
+  status 404 unless w != nil
+
   WikiTag.destroy(wt)
 end
 
@@ -517,33 +500,24 @@ end
 post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   content_type :json
   data = JSON.parse(request.body.read)
-  wiki = Wiki.find(params[:wiki_id])
-  wc = WikiContent.create!(:wiki => wiki, :text => data['text'], :comment => data['comment'])
-  wiki.touch
+  wc = WikiContent.create!(:wiki => @wiki, :text => data['text'], :comment => data['comment'])
+  @wiki.touch
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'wikis',
       :occurred_at => DateTime.now,
-      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{wiki.id}'>" + wiki.title + "</a></span> updated"
+      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> updated"
   );
   wc.to_json
 end
 
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
-  WikiContent.where("wiki_id = ?", params[:wiki_id]).to_json
+  @wikis.wiki_contents.to_json
 end
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
-  wc_ids = 0;
-
-  if params[:wc_id].include? ';'
-    wc_ids = params[:wc_id].split(';')
-  else
-    wc_ids = params[:wc_id]
-  end
-
-  WikiContent.find(wc_ids).to_json
+  @wikicontent.to_json
 end
 
 
@@ -557,9 +531,8 @@ end
 
 post '/api/project/:project_id/wiki/:wiki_id/diff' do
   content_type :html
-  wiki = Wiki.find(params[:wiki_id])
-  wc1 = WikiContent.find(params[:ids][0])
-  wc2 = WikiContent.find(params[:ids][1])
+  wc1 = @wiki.wiki_contents.find(params[:ids][0])
+  wc2 = @wiki.wiki_contents.find(params[:ids][1])
 
   Diffy::Diff.new(wc1.text, wc2.text).to_s(:html)
 end
@@ -583,8 +556,8 @@ end
 post '/api/project/:project_id/taskdep' do
   content_type :json
   data = JSON.parse(request.body.read)
-  task = Task.find(data['task_id'])
-  dep = Task.find(data['dependency_id'])
+  task = @project.tasks.find(data['task_id'])
+  dep = @project.tasks.find(data['dependency_id'])
   tdep = TaskDep.create!(:task => task, :dependency => dep)
   tdep.to_json
 end
@@ -592,6 +565,10 @@ end
 
 delete '/api/project/:project_id/taskdep/:taskdep_id' do
   tdep = TaskDep.find(params[:taskdep_id])
+
+  t = @project.tasks.find(tdep.task_id)
+  status 404 unless t != nil
+
   TaskDep.destroy(tdep)
 end
 
@@ -604,20 +581,19 @@ end
 
 get '/api/project/:project_id/task' do
   content_type :json
-  Task.where("project_id = ?", params[:project_id]).to_json
+  @project.tasks.to_json
 end
 
 get '/api/project/:project_id/task/:task_id' do
-  Task.find(params[:task_id]).to_json
+  @task.to_json
 end
 
 post '/api/project/:project_id/task' do
   content_type :json
-  p = Project.find(params[:project_id])
   data = JSON.parse(request.body.read)
-  t = Task.create!(:summary => data['summary'], :project => p)
+  t = Task.create!(:summary => data['summary'], :project => @project)
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'tasks',
       :occurred_at => DateTime.now,
       :summary => "Task <span class='timeline-task'>" + t.summary + "</span> added"
@@ -627,41 +603,38 @@ end
 
 put '/api/project/:project_id/task/:task_id' do
   content_type :json
-  t = Task.find(params[:task_id])
-  completed = t.completed
-  JSON.parse(request.body.read).each { |p, v| t.send(p + "=", v) }
-  t.save!
+  completed = @task.completed
+  JSON.parse(request.body.read).each { |p, v| @task.send(p + "=", v) }
+  @task.save!
 
-  if t.completed and not completed
+  if @task.completed and not completed
     e = Event.create!(
-        :project => Project.find(params[:project_id]),
+        :project => @project,
         :type => 'tasks',
         :occurred_at => DateTime.now,
-        :summary => "Task <span class='timeline-task'>" + t.summary + "</span> completed"
+        :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> completed"
     );
-  elsif not t.completed and completed
+  elsif not @task.completed and completed
     e = Event.create!(
-        :project => Project.find(params[:project_id]),
+        :project => @project,
         :type => 'tasks',
         :occurred_at => DateTime.now,
-        :summary => "Task <span class='timeline-task'>" + t.summary + "</span> back in the game"
+        :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> back in the game"
     );
   end
 
-  t.to_json
+  @task.to_json
 end
 
 delete '/api/project/:project_id/task/:task_id' do
-  t = Task.find(params[:task_id])
-
   e = Event.create!(
-      :project => Project.find(params[:project_id]),
+      :project => @project,
       :type => 'tasks',
       :occurred_at => DateTime.now,
-      :summary => "Task <span class='timeline-task'>" + t.summary + "</span> deleted"
+      :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> deleted"
   );
 
-  Task.destroy(t)
+  Task.destroy(@task)
 end
 
 
@@ -687,8 +660,8 @@ end
 
 
 error ActiveRecord::RecordNotFound do
+  { "errors" => ["Resource not found"] }.to_json
   status 404
-  { "errors" => ["Resource is not available"] }.to_json
 end
 
 
