@@ -257,8 +257,7 @@ post '/api/project/:project_id/note' do
   content_type :json
   data = JSON.parse(request.body.read)
   n = @project.notes.create!(:text => data['text'])
-  e = Event.create!(
-      :project => @project,
+  e = @project.events.create!(
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note added",
@@ -268,8 +267,7 @@ post '/api/project/:project_id/note' do
 end
 
 delete '/api/project/:project_id/note/:note_id' do
-  e = Event.create!(
-      :project => Project.find(params[:project_id]),
+  e = @project.events.create!(
       :type => 'notes',
       :occurred_at => DateTime.now,
       :summary => "Note deleted",
@@ -318,8 +316,7 @@ put '/api/project/:project_id/wiki/:wiki_id' do
   @wiki.save!
 
   if @wiki.title != old_title
-    e = Event.create!(
-        :project => @project,
+    e = @project.events.create!(
         :type => 'wikis',
         :occurred_at => DateTime.now,
         :summary => "Wiki <span class='timeline-wiki'>" + old_title + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span>"
@@ -333,9 +330,8 @@ end
 post '/api/project/:project_id/wiki' do
   content_type :json
   data = JSON.parse(request.body.read)
-  w = Wiki.create!(:title => data['title'], :project => @project)
-  e = Event.create!(
-      :project => @project,
+  w = @project.wikis.create!(:title => data['title'])
+  e = @project.events.create!(
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> added"
@@ -344,8 +340,7 @@ post '/api/project/:project_id/wiki' do
 end
 
 delete '/api/project/:project_id/wiki/:wiki_id' do
-  e = Event.create!(
-      :project => @project,
+  e = @project.events.create!(
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> deleted"
@@ -373,7 +368,7 @@ end
 post '/api/project/:project_id/settings' do
   content_type :json
   data = JSON.parse(request.body.read)
-  s = Setting.create!(:key => data['key'], :value => data['value'], :project => @project)
+  s = @project.settings.create!(:key => data['key'], :value => data['value'])
   s.to_json
 end
 
@@ -387,7 +382,7 @@ end
 post '/api/project/:project_id/extresource' do
   content_type :json
   data = JSON.parse(request.body.read)
-  e = ExtResource.create!(:type => data['type'], :location => data['location'], :project => @project)
+  e = @project.ext_resources.create!(:type => data['type'], :location => data['location'])
   e.to_json
 end
 
@@ -417,7 +412,7 @@ end
 post '/api/project/:project_id/tag' do
   content_type :json
   data = JSON.parse(request.body.read)
-  t = Tag.create!(:name => data['name'], :project => @project)
+  t = @project.tags.create!(:name => data['name'])
   t.to_json
 end
 
@@ -500,10 +495,9 @@ end
 post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
   content_type :json
   data = JSON.parse(request.body.read)
-  wc = WikiContent.create!(:wiki => @wiki, :text => data['text'], :comment => data['comment'])
+  wc = @wiki.wiki_contents.create!(:text => data['text'], :comment => data['comment'])
   @wiki.touch
-  e = Event.create!(
-      :project => @project,
+  e = @project.events.create!(
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> updated"
@@ -591,9 +585,8 @@ end
 post '/api/project/:project_id/task' do
   content_type :json
   data = JSON.parse(request.body.read)
-  t = Task.create!(:summary => data['summary'], :project => @project)
-  e = Event.create!(
-      :project => @project,
+  t = @project.tasks.create!(:summary => data['summary'])
+  e = @project.events.create!(
       :type => 'tasks',
       :occurred_at => DateTime.now,
       :summary => "Task <span class='timeline-task'>" + t.summary + "</span> added"
@@ -608,15 +601,13 @@ put '/api/project/:project_id/task/:task_id' do
   @task.save!
 
   if @task.completed and not completed
-    e = Event.create!(
-        :project => @project,
+    e = @project.events.create!(
         :type => 'tasks',
         :occurred_at => DateTime.now,
         :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> completed"
     );
   elsif not @task.completed and completed
-    e = Event.create!(
-        :project => @project,
+    e = @project.events.create!(
         :type => 'tasks',
         :occurred_at => DateTime.now,
         :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> back in the game"
@@ -627,8 +618,7 @@ put '/api/project/:project_id/task/:task_id' do
 end
 
 delete '/api/project/:project_id/task/:task_id' do
-  e = Event.create!(
-      :project => @project,
+  e = @project.events.create!(
       :type => 'tasks',
       :occurred_at => DateTime.now,
       :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> deleted"
