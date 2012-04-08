@@ -197,6 +197,9 @@ post '/api/project' do
   content_type :json
   data = JSON.parse(request.body.read)
   @project = @user.projects.create!(:name => data['name'])
+  pu = ProjectUser.where(:project_id => @project.id, :user_id => @user.id).first
+  pu.is_owner = true
+  pu.save!
   @project.to_json
 end
 
