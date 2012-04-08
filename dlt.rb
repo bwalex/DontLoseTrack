@@ -57,18 +57,17 @@ get '/login' do
 end
 
 post '/login' do
-  "User: " + params[:username] + ", password: " + params[:password]
   u = User.authenticate(params[:username], params[:password])
 
-  redirect '/login' unless u != nil
-
-  session[:user] = u.id
-  redirect '/'
-end
-
-get '/logout' do
-  session[:user] = nil
-  redirect '/'
+  if u == nil
+    haml :login, :format => :html5,
+                 :locals => {
+                   :errors => ['Invalid username or password']
+                 }
+  else
+    session[:user] = u.id
+    redirect '/'
+  end
 end
 
 get '/register' do
@@ -97,6 +96,12 @@ post '/register' do
   end
 end
 
+get '/logout' do
+  session[:user] = nil
+  redirect '/'
+end
+
+
 
 
 get '/' do
@@ -110,52 +115,52 @@ end
 
 
 
-#before '/api/project' do
-#  redirect '/login' unless session[:user]
-#end
-
 before '/api/*' do
-  @user = User.find(session[:user])
+  begin
+    @user = User.find(session[:user])
+  rescue ActiveRecord::RecordNotFound
+    halt 403
+  end
 end
 
 before '/api/project/:project_id*' do
   @project = @user.projects.find(params[:project_id])
-  status 404 unless @project != nil
+  halt 404 unless @project != nil
 end
 
 before '/api/project/:project_id/note/:note_id*' do
   @note = @project.notes.find(params[:note_id])
-  status 404 unless @note != nil
+  halt 404 unless @note != nil
 end
 
 before '/api/project/:project_id/task/:task_id*' do
   @task = @project.tasks.find(params[:task_id])
-  status 404 unless @task != nil
+  halt 404 unless @task != nil
 end
 
 before '/api/project/:project_id/wiki/:wiki_id*' do
   @wiki = @project.wikis.find(params[:wiki_id])
-  status 404 unless @wiki != nil
+  halt 404 unless @wiki != nil
 end
 
 before '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
   @wikicontent = @wiki.find(params[:wc_id])
-  status 404 unless @wikicontent != nil
+  halt 404 unless @wikicontent != nil
 end
 
 before '/api/project/:project_id/settings/:setting_id*' do
   @setting = @project.settings.find(params[:setting_id])
-  status 404 unless @setting != nil
+  halt 404 unless @setting != nil
 end
 
 before '/api/project/:project_id/extresource/:extres_id*' do
   @extres = @project.ext_resources.find(params[:extres_id])
-  status 404 unless @extres != nil
+  halt 404 unless @extres != nil
 end
 
 before '/api/project/:project_id/tag/:tag_id*' do
   @tag = @project.tags.find(params[:tag_id])
-  status 404 unless @tag != nil
+  halt 404 unless @tag != nil
 end
 
 before '/api/project/:project_id/taskdep/:tdep_id' do
@@ -437,7 +442,7 @@ delete '/api/project/:project_id/tasktag/:tasktag_id' do
   tt = TaskTag.find(params[:tasktag_id])
 
   t = @project.tasks.find(tt.task_id)
-  status 404 unless t != nil
+  halt 404 unless t != nil
 
   TaskTag.destroy(tt)
 end
@@ -459,7 +464,7 @@ delete '/api/project/:project_id/notetag/:notetag_id' do
   nt = NoteTag.find(params[:notetag_id])
 
   n = @project.notes.find(nt.note_id)
-  status 404 unless n != nil
+  halt 404 unless n != nil
 
   NoteTag.destroy(nt)
 end
@@ -484,7 +489,7 @@ delete '/api/project/:project_id/wikitag/:wikitag_id' do
   wt = WikiTag.find(params[:wikitag_id])
 
   w = @project.wikis.find(wt.wiki_id)
-  status 404 unless w != nil
+  halt 404 unless w != nil
 
   WikiTag.destroy(wt)
 end
@@ -561,7 +566,7 @@ delete '/api/project/:project_id/taskdep/:taskdep_id' do
   tdep = TaskDep.find(params[:taskdep_id])
 
   t = @project.tasks.find(tdep.task_id)
-  status 404 unless t != nil
+  halt 404 unless t != nil
 
   TaskDep.destroy(tdep)
 end
@@ -654,7 +659,9 @@ error ActiveRecord::RecordNotFound do
   status 404
 end
 
-
+error 403 do
+  "Not authenticated"
+end
 
 
 not_found do
