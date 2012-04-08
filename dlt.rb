@@ -125,42 +125,42 @@ end
 
 before '/api/project/:project_id*' do
   @project = @user.projects.find(params[:project_id])
-  halt 404 unless @project != nil
+  halt 404 unless @project != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/note/:note_id*' do
   @note = @project.notes.find(params[:note_id])
-  halt 404 unless @note != nil
+  halt 404 unless @note != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/task/:task_id*' do
   @task = @project.tasks.find(params[:task_id])
-  halt 404 unless @task != nil
+  halt 404 unless @task != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/wiki/:wiki_id*' do
   @wiki = @project.wikis.find(params[:wiki_id])
-  halt 404 unless @wiki != nil
+  halt 404 unless @wiki != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
   @wikicontent = @wiki.find(params[:wc_id])
-  halt 404 unless @wikicontent != nil
+  halt 404 unless @wikicontent != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/settings/:setting_id*' do
   @setting = @project.settings.find(params[:setting_id])
-  halt 404 unless @setting != nil
+  halt 404 unless @setting != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/extresource/:extres_id*' do
   @extres = @project.ext_resources.find(params[:extres_id])
-  halt 404 unless @extres != nil
+  halt 404 unless @extres != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/tag/:tag_id*' do
   @tag = @project.tags.find(params[:tag_id])
-  halt 404 unless @tag != nil
+  halt 404 unless @tag != nil # not reached normally, as above raises RecordNotFound
 end
 
 before '/api/project/:project_id/taskdep/:tdep_id' do
@@ -658,6 +658,7 @@ error ActiveRecord::RecordNotFound do
   { "errors" => ["Resource not found"] }.to_json
   status 404
 end
+
 
 error 403 do
   "Not authenticated"
