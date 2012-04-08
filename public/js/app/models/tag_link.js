@@ -8,15 +8,18 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
     idAttribute: 'id',
     initialize: function() {
       var dit = this;
-      console.log("this.get('tag'):");
 
-      this.on('destroy:tag', function(model) {
+      this.get('tag').on('destroy', function(model) {
+        dit.trigger('destroy:tag');
+
 	var task = dit.get('task');
 	if (typeof(task) !== 'undefined')
 	  task.trigger('destroy:tag', model);
       });
 
-      this.on('change:tag', function(model) {
+      this.get('tag').on('change', function(model) {
+        dit.trigger('change:tag');
+
 	var task = dit.get('task');
 	if (typeof(task) !== 'undefined')
           task.trigger('change:tag', model);
@@ -42,13 +45,17 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
       var dit = this;
       console.log("this.get('tag'):");
 
-      this.on('destroy:tag', function(model) {
+      this.get('tag').on('destroy', function(model) {
+        dit.trigger('destroy:tag');
+
 	var note = dit.get('note');
 	if (typeof(note) !== 'undefined')
 	  note.trigger('destroy:tag', model);
       });
 
-      this.on('change:tag', function(model) {
+      this..get('tag').on('change', function(model) {
+        dit.trigger('change:tag');
+
 	var note = dit.get('note');
         if (typeof(note) !== 'undefined')
 	  note.trigger('change:tag', model);
@@ -76,14 +83,18 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
       var dit = this;
       console.log("this.get('tag'):");
 
-      this.on('destroy:tag', function(model) {
+      this.get('tag').on('destroy', function(model) {
+        dit.trigger('destroy:tag');
+
 	var wiki = dit.get('wiki');
 	if (typeof(wiki) !== 'undefined')
 	  wiki.trigger('destroy:tag', model);
       });
 
-      this.on('change:tag', function(model) {
+      this.get('tag').on('change', function(model) {
 	var wiki = dit.get('wiki');
+        dit.trigger('change:tag');
+
         if (typeof(wiki) !== 'undefined')
 	  wiki.trigger('change:tag', model);
       });

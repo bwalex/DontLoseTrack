@@ -21,6 +21,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
     },
 
     destroy: function(ev) {
+      console.log('destroy called in AppliedTagView');
       this.remove();
       this.unbind();
     },

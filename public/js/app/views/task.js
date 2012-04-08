@@ -12,6 +12,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.model.bind('change:dep', this.render);
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.remove);
+      this.model.bind('destroy:dep', this.remove);
     },
 
     removeMe: function(ev) {
