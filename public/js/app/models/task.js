@@ -11,12 +11,17 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
       var dit = this;
       console.log("moo, taskdep: %o", this);
       //console.log(this.get("dependency") === this.get("task"));
-      this.get('dependency').on('change', function(model) {
+      this.on('change:dependency', function(model) {
         dit.trigger('change:dep', model);
         dit.get('task').trigger('change:dep', model);
       });
 
-      this.get('dependency').on('destroy', function(model) {
+      this.on('destroy:dependency', function(model) {
+        dit.trigger('destroy:dep', model);
+        dit.get('task').trigger('destroy:dep', model);
+      });
+
+      this.on('remove:dependency', function(model) {
         dit.trigger('destroy:dep', model);
         dit.get('task').trigger('destroy:dep', model);
       });

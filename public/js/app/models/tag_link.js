@@ -53,7 +53,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
 	  note.trigger('destroy:tag', model);
       });
 
-      this..get('tag').on('change', function(model) {
+      this.get('tag').on('change', function(model) {
         dit.trigger('change:tag');
 
 	var note = dit.get('note');

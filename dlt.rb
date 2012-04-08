@@ -144,7 +144,7 @@ before '/api/project/:project_id/wiki/:wiki_id*' do
 end
 
 before '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
-  @wikicontent = @wiki.find(params[:wc_id])
+  @wikicontent = @wiki.wiki_contents.find(params[:wc_id])
   halt 404 unless @wikicontent != nil # not reached normally, as above raises RecordNotFound
 end
 
