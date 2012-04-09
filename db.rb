@@ -13,6 +13,8 @@ end
 class User < ActiveRecord::Base
   attr_accessor :new_password, :new_password_confirmation
 
+  has_many :user_project_settings
+
   has_many :project_users
 
   has_many :projects,     :through => :project_users,
@@ -85,6 +87,20 @@ class ProjectUser < ActiveRecord::Base
   validates_associated  :user
 
 end
+
+
+class UserProjectSetting < ActiveRecord::Base
+  belongs_to :project
+  belongs_to :user,     :inverse_of => :user_project_settings
+
+  validates :key, :length => { :in => 1..200 }
+  validates_uniqueness_of :key,  :scope => [:user_id, :project_id]
+  validates_presence_of :project
+  validates_associated  :project
+  validates_presence_of :user
+  validates_associated  :user
+end
+
 
 
 class Setting < ActiveRecord::Base

@@ -149,7 +149,7 @@ before '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
 end
 
 before '/api/project/:project_id/settings/:setting_id*' do
-  @setting = @project.settings.find(params[:setting_id])
+  @setting = @user.user_project_settings.where(:project_id => @project.id, :id => params[:setting_id]).first
   halt 404 unless @setting != nil # not reached normally, as above raises RecordNotFound
 end
 
@@ -212,7 +212,7 @@ end
 get '/api/project/:project_id/events' do
   content_type :json
 
-  s = @project.settings.where(:key => 'timeline:events')
+  s = @user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
   if s.empty?
     return [].to_json
   end
@@ -378,7 +378,7 @@ end
 
 
 get '/api/project/:project_id/settings' do
-  @project.settings.to_json
+  @user.user_project_settings.where(:project_id => @project.id).to_json
 end
 
 put '/api/project/:project_id/settings/:setting_id' do
@@ -391,7 +391,7 @@ end
 post '/api/project/:project_id/settings' do
   content_type :json
   data = JSON.parse(request.body.read)
-  s = @project.settings.create!(:key => data['key'], :value => data['value'])
+  s = @user.user_project_settings.create!(:project => @project, :key => data['key'], :value => data['value'])
   s.to_json
 end
 
