@@ -1,19 +1,48 @@
 %script{ :type => "text/x-jsrender", :id => "navbar-tmpl" }
-  {{if id}}
-  %ul.menu.tabs
-    %li
-      %a{ :title => 'timeline', :href => "#project/{{:id}}/timeline" } Timeline
-    %li
-      %a{ :title => 'notes', :href => "#project/{{:id}}/notes" } Notes
-    %li
-      %a{ :title => 'tasks', :href => "#project/{{:id}}/tasks" } Tasks
-    %li
-      %a{ :title => 'wikis', :href => "#project/{{:id}}/wikis" } Wikis
-    %li
-      %a{ :title => 'emails', :href => "#project/{{:id}}/emails" } Emails
-    %li
-      %a{ :title => 'files', :href => "#project/{{:id}}/files" } Files
-    %li
-      %a{ :title => 'settings', :href => "#project/{{:id}}/settings" } Settings
-  {{/if}}
-  %input#projectSelector{ :type => "text", :value => "Switch Project..." }
+  #nav-left
+    {{if id}}
+    %ul.menu.tabs
+      %li
+        %a{ :title => 'timeline', :href => "#project/{{:id}}/timeline" } Timeline
+      %li
+        %a{ :title => 'notes', :href => "#project/{{:id}}/notes" } Notes
+      %li
+        %a{ :title => 'tasks', :href => "#project/{{:id}}/tasks" } Tasks
+      %li
+        %a{ :title => 'wikis', :href => "#project/{{:id}}/wikis" } Wikis
+      %li
+        %a{ :title => 'emails', :href => "#project/{{:id}}/emails" } Emails
+      %li
+        %a{ :title => 'files', :href => "#project/{{:id}}/files" } Files
+      %li
+        %a{ :title => 'settings', :href => "#project/{{:id}}/settings" } Settings
+    {{/if}}
+  #nav-right
+    #nav-user
+      #drop-container
+        #topnav.topnav
+          %a.signin
+            %span.user-name
+              {{: ~curUserName() }}
+            %span.drop-icon
+        .drop-nav
+          .rel
+            .left
+              %img{ :src => "{{: ~curUserAvatar(48) }}" }
+            .right
+              .row
+                %a{ :href => "#user/settings" }
+                  Settings
+              .row
+                %a{ :href => "/logout" }
+                  Logout
+            .clearer
+      .clearer
+
+          
+    #nav-projsel
+      %input#projectSelector{ :type => "text", :value => "Switch Project..." }
+      .clearer
+    -#.clearer
+  -#.clearer
+

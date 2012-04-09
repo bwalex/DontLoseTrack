@@ -4,6 +4,11 @@
       <input type="checkbox" {{: selected ? "checked" : "" }}/>
   %td.date
     {{:updated_at}}
+  %td.user
+    %img{ :src => "{{: ~userAvatar(user_id, 24) }}", :alt => "{{: ~userName(user_id) }}", :title => "{{: ~userName(user_id) }}" }
+    %span.name
+      {{: ~userName(user_id) }}
+
   %td.comment
     %a{ :href => "#project/{{:~projectId()}}/wikis/{{:wiki_id}}/history/{{:id}}" }
       %span.history-id

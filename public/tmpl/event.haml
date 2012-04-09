@@ -3,9 +3,14 @@
     .top
       .date-created
         {{:occurred_at}}
+      .clearer
+    .user
+      %img{ :src => "{{: ~userAvatar(user_id, 48) }}", :alt => "user picture" }
   .text
     .summary
-      {{:summary}}
+      {{:summary}} by&nbsp;
+      %span.name
+        {{: ~userName(user_id) }}
     .body
       {{:body}}
   .clearer

@@ -114,11 +114,10 @@ div#content {
 
 
 #navbar {
+    position: relative;
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
-    //height: 50px;
     margin: 0 0 0 -20px;
-    overflow: hidden;
     padding: 0 20px;
     width: 100%;
 
@@ -128,12 +127,12 @@ div#content {
 
     div {
         margin: 0;
-        text-align: center;
     }
+
     ul {
+	vertical-align: bottom;
         float: left;
 	margin: 0;
-	//width: 100%;
 	padding-left: 0px;
 	li {
             float: left;
@@ -141,12 +140,12 @@ div#content {
 	    margin: 0 0;
         }
     }
-    a {
+
+    .menu a {
 	color: black;
 	display: block;
 	font-size: 90%;
 	font-weight: bold;
-	//height: 26px;
 	padding: 15px 15px 0px;
 	text-decoration: none;
 
@@ -154,8 +153,41 @@ div#content {
             color: #99173C;    
 	}
     }
+
+    div#nav-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+    }
+    
+    div#nav-right {
+	text-align: left;
+	display: inline;
+	position: relative;
+	float: right;
+    }
+
+    div#projsel {
+	position: relative;
+	//position: absolute;
+	//right: 0%;
+	//top: 0%;
+    }
+
     input#projectSelector {
 	float: right;
+    }
+
+    div#nav-user {
+	font-weight: bold;
+	font-size: 90%;
+	a {
+	    color: black;
+	    margin-left: 8px;
+	    &:hover {
+		color: $redish;
+	    }
+	}
     }
 }
 
@@ -1229,6 +1261,19 @@ blockquote {
 	    font-size: 90%;
 	    width: 10em;
 	}
+
+	td.user {
+	    valign: middle;
+	    vertical-align: middle;
+	    img {
+		vertical-align: bottom;
+	    }
+	    span {
+		margin-left: 8px;
+		vertical-align: middle;
+	    }
+	}
+
 	td.comment {
 	    a {
 		color: black;
@@ -1538,5 +1583,124 @@ div#mask {
     input[type=submit] {
 	margin-top: 10px;
 	float: right;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#drop-container {
+    width:780px;
+    margin:0 auto;
+    position: relative;
+}
+
+#drop-content {
+    width:520px;
+    min-height:500px;
+}
+a img {
+    border-width:0;
+}
+#topnav {
+    padding:10px 0px 12px;
+    line-height:23px;
+    text-align:right;
+}
+#topnav a.signin {
+    padding:4px 6px 6px;
+}
+#topnav a.signin:hover {
+    *padding:4px 12px 6px;
+}
+#topnav a.signin, #topnav a.signin:hover {
+    *background-position:0 3px!important;
+}
+
+a.signin {
+    cursor: pointer;
+    position:relative;
+    margin-left:3px;
+}
+
+a.signin span.user-name {
+    padding-right: 10px;
+}
+
+a.signin span.drop-icon {
+    position: absolute;
+    right: 2px;
+    top: 40%;
+    background: url("/img/arrow_down.png") no-repeat 0px 0px;
+    width: 7px;
+    height: 6px;
+    //background-repeat:no-repeat;
+    //background-position:100% 50%;
+}
+#topnav a.menu-open {
+    background: white; //lighten($redish,50%)!important;
+    outline:none;
+}
+#small_signup {
+    display:inline;
+    float:none;
+    line-height:23px;
+    margin:25px 0 0;
+    width:170px;
+}
+a.signin.menu-open span.drop-icon {
+    background-position: 0px -6px;
+}
+
+.drop-nav {
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -webkit-border-top-left-radius:5px;
+    -webkit-border-bottom-left-radius:5px;
+    -webkit-border-bottom-right-radius:5px;
+    border: 1px solid black;
+    display:none;
+    //background-color: white; //lighten($redish, 50%);
+    background: none repeat scroll 0 0 #FFFFFF;
+
+    position:absolute;
+
+    //width:210px;
+    z-index:10;
+    text-align:left;
+    padding:12px;
+    padding-right: 40px;
+    top: 30.5px;
+    right: 0px;
+    margin-top:8px;
+    margin-right: 0px;
+    *margin-right: -1px;
+    color:#789;
+    visibility: visible;
+
+    .rel {
+	position: relative;
+	.left {
+	    float: left;
+	    display: inline;
+	}
+	.right {
+	    float: right;
+	    display: inline;
+	}
     }
 }

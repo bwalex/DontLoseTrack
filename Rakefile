@@ -3,6 +3,10 @@ require 'fileutils'
 require './dlt.rb'
 require 'foreigner'
 
+ActiveRecord::Base.establish_connection(YAML::load(File.open('config/database.yml')))
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+
 Foreigner.load
 
 namespace :db do

@@ -5,6 +5,7 @@ require([
   "global-controller",
   "backbone",
   "backbone-relational",
+  "models/users",
   "models/tag_link",
   "models/tag",
   "models/project",
@@ -15,6 +16,7 @@ require([
   "models/wiki",
   "views/error",
   "views/navbar",
+  "views/users",
   "views/project",
   "views/settings",
   "views/events",
@@ -92,6 +94,39 @@ require([
       });
 
       return mapArr;
+    },
+
+
+    userAvatar: function(user_id, size) {
+      console.log('userAvatar for user_id = ', user_id);
+      var baseUrl = '';
+
+      if (user_id == null)
+	baseUrl = "http://www.gravatar.com/avatar/00000000000000000000000000000000";
+      else
+	baseUrl = "http://www.gravatar.com/avatar/" + ((typeof(user_id) === 'number') ? App.userCollection.get(user_id).get('email_hashed') : user_id);
+
+      baseUrl += "?d=mm" + ((typeof(size) !== 'undefined') ? ("&s=" + size) : "");
+
+      return baseUrl;
+    },
+
+
+    userName: function(user_id) {
+      console.log('userName for user_id = ', user_id);
+
+      if (user_id == null)
+	return "Unknown user";
+
+      return App.userCollection.get(user_id).get('name');
+    },
+
+    curUserName: function() {
+      return App.currentUser.get('name');
+    },
+
+    curUserAvatar: function(size) {
+      return $.views.helpers.userAvatar(App.currentUser.get('email_hashed'), size);
     }
   });
 
@@ -164,6 +199,7 @@ require([
 
       console.log("changeProject: ", newModel, oldModel);
       if (typeof(newModel) !== 'undefined') {
+	App.userCollection.fetch({async: false});
 	App.settingsCollection.fetch({async: false});
 	App.tagCollection.fetch({async: false});
 
@@ -196,6 +232,7 @@ require([
   App.Router = Backbone.Router.extend({
     routes: {
       ""                                        : "showProjects",
+      "user/settings"                           : "showUserSettings",
       "project/:projectId/settings"             : "showSettings",
       "project/:projectId/timeline"             : "showTimeline",
       "project/:projectId/notes"                : "showNotes",
@@ -269,6 +306,20 @@ require([
       App.projectListView.render();
     },
 
+
+
+    showUserSettings: function() {
+      this.cleanView();
+      App.globalController.set('projectId', -1);
+      App.globalController.trigger('navigate', 'home');
+
+      this.currentView = App.userSettingsView = new App.UserSettingsView({
+	el: $('<div></div>').appendTo('#main-pane'),
+	model: App.currentUser
+      });
+
+      App.userSettingsView.render();
+    },
 
 
 
@@ -450,8 +501,12 @@ require([
     el: $('#content .errors')
   });
 
+  App.currentUser = new App.User();
+  App.currentUser.fetch({async: false});
+
   App.settingsCollection = new App.SettingsCollection();
   App.tagCollection = new App.TagCollection();
+  App.userCollection = new App.UserCollection();
   App.projectCollection = new App.ProjectCollection();
   App.projectCollection.fetch({async: false});
 

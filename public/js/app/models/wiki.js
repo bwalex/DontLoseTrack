@@ -30,6 +30,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
 	comment: this.get('comment'),
 	updated_at: this.get('updated_at'),
 	id: this.get('id'),
+	user_id: this.get('user_id'),
 	selected: this.get('selected'),
 	displayRaw: this.get('displayRaw'),
 	html_text: this.get('html_text')

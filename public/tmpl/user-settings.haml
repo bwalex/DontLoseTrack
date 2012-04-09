@@ -1,0 +1,60 @@
+%script{ :type => "text/x-jsrender",:id => "user-settings-tmpl"}
+  .options
+    
+    .timeline.section
+      %h2 Timeline
+      .visible-events
+        %span.setting-label Events to show
+        %button.save-events
+          Save
+        .row
+          :plain
+            <input type="checkbox" name="events" value="notes" {{: ~settingArrayContains(settings, 'timeline:events', 'notes') ? 'checked="yes"' : '' }} >
+          &nbsp;Notes
+        .row
+          :plain
+            <input type="checkbox" name="events" value="tasks" {{: ~settingArrayContains(settings, 'timeline:events', 'tasks') ? 'checked="yes"' : '' }} >
+          &nbsp;Tasks
+        .row
+          :plain
+            <input type="checkbox" name="events" value="wikis" {{: ~settingArrayContains(settings, 'timeline:events', 'wikis') ? 'checked="yes"' : '' }} >
+          &nbsp;Wikis
+
+    .section
+      %h2 External Resources
+      .ext-resources
+
+        
+    .tasks.section
+      %h2 Tasks
+      .sorting
+        %span.setting-label Default ordering
+        %select
+          :plain
+            <option value="intelligent" {{if settings['tasks:default_sort'] === 'intelligent' }}selected="selected" {{/if}}>Intelligent</option>
+            <option value="duedate" {{if settings['tasks:default_sort'] === 'duedate' }}selected="selected" {{/if}}>Due date</option>
+            <option value="importance" {{if settings['tasks:default_sort'] === 'importance' }}selected="selected" {{/if}}>Importance</option>
+
+            
+    
+  .project-knobs.section
+    %h2 Project Management
+    %div
+      :plain
+        <input type="text" value="{{> project.name}}">
+      %button.rename-project
+        Rename Project
+      %button.delete-project{ :rel => "#delete-project-modal" }
+        Delete Project
+    .modal#delete-project-modal
+      %h2
+        Danger!
+      %p
+        Are you sure you want to delete this project?&nbsp;
+        %strong
+          All project related information will be deleted.
+      %p.buttons
+        %button.close.delete-project
+          Yes
+        %button.close
+          No

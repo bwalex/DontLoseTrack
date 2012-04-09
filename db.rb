@@ -37,6 +37,7 @@ class User < ActiveRecord::Base
   def as_json(options={})
     super(
       :only => [
+                :id,
                 :email,
                 :email_hashed,
                 :name
@@ -112,7 +113,7 @@ end
 class Event < ActiveRecord::Base
   self.inheritance_column = :inheritance_type
 
-  has_one :user
+  belongs_to :user
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
@@ -124,6 +125,11 @@ class Event < ActiveRecord::Base
     return (self[:occurred_at] != nil) ? self[:occurred_at].strftime("%d/%m/%Y - %H:%M") : nil
   end
 
+  def as_json(options={})
+    super(
+#      :include => { :user => { :only => [:email_hashed, :name] } }
+    )
+  end
 end
 
 
@@ -213,7 +219,7 @@ end
 class Note < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :notes
 
-  has_one  :user
+  belongs_to :user
 
   has_many :note_tags
   has_many :tags,       :through => :note_tags,
@@ -244,7 +250,8 @@ class Note < ActiveRecord::Base
   def as_json(options={})
     super(
       :methods => :html_text,
-      :include => [ :note_tags ]
+      :include =>  { :note_tags => {} }#, :user => { :only => [:email_hashed, :name] } }
+
       #:include => [ :tags, :note_tags ]
       #:include => { :tags => {}, :note_tags => { :include => [:note, :tag] } }
     )
@@ -255,7 +262,7 @@ end
 class WikiContent < ActiveRecord::Base
   belongs_to :wiki,     :inverse_of => :wiki_contents
 
-  has_one :user
+  belongs_to :user
 
   validates_presence_of :wiki
   validates_associated  :wiki
@@ -280,6 +287,7 @@ class WikiContent < ActiveRecord::Base
 
   def as_json(options={})
     super(
+      #:include => { :user => { :only => [:email_hashed, :name] } },
       :methods => :html_text
     )
   end
@@ -328,7 +336,7 @@ class Wiki < ActiveRecord::Base
   def as_json(options={})
     super(
       :methods => [ :html_text, :last_updated_at, :raw_text ],
-      :include => { :wiki_tags => {}, :wiki_contents => { :only => [:wiki, :id] } }
+      :include => { :wiki_tags => {}, :wiki_contents => { :only => [:wiki, :id, :user_id] } }
     )
   end
 end

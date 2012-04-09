@@ -36,10 +36,10 @@ configure do
       :space_after_headers => true
     })
 
-  dbconfig = YAML::load(File.open('config/database.yml'))
+#  dbconfig = YAML::load(File.open('config/database.yml'))
 
-  ActiveRecord::Base.logger = Logger.new(STDOUT)
-  ActiveRecord::Base.establish_connection(dbconfig)
+#  ActiveRecord::Base.logger = Logger.new(STDOUT)
+#  ActiveRecord::Base.establish_connection(dbconfig)
 
   ActiveRecord::Base.include_root_in_json = false
 
@@ -47,9 +47,9 @@ configure do
 end
 
 
-after do
-  ActiveRecord::Base.clear_active_connections!
-end
+#after do
+#  ActiveRecord::Base.clear_active_connections!
+#end
 
 
 get '/login' do
@@ -531,7 +531,7 @@ end
 
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
-  @wikis.wiki_contents.to_json
+  @wiki.wiki_contents.to_json
 end
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
