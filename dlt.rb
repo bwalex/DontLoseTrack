@@ -24,6 +24,55 @@ class HTMLwithPygments < Redcarpet::Render::HTML
 end
 
 
+enable :sessions
+
+require 'rack/openid'
+use Rack::OpenID
+
+
+
+
+
+
+
+
+
+
+get '/openid_test' do
+  haml :openid_test
+end
+
+post '/login/openid' do
+  resp = request.env["rack.openid.response"]
+  if resp
+    "moo: " + resp.identity_url + " " + resp.to_json
+  else
+    headers 'WWW-Authenticate' => Rack::OpenID.build_header(
+      :identifier => params["openid_identifier"],
+      :required => ["http://axschema.org/contact/email"]
+    )
+    throw :halt, [401, 'got openid?']
+  end
+end
+
+
+
+get '/login/openid' do
+  resp = request.env["rack.openid.response"]
+  resp.to_json
+end
+
+
+
+
+
+
+
+
+
+
+
+
 configure do
   $markdown = Redcarpet::Markdown.new(
     HTMLwithPygments.new(:hard_wrap => true), {
@@ -43,7 +92,7 @@ configure do
 
   ActiveRecord::Base.include_root_in_json = false
 
-  enable :sessions
+#  enable :sessions
 end
 
 
@@ -599,8 +648,14 @@ end
 
 get '/api/project/:project_id/task' do
   content_type :json
+  @project.tasks.find(:all, :include => [:task_deps, :dep_tasks, :task_tags]).to_json
+end
+
+get '/api/project/:project_id/task_non_eager' do
+  content_type :json
   @project.tasks.to_json
 end
+
 
 get '/api/project/:project_id/task/:task_id' do
   @task.to_json

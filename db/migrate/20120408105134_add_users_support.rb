@@ -71,11 +71,11 @@ class AddUsersSupport < ActiveRecord::Migration
 
 
   def self.down
-    drop_foreign_key(:wiki_contents, :users)
-    drop_foreign_key(:notes, :users)
-    drop_foreign_key(:events, :users)
-    drop_foreign_key(:project_users, :users)
-    drop_foreign_key(:project_users, :projects)
+    remove_foreign_key(:wiki_contents, :column => 'user_id')
+    remove_foreign_key(:notes, :column => 'user_id')
+    remove_foreign_key(:events, :column => 'user_id')
+    remove_foreign_key(:project_users, :column => 'user_id')
+    remove_foreign_key(:project_users, :column => 'project_id')
     drop_table :project_users
     remove_column :events, :user_id
     remove_column :notes, :user_id

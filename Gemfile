@@ -17,3 +17,6 @@ gem "sass"
 
 gem "json"
 gem "bcrypt-ruby"
+
+gem "ruby-openid"
+gem "rack-openid"

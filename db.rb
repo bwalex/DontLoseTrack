@@ -24,6 +24,8 @@ class User < ActiveRecord::Base
   validates :name, :length => { :in => 2..40 }
   validates_confirmation_of :new_password, :if=>:password_changed?
   validates :email, :presence => true, :uniqueness => true, :email => true
+  validates_uniqueness_of :alias
+  validates_uniqueness_of :openid, :allow_nil => true, :allow_blank => true
 
   before_save :hash_new_password, :if=>:password_changed?
   before_save :hash_mail
@@ -46,6 +48,12 @@ class User < ActiveRecord::Base
                ]
     )
   end
+
+
+  def self.auth_by_openid(openid)
+    return find_by_openid(openid)
+  end
+
 
   def self.authenticate(email, password)
     # Because we use bcrypt we can't do this query in one part, first
@@ -129,7 +137,8 @@ end
 class Event < ActiveRecord::Base
   self.inheritance_column = :inheritance_type
 
-  belongs_to :user
+  belongs_to :ext_resource #, :optional
+  belongs_to :user #, :optional
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
@@ -180,6 +189,9 @@ end
 
 
 class Project < ActiveRecord::Base
+  belongs_to :owner,      :class_name => "User",
+                          :foreign_key => "owner_id"
+
   has_many :tags,         :dependent => :delete_all
 
   has_many :notes,        :dependent => :delete_all
@@ -197,7 +209,7 @@ class Project < ActiveRecord::Base
                           :uniq => true
 
   validates :name, :length => { :in => 1..50 }
-  validates :name, :uniqueness => true
+  validates_uniqueness_of :name, :scope => :owner_id
 
   def task_stats
     # total, tasks completed, pending, overdue

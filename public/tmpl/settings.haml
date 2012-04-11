@@ -20,11 +20,6 @@
             <input type="checkbox" name="events" value="wikis" {{: ~settingArrayContains(settings, 'timeline:events', 'wikis') ? 'checked="yes"' : '' }} >
           &nbsp;Wikis
 
-    .section
-      %h2 External Resources
-      .ext-resources
-
-        
     .tasks.section
       %h2 Tasks
       .sorting
@@ -34,6 +29,15 @@
             <option value="intelligent" {{if settings['tasks:default_sort'] === 'intelligent' }}selected="selected" {{/if}}>Intelligent</option>
             <option value="duedate" {{if settings['tasks:default_sort'] === 'duedate' }}selected="selected" {{/if}}>Due date</option>
             <option value="importance" {{if settings['tasks:default_sort'] === 'importance' }}selected="selected" {{/if}}>Importance</option>
+
+
+
+          
+    .section
+      %h2 External Resources
+      .ext-resources
+
+        
 
             
     
