@@ -36,7 +36,7 @@ class User < ActiveRecord::Base
   end
 
   def is_new_openid?
-    return (defined? @new_openid or self[:alias].nil? or self[:alias].empty?)
+    return ((defined? @new_openid and @new_openid) or self[:alias].nil? or self[:alias].empty?)
   end
 
 

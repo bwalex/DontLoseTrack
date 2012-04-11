@@ -31,6 +31,11 @@ class HTMLwithPygments < Redcarpet::Render::HTML
 end
 
 
+
+##################################################################
+######## Rack::OpenID setup
+##################################################################
+
 enable :sessions
 
 require 'openid/store/memcache'
@@ -62,6 +67,9 @@ elsif @config['openid']['store'] == 'filesystem'
   use Rack::OpenID, OpenID::Store::Filesystem.new(@config['openid']['location'])
 end
 
+##################################################################
+######## end Rack::OpenID setup
+##################################################################
 
 
 configure do
@@ -163,6 +171,7 @@ post '/register/openid' do
 
   begin
     @user.is_new_openid = false
+    @user.alias = params[:alias]
     @user.name = params[:name]
     @user.email = params[:email]
     @user.alias = params[:alias]
@@ -170,7 +179,7 @@ post '/register/openid' do
     @user.new_password_confirmation = params[:password_confirmation]
     @user.save!
 
-    session[:user] = u.id
+    session[:user] = @user.id
     redirect '/'
   rescue ActiveRecord::RecordInvalid => invalid
     errors = []
@@ -179,7 +188,7 @@ post '/register/openid' do
       errors.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
     end
 
-    haml :register_openid, :format => :html5, :locals => {:errors => errors }
+    haml :register_openid, :format => :html5, :locals => {:errors => errors, :params => params }
   end
 end
 
@@ -203,7 +212,7 @@ post '/register' do
       errors.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
     end
 
-    haml :login, :format => :html5, :locals => {:errors => errors }
+    haml :login, :format => :html5, :locals => {:errors => errors, :params => params }
   end
 end
 
@@ -314,7 +323,7 @@ end
 post '/api/project' do
   content_type :json
   data = JSON.parse(request.body.read)
-  @project = @user.projects.create!(:name => data['name'])
+  @project = @user.projects.create!(:name => data['name'], :owner => @user)
   pu = ProjectUser.where(:project_id => @project.id, :user_id => @user.id).first
   pu.is_owner = true
   pu.save!

@@ -468,7 +468,7 @@ img.boring {
 }
 
 .hide {
-    display: none;
+    display: none !important;
 }
 
 
@@ -1562,10 +1562,15 @@ div#mask {
 }
 
 .login,
-.registration  {
+.registration,
+.openid-login  {
+    fieldset {
+	border: none;
+    }
+
     float: left;
     display: block;
-    margin-right: 100px;
+    //margin-right: 100px;
 
     h2 {
 	color: $redish;
@@ -1584,10 +1589,104 @@ div#mask {
 	margin-top: 10px;
 	float: right;
     }
+
+    legend {
+	font-weight: bold;
+    }
+}
+
+.openid-registration {
+    label {
+	display: inline-block;
+	width: 10em;
+    }
+
+    input {
+	display: inline-block;
+    }
+
+    input[type=submit] {
+	margin-top: 10px;
+	float: right;
+    }
+
+    legend {
+	font-weight: bold;
+    }
+}
+
+.openid-registration {
+    width: 500px;
+
+    .info-text {
+	color: $dark_grey;
+	font-size: 90%;
+    }
+}
+
+.intermediate {
+    float: left;
+    display: block;
+    height: 300px;
+    vertical-align:middle;
+    valign: middle;
+    margin: 20px;
+    margin-right: 30px;
+
+    position: relative;
+    p {
+	font-size: 90%;
+	color: $light_grey;
+	position: absolute;
+	top: 25%;
+    }
+}
+
+.openid-login {
+    padding-top: 10px;
+}
+
+.login {
+    padding-top: 10px;
+    float: left;
+    //background-color: lighten($light_grey, 32%);
+    //height: 300px;
+    //border-radius: 0px 0px 10px 0px;
+}
+
+.sign-in {
+    border: 1px solid $light_grey;
+    border-radius: 10px;
+    & > legend {
+	font-weight: bold;
+	font-size: 120%;
+	color: $redish;
+    }
+}
+
+.login-logo {
+    //border-radius: 10px 10px 0px 0px;
+    padding: 2px;
+    padding-left: 10px;
+    //background-color: lighten($light_grey, 33%);
+    h2 {
+	font-weight: bold;
+	color: $redish;
+    }
 }
 
 
+.login {
+    .no-account {
+	color: $light_grey;
+	font-size: 90%;
+    }
+}
 
+
+.login {
+    //width: 470px;
+}
 
 
 

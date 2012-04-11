@@ -18,6 +18,9 @@
     :javascript
       $(document).ready(function() {
         openid.init('openid_identifier');
+        $('.no-account a').on("click", function(ev) {
+          $('#register-form').toggleClass('hide');
+        });
       });
 
     
@@ -46,58 +49,75 @@
                 .p= error
         .panes
           #main-pane
-            .openid-login
-              %form{ :action => '/login/openid', :method => 'post', :id => 'openid_form' }
-                %input{ :type => 'hidden', :name => 'action', :value => 'verify' }
-                %fieldset
-                  %legend Sign-in using OpenID
-                  #openid_choice
-                    %p Please click your account provider:
-                    #openid_btns
-                  #openid_input_area
-                    %input{ :id => 'openid_identifier', :name => 'openid_identifier', :type => "text", :value => "http://" }
-                    %input{ :id => 'openid_submit', :type => 'submit', :value => 'Sign-In' }
+            %fieldset.sign-in.clearfix
+              %legend Login to Don't Lose Track!
+              -#.login-logo
+              -#  %h2 Login to Don't Lose Track
+              .openid-login
+                %form{ :action => '/login/openid', :method => 'post', :id => 'openid_form' }
+                  %input{ :type => 'hidden', :name => 'action', :value => 'verify' }
+                  %fieldset
+                    %legend Login using OpenID
+                    #openid_choice
+                      %p Please click your account provider:
+                      #openid_btns
+                    #openid_input_area
+                      %input{ :id => 'openid_identifier', :name => 'openid_identifier', :type => "text", :value => "http://" }
+                      %input{ :id => 'openid_submit', :type => 'submit', :value => 'Login' }
 
-              
-            .login
-              %h2
-                Login
-              %form{ :method => 'post', :action => '/login' }
-                .row
-                  %label{ :for => 'username' }
-                    Email
-                  %input{ :type => "text", :id => 'username', :name => 'username' }
-                .row
-                  %label{ :for => 'password' }
-                    Password
-                  %input{ :type => 'password', :id => 'password', :name => 'password' }
-                .row
-                  %input{ :type => 'submit', :value => 'Login' }
-                  
-            .registration
-              %h2
-                Register
-              %form{ :method => 'post', :action => '/register' }
-                .row
-                  %label{ :for => 'name' }
-                    Name
-                  %input{ :type => 'text', :id => 'name', :name => 'name' }
+              .intermediate
+                %p or
+                
+              .login
+                %form{ :method => 'post', :action => '/login' }
+                  %fieldset
+                    %legend Login directly
+                    .row
+                      %label{ :for => 'username' }
+                        Email
+                      %input{ :type => "text", :id => 'username', :name => 'username' }
+                    .row
+                      %label{ :for => 'password' }
+                        Password
+                      %input{ :type => 'password', :id => 'password', :name => 'password' }
+                    .row
+                      %input{ :type => 'submit', :value => 'Login' }
+                    .row
+                      %p.no-account
+                        Don't have an account yet?
+                        %a{ :href => "javascript:void(0)" }
+                          Click here
 
-                .row
-                  %label{ :for => 'email' }
-                    Email
-                  %input{ :type => 'text', :id => 'email', :name => 'email' }
-          
-                .row
-                  %label{ :for => 'password' }
-                    Password
-                  %input{ :type => 'password', :id => 'password', :name => 'password' }
-                .row
-                  %label{ :for => 'password-confirmation' }
-                    Password (again)
-                  %input{ :type => 'password', :id => 'password-confirmation', :name => 'password_confirmation' }
-                .row
-                  %input{ :type => 'submit', :value => 'Register' }
+                %form#register-form{ :class => (defined? errors and not errors.nil?) ? "" : "hide", :method => 'post', :action => '/register' }
+                
+                  %fieldset
+                    %legend Sign up
+                    .row
+                      %label{ :for => 'name' }
+                        Name
+                      %input{ :type => 'text', :id => 'name', :name => 'name', :value => params[:name] }
+
+                    .row
+                      %label{ :for => 'alias' }
+                        Alias/Nick
+                      %input{ :type => 'text', :id => 'alias', :name => 'alias', :value => params[:alias] }
+
+                    .row
+                      %label{ :for => 'email' }
+                        Email
+                      %input{ :type => 'text', :id => 'email', :name => 'email', :value => params[:email] }
+
+                    .row
+                      %label{ :for => 'password' }
+                        Password
+                      %input{ :type => 'password', :id => 'password', :name => 'password' }
+
+                    .row
+                      %label{ :for => 'password-confirmation' }
+                        Password (again)
+                      %input{ :type => 'password', :id => 'password-confirmation', :name => 'password_confirmation' }
+                    .row
+                      %input{ :type => 'submit', :value => 'Register' }
             .clearer
       
 

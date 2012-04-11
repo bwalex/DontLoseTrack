@@ -20,7 +20,7 @@ openid = {
 	locale : null, // is set in openid-<locale>.js
 	sprite : null, // usually equals to locale, is set in
 	// openid-<locale>.js
-	signin_text : null, // text on submit button on the form
+        signin_text : 'Login', // text on submit button on the form
 	all_small : false, // output large providers w/ small icons
 	no_sprite : false, // don't use sprite image
 	image_title : '{provider}', // for image title
