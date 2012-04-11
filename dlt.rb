@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require 'dalli'
+
 require 'active_record'
 require 'foreigner'
 
@@ -17,6 +19,11 @@ require 'haml'
 require './db.rb'
 
 
+
+@config = YAML::load(File.open('config/config.yml'))
+puts @config.to_json
+
+
 class HTMLwithPygments < Redcarpet::Render::HTML
   def block_code(code, language)
     Pygments.highlight(code, :lexer => language)
@@ -26,50 +33,34 @@ end
 
 enable :sessions
 
-require 'rack/openid'
-use Rack::OpenID
+require 'openid/store/memcache'
+require 'openid/store/filesystem'
 
+require 'openid/store/nonce'
+require 'openid/store/interface'
+module OpenID
+  module Store
+    class Memcache < Interface
+      def use_nonce(server_url, timestamp, salt)
+        return false if (timestamp - Time.now.to_i).abs > Nonce.skew
+        ts = timestamp.to_s # base 10 seconds since epoch
+        nonce_key = key_prefix + 'N' + server_url + '|' + ts + '|' + salt
+        result = @cache_client.add(nonce_key, '', expiry(Nonce.skew + 5))
 
-
-
-
-
-
-
-
-
-get '/openid_test' do
-  haml :openid_test
-end
-
-post '/login/openid' do
-  resp = request.env["rack.openid.response"]
-  if resp
-    "moo: " + resp.identity_url + " " + resp.to_json
-  else
-    headers 'WWW-Authenticate' => Rack::OpenID.build_header(
-      :identifier => params["openid_identifier"],
-      :required => ["http://axschema.org/contact/email"]
-    )
-    throw :halt, [401, 'got openid?']
+        return result
+      end
+    end
   end
 end
 
 
+require 'rack/openid'
 
-get '/login/openid' do
-  resp = request.env["rack.openid.response"]
-  resp.to_json
+if @config['openid']['store'] == 'memcache'
+  use Rack::OpenID, OpenID::Store::Memcache.new(Dalli::Client.new(@config['openid']['location']), key_prefix=@config['openid']['key_prefix'])
+elsif @config['openid']['store'] == 'filesystem'
+  use Rack::OpenID, OpenID::Store::Filesystem.new(@config['openid']['location'])
 end
-
-
-
-
-
-
-
-
-
 
 
 
@@ -101,9 +92,10 @@ end
 #end
 
 
-get '/login' do
+get '/login*' do
   haml :login, :format => :html5
 end
+
 
 post '/login' do
   u = User.authenticate(params[:username], params[:password])
@@ -119,15 +111,85 @@ post '/login' do
   end
 end
 
+
+post '/login/openid' do
+  resp = request.env["rack.openid.response"]
+  if resp
+    puts resp.to_json
+    puts resp.status
+
+    if resp.status == :success
+      u = User.auth_by_openid(resp.identity_url)
+      u = User.create!(:openid => resp.identity_url) if u.nil?
+
+      session[:user] = u.id
+      redirect '/'
+    else
+      haml :login, :format => :html5,
+                   :locals => {
+                     :errors => [
+                       'OpenID Authentication unsuccessful',
+                       resp.message
+                     ]
+                   }
+    end
+  else
+    headers 'WWW-Authenticate' => Rack::OpenID.build_header(
+      :identifier => params["openid_identifier"],
+      :required => ["http://axschema.org/contact/email"]
+    )
+    throw :halt, [401, 'got openid?']
+  end
+end
+
+
 get '/register' do
   haml :login, :format => :html5
 end
+
+
+get '/register/openid' do
+  haml :register_openid, :format => :html5
+end
+
+
+post '/register/openid' do
+  begin
+    @user = User.find(session[:user])
+    halt 403 unless @user.is_new_openid?
+  rescue ActiveRecord::RecordNotFound
+    halt 403
+  end
+
+  begin
+    @user.is_new_openid = false
+    @user.name = params[:name]
+    @user.email = params[:email]
+    @user.alias = params[:alias]
+    @user.new_password = params[:password]
+    @user.new_password_confirmation = params[:password_confirmation]
+    @user.save!
+
+    session[:user] = u.id
+    redirect '/'
+  rescue ActiveRecord::RecordInvalid => invalid
+    errors = []
+
+    invalid.record.errors.each do |k, v|
+      errors.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
+    end
+
+    haml :register_openid, :format => :html5, :locals => {:errors => errors }
+  end
+end
+
 
 post '/register' do
   begin
     u = User.create!(
       :name => params[:name],
       :email => params[:email],
+      :alias => params[:alias],
       :new_password => params[:password],
       :new_password_confirmation => params[:password_confirmation]
     )
@@ -145,6 +207,7 @@ post '/register' do
   end
 end
 
+
 get '/logout' do
   session[:user] = nil
   redirect '/'
@@ -155,8 +218,13 @@ end
 
 get '/' do
   redirect '/login' unless session[:user]
+
+  user = User.find(session[:user])
+  redirect '/register/openid' if user.is_new_openid?
+
   haml :main, :format => :html5
 end
+
 
 get '/markdown-cheatsheet' do
   haml :markdown_cheat, :format => :html5
@@ -167,6 +235,7 @@ end
 before '/api/*' do
   begin
     @user = User.find(session[:user])
+    halt 403 if @user.is_new_openid?
   rescue ActiveRecord::RecordNotFound
     halt 403
   end

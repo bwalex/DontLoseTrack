@@ -31,16 +31,15 @@
             <option value="importance" {{if settings['tasks:default_sort'] === 'importance' }}selected="selected" {{/if}}>Importance</option>
 
 
+  {{if ~curUserIs(project.owner)}}
+  .section
+    %h2 External Resources
+    .ext-resources
 
-          
-    .section
-      %h2 External Resources
-      .ext-resources
 
-        
 
-            
-    
+
+
   .project-knobs.section
     %h2 Project Management
     %div
@@ -62,3 +61,4 @@
           Yes
         %button.close
           No
+  {{/if}}

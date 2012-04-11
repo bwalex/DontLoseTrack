@@ -21,14 +21,24 @@ class User < ActiveRecord::Base
                           :uniq => true
 
 
-  validates :name, :length => { :in => 2..40 }
+  validates :name, :length => { :in => 2..40 }, :unless => :is_new_openid?
   validates_confirmation_of :new_password, :if=>:password_changed?
-  validates :email, :presence => true, :uniqueness => true, :email => true
-  validates_uniqueness_of :alias
+  validates :email, :presence => true, :uniqueness => true, :email => true, :unless => :is_new_openid?
+  validates_uniqueness_of :alias, :unless => :is_new_openid?
   validates_uniqueness_of :openid, :allow_nil => true, :allow_blank => true
 
   before_save :hash_new_password, :if=>:password_changed?
-  before_save :hash_mail
+  before_save :hash_mail, :unless => :is_new_openid?
+
+
+  def is_new_openid=(val)
+    @new_openid = val
+  end
+
+  def is_new_openid?
+    return (defined? @new_openid or self[:alias].nil? or self[:alias].empty?)
+  end
+
 
   def email=(mail)
     self[:email] = mail.strip.downcase
@@ -190,7 +200,8 @@ end
 
 class Project < ActiveRecord::Base
   belongs_to :owner,      :class_name => "User",
-                          :foreign_key => "owner_id"
+                          :foreign_key => "owner_id"#,
+                          #:include => :alias
 
   has_many :tags,         :dependent => :delete_all
 
@@ -210,6 +221,10 @@ class Project < ActiveRecord::Base
 
   validates :name, :length => { :in => 1..50 }
   validates_uniqueness_of :name, :scope => :owner_id
+
+  def path
+    return "" + owner.alias + "/" + name
+  end
 
   def task_stats
     # total, tasks completed, pending, overdue
@@ -238,7 +253,8 @@ class Project < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :methods => [ :task_stats, :note_stats, :wiki_stats ]
+      :include => { :owner => { :only => [:id, :alias] } },
+      :methods => [ :path, :task_stats, :note_stats, :wiki_stats ]
     )
   end
 end

@@ -20,3 +20,4 @@ gem "bcrypt-ruby"
 
 gem "ruby-openid"
 gem "rack-openid"
+gem "dalli"

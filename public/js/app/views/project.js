@@ -7,7 +7,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       App.globalController.register(this);
     },
 
-    template: $.templates(null, '<h2>{{:name}}</h2>'),
+    template: $.templates(null, '<h2>{{:path}}</h2>'),
 
     render: function(project) {
       if (typeof(project) !== 'object')

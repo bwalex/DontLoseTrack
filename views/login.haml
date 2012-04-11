@@ -6,12 +6,21 @@
 
     -#%link{ :type => "text/css", :href => "http://fonts.googleapis.com/css?family=Nunito", :rel => "stylesheet" }
 
+    %link{ :type => "text/css", :href => "/openid/css/openid.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/dateinput.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/colorpicker.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/pyg_github.css", :rel => "stylesheet" }
+    %script{ :src => "/js/contrib/jquery-1.7.2.js" }
+    %script{ :src => "/openid/js/openid-jquery.js" }
+    %script{ :src => "/openid/js/openid-en.js" }    
+    :javascript
+      $(document).ready(function() {
+        openid.init('openid_identifier');
+      });
 
+    
   %body
     .container_16
       .grid_16#logo
@@ -37,6 +46,19 @@
                 .p= error
         .panes
           #main-pane
+            .openid-login
+              %form{ :action => '/login/openid', :method => 'post', :id => 'openid_form' }
+                %input{ :type => 'hidden', :name => 'action', :value => 'verify' }
+                %fieldset
+                  %legend Sign-in using OpenID
+                  #openid_choice
+                    %p Please click your account provider:
+                    #openid_btns
+                  #openid_input_area
+                    %input{ :id => 'openid_identifier', :name => 'openid_identifier', :type => "text", :value => "http://" }
+                    %input{ :id => 'openid_submit', :type => 'submit', :value => 'Sign-In' }
+
+              
             .login
               %h2
                 Login

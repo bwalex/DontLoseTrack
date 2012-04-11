@@ -127,6 +127,10 @@ require([
 
     curUserAvatar: function(size) {
       return $.views.helpers.userAvatar(App.currentUser.get('email_hashed'), size);
+    },
+
+    curUserIs: function(u) {
+      return (u.id === App.currentUser.get('id'));
     }
   });
 
