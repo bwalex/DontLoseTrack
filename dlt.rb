@@ -738,7 +738,27 @@ end
 
 get '/api/project/:project_id/task' do
   content_type :json
-  @project.tasks.includes(:task_deps, :dep_tasks, :task_tags).to_json
+  if params[:filter] != nil and defined? params[:filter][:completed]
+    tasks = @project.tasks
+      .where('completed = ?', params[:filter][:completed])
+      .includes(:task_deps, :dep_tasks, :task_tags)
+
+    task_ids = []
+    tasks.each { |x| task_ids << x.id }
+
+    # Load first order (fo) dependencies
+    deps = @project.tasks
+      .includes(:dep_tasks)
+      .where('completed = ?', true)
+      .where(TaskDep.arel_table[:task_id].in(task_ids))
+
+    tasks_and_fo_deps = tasks | deps;
+    tasks_and_fo_deps.to_json({ completed_no_inc: true })
+
+      
+  else
+    @project.tasks.includes(:task_deps, :dep_tasks, :task_tags).to_json
+  end
 end
 
 get '/api/project/:project_id/task_non_eager' do

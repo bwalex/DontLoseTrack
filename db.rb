@@ -226,13 +226,19 @@ class Project < ActiveRecord::Base
     return "" + owner.alias + "/" + name
   end
 
+  def user_stats
+    return {
+      'total' => project_users.count
+    }
+  end
+
   def task_stats
     # total, tasks completed, pending, overdue
     return {
       'total' => tasks.count,
       'completed' => tasks.count(:conditions => "completed = true"),
       'pending' => tasks.count(:conditions => "completed != true"),
-      'overdue' => tasks.count(:conditions => "due_date < NOW()")
+      'overdue' => tasks.count(:conditions => "completed != true AND due_date < NOW()")
     }
   end
 
@@ -254,7 +260,7 @@ class Project < ActiveRecord::Base
   def as_json(options={})
     super(
       :include => { :owner => { :only => [:id, :alias] } },
-      :methods => [ :path, :task_stats, :note_stats, :wiki_stats ]
+      :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats ]
     )
   end
 end
@@ -584,7 +590,7 @@ class Task < ActiveRecord::Base
       return "completed"
     elsif blocked
       return "blocked"
-    elsif not deps.empty?
+    elsif deps.count(:conditions => "completed != true") > 0
       return "depends"
     else
       return "active"
@@ -601,6 +607,12 @@ class Task < ActiveRecord::Base
 
 
   def as_json(options={})
+    inc = [ ];
+
+    unless options[:completed_no_inc] and self[:completed]
+      inc << :task_tags << :task_deps << :dep_tasks
+    end
+
     super(
       :methods => [
                     :html_text,
@@ -609,13 +621,7 @@ class Task < ActiveRecord::Base
                     :raw_importance,
                     :status
                   ],
-      :include => [
-#                   {:deps => { :methods => [:status], :only => [:id, :summary] }},
-#                   :tags,
-                    :task_tags,
-                    :task_deps,
-                    :dep_tasks
-                  ]
+      :include => inc
     )
   end
 end

@@ -494,8 +494,9 @@ require([
 	el: $('<div></div>').appendTo('#main-pane'),
 	collection: App.taskCollection
       });
-      //App.taskCollection.fetch({data: { filter: { tags: [5,17] }}});
-      App.taskCollection.fetch();
+      App.taskListView.refetch();
+      //App.taskCollection.fetch({data: { filter: { completed: false }}});
+      //App.taskCollection.fetch();
     }
   });
 

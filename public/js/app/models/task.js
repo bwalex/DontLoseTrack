@@ -13,21 +13,33 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
       //console.log(this.get("dependency") === this.get("task"));
       this.on('change:dependency', function(model) {
         dit.trigger('change:dep', model);
-        dit.get('task').trigger('change:dep', model);
+	var task = dit.get('task');
+	if (typeof(task) !== 'undefined' && task !== null)
+          dit.get('task').trigger('change:dep', model);
       });
 
       this.on('destroy:dependency', function(model) {
         dit.trigger('destroy:dep', model);
-        dit.get('task').trigger('destroy:dep', model);
+	var task = dit.get('task');
+	if (typeof(task) !== 'undefined' && task !== null)
+	  dit.get('task').trigger('destroy:dep', model);
       });
 
       this.on('remove:dependency', function(model) {
         dit.trigger('destroy:dep', model);
-        dit.get('task').trigger('destroy:dep', model);
+	var task = dit.get('task');
+	if (typeof(task) !== 'undefined' && task !== null)
+	  dit.get('task').trigger('destroy:dep', model);
       });
 
     },
     toJSON: function() {
+      var task = this.get('task');
+      var dep  = this.get('dependency');
+
+      if (typeof(task) === 'undefined' || typeof(dep) === 'undefined')
+	return {};
+
       return { task_id: this.get('task').get('id'), dependency_id: this.get('dependency').get('id') };
     }
   });
@@ -142,10 +154,17 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
 
 
     sortDueDate: function(a, b) {
+      var a_comp = a.get('completed');
+      var b_comp = b.get('completed');
       var a_dd = a.get('raw_due_date');
       var b_dd = b.get('raw_due_date');
       var a_pri = a.get('raw_importance');
       var b_pri = b.get('raw_importance');
+
+      if (a_comp && !b_comp)
+	return 1;
+      if (!a_comp && b_comp)
+	return -1;
 
       if (a_dd != b_dd)
 	return (a_dd === null && b_dd === null) ? 0 :
@@ -159,12 +178,17 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
 
     sortPriority: function(a, b) {
       console.log('sortPriorty!... ', a, b);
+      var a_comp = a.get('completed');
+      var b_comp = b.get('completed');
       var a_dd = a.get('raw_due_date');
       var b_dd = b.get('raw_due_date');
       var a_pri = a.get('raw_importance');
       var b_pri = b.get('raw_importance');
 
-      console.log('ab, pri: ', a_pri, b_pri);
+      if (a_comp && !b_comp)
+	return 1;
+      if (!a_comp && b_comp)
+	return -1;
 
       if (a_pri != b_pri)
 	return (b_pri - a_pri);
@@ -177,6 +201,14 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
 
 
     sortIntelligent: function(a, b) {
+      var a_comp = a.get('completed');
+      var b_comp = b.get('completed');
+
+      if (a_comp && !b_comp)
+	return 1;
+      if (!a_comp && b_comp)
+	return -1;
+
       return (b.iSortWeight - a.iSortWeight);
     },
 

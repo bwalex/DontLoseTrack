@@ -3,6 +3,8 @@
     %a{ :href => "#project/{{:id}}/timeline" }
       {{:path}}
   %td
+    {{:task_stats.overdue}}
+  %td
     {{:task_stats.pending}}
   %td
     {{:task_stats.completed}}
@@ -15,3 +17,6 @@
   %td
     %a{ :href => "#project/{{:id}}/wikis" }
       {{:wiki_stats.total}}
+  %td
+    %a{ :href => "#project/{{:id}}/settings" }
+      {{:user_stats.total}}

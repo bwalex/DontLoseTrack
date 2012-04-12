@@ -38,7 +38,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'taskView',
     expanded: false,
     filteredOut: false,
-    hideCompleted: true,
 
     events: {
       "click .deltask .rm-button"        : "deleteTask",
@@ -82,7 +81,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.model.bind('add:task_deps', this.render);
       this.model.bind('remove:task_tags', this.refreshFilter);
       this.model.bind('destroy:tag', this.refreshFilter);
-      this.bind('btn:task:showCompleted', this.refreshFilterCompleted);
+      this.bind('change:tasks:showCompleted', this.refreshFilterCompleted);
       this.bind('change:filter', this.filterChange);
 
       App.globalController.register(this);
@@ -118,14 +117,12 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     refreshFilterCompleted: function(showCompleted) {
-      this.hideCompleted = !showCompleted;
-      console.log('refreshFilterCompleted: ', this.hideCompleted, showCompleted);
       this.actOnHide();
     },
 
     actOnHide: function() {
       console.log("actOnHide, completed? ", this.model.get('completed'));
-      if (this.filteredOut || (this.hideCompleted && this.model.get('completed')))
+      if (this.filteredOut || (!App.globalController.get('tasks:showCompleted') && this.model.get('completed')))
 	$(this.el).addClass('contracted');
       else
 	$(this.el).removeClass('contracted');
@@ -375,26 +372,21 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       var html = $(this.template.render(this.model.toJSON()));
       var self = this;
 
-      this.model.get('task_deps').each(function(m) {
-	var t = m.get('task');
-	var d = m.get('dependency');
-        console.log("Each task_deps: %o", m);
-        console.log("---> %o", t);
-        console.log("---> %o", d);
-	console.log(d === t);
-        var depView = new App.TaskDepView({model: m });
-        $(html).find('div.deps').append($(depView.render()));
-      });
+      if (typeof(this.model.get('task_deps')) !== 'undefined')
+	this.model.get('task_deps').each(function(m) {
+	  var t = m.get('task');
+	  var d = m.get('dependency');
+          var depView = new App.TaskDepView({model: m });
+          $(html).find('div.deps').append($(depView.render()));
+	});
 
-      this.model.get('task_tags').each(function(m) {
-	var task = m.get('task');
-	var tag  = m.get('tag');
-	console.log("Each task_tags: %o", m);
-	console.log("---> %o", task);
-	console.log("---> %o", tag);
-	var tagView = new App.AppliedTagView({model: m });
-	$(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
-      });
+      if (typeof(this.model.get('task_tags')) !== 'undefined')
+	this.model.get('task_tags').each(function(m) {
+	  var task = m.get('task');
+	  var tag  = m.get('tag');
+	  var tagView = new App.AppliedTagView({model: m });
+	  $(html).find('div.tags > .placeholder-tag').before($(tagView.render()));
+	});
 
       $(html).children('.summary').tagDroppable({});
       $(html).find('a[rel]').customOverlay();
@@ -416,7 +408,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
   App.TaskListView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskListView',
-    showCompleted: false,
 
     events: {
       "click .sorter .sort-intellisort"   : "sortIntelliSort",
@@ -448,8 +439,22 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       $(this.el).find('.tabmenu .btn_showcompleted')
 	  .toggleClass('btn-selected');
 
-      this.showCompleted = !this.showCompleted;
-      App.globalController.trigger('btn:task:showCompleted', this.showCompleted);
+      this.showCompleted = App.globalController.get('tasks:showCompleted');
+      this.showCompleted = (typeof(this.showCompleted) === 'undefined') ? true : !this.showCompleted;
+      App.globalController.set('tasks:showCompleted', this.showCompleted);
+
+      this.refetch();
+    },
+
+    refetch: function() {
+      var sc = App.globalController.get('tasks:showCompleted');
+      if (typeof(sc) === 'undefined')
+	sc = false;
+
+      if (sc)
+	App.taskCollection.fetch();
+      else
+	App.taskCollection.fetch({data: { filter: { completed: false }}});
     },
 
     addTagBtn: function(ev) {
@@ -509,6 +514,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 		'addTagBtn',
 		'destroy',
 		'tagbtn',
+		'refetch',
 		'newTaskFocus',
 		'newTaskFocusOut',
 		'showCompletedBtn',
@@ -522,6 +528,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.collection.bind('reset', this.render);
 
       this.bind('btn:addTags', this.tagbtn);
+      this.bind('btn:task:showCompleted', this.refetch);
       this.bind('tasks:sort', this.refreshSort);
       App.globalController.register(this);
     },
@@ -529,7 +536,10 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     template: $.templates('#task-list-tmpl'),
 
     render: function() {
-      $(this.el).html(this.template.render({}));
+      var sc = App.globalController.get('tasks:showCompleted');
+      sc = (typeof(sc) === 'undefined') ? false : sc;
+
+      $(this.el).html(this.template.render({showCompleted: sc}));
       this.collection.each(this.renderTask);
     },
 

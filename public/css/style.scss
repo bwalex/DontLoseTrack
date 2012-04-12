@@ -631,6 +631,11 @@ $task_summary_height: 28px;
     text-decoration: line-through;
 }
 
+.status-depends .summary .summary {
+    //font-style: italic;
+    color: $light_grey;
+}
+
 .task .body {
     padding-left: 32px;
     padding-right: 32px;
@@ -1058,7 +1063,7 @@ textarea {
     border-top: none;
     border-right: none;
     border-bottom: none;
-    width: 60%;
+    width: 50%;
     text-align: left;
 }
 

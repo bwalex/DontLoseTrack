@@ -2,19 +2,25 @@
   %table.projectList
     %tr.top
       %th.top.name
-      %th.visible{ :colspan => '3' }
+      %th.visible{ :colspan => '4' }
         Tasks
       %th.visible{ :colspan => '1' }
         Notes
       %th.visible{ :colspan => '1' }
         Wikis
+      %th.visible{ :colspan => '1' }
+        Users
     %tr
       %th.name
-        %input#newprojectname{ :type => "text", :value => "Add Project..." }
+        %input#newprojectname{ :type => "text", :value => "Add Project..." }        
+      %th.visible
+        Overdue
       %th.visible
         To do
       %th.visible
         Done
+      %th.visible
+        Total
       %th.visible
         Total
       %th.visible
