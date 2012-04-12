@@ -52,6 +52,7 @@ class User < ActiveRecord::Base
     super(
       :only => [
                 :id,
+                :alias,
                 :email,
                 :email_hashed,
                 :name
@@ -271,7 +272,7 @@ class Project < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :include => { :owner => { :only => [:id, :alias] } },
+      :include => { :project_users => {}, :owner => { :only => [:id, :alias] } },
       :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats, :event_stats ]
     )
   end

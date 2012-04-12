@@ -15,6 +15,8 @@
       %li
         %a{ :title => 'files', :href => "#project/{{:id}}/files" } Files
       %li
+        %a{ :title => 'team', :href => "#project/{{:id}}/team" } Team
+      %li
         %a{ :title => 'settings', :href => "#project/{{:id}}/settings" } Settings
     {{/if}}
   #nav-right
@@ -23,7 +25,8 @@
         #topnav.topnav
           %a.signin
             %span.user-name
-              {{: ~curUserName() }}
+              {{: ~curUserName() }}&nbsp;
+              %span.alias ({{: ~curUserAlias()}})
             %span.drop-icon
         .drop-nav
           .rel

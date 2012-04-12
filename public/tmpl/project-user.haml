@@ -1,0 +1,34 @@
+%script{ :type => "text/x-jsrender",:id => "project-user-tmpl"}
+  %td
+    %img{ :src => "{{:~userAvatar(id, 48)}}" }
+  %td{ :class => "{{:~userIdIsOwner(id)?'bold':''}}" }
+    {{:name}}
+  %td{ :class => "{{:~userIdIsOwner(id)?'bold':''}}" }
+    {{:alias}}
+  %td{ :class => "{{:~userIdIsOwner(id)?'bold':''}}" }
+    {{:email}}
+  {{if ~curUserIsOwner()}}
+  %td.actions
+    {{if ~curUserIsId(id)}}
+    %p.boss
+      You are the boss!
+    {{else}}
+    %button.delete-user
+      Delete
+    %button.transfer-ownership
+      Transfer ownership
+    {{/if}}
+    .modal.transfer-ownership-modal
+      %h2
+        Danger!
+      %p
+        Are you sure you want to transfer ownership of this project?&nbsp;
+        %strong
+          You will lose control over the project.
+      %p.buttons
+        %button.close.transfer-ownership
+          Yes
+        %button.close
+          No
+
+  {{/if}}

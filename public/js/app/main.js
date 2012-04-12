@@ -125,12 +125,28 @@ require([
       return App.currentUser.get('name');
     },
 
+    curUserAlias: function() {
+      return App.currentUser.get('alias');
+    },
+
     curUserAvatar: function(size) {
       return $.views.helpers.userAvatar(App.currentUser.get('email_hashed'), size);
     },
 
     curUserIs: function(u) {
       return (u.id === App.currentUser.get('id'));
+    },
+
+    curUserIsId: function(id) {
+      return (id === App.currentUser.get('id'));
+    },
+
+    curUserIsOwner: function() {
+      return (App.currentUser.get('id') === App.globalController.get('project').get('owner_id'));
+    },
+
+    userIdIsOwner: function(id) {
+      return (id === App.globalController.get('project').get('owner_id'));
     }
   });
 
@@ -147,6 +163,7 @@ require([
       "navigate"            : "navigate",
       "select:tag"          : "updateFilter",
       "register"            : "registered",
+      "refresh:users"       : "refreshProjectUsers",
       "reload:settings"     : "loadKnownSettings"
     },
 
@@ -156,6 +173,7 @@ require([
 
     initialize: function() {
       _.bindAll(this,
+		'refreshProjectUsers',
 		'changeProjectId',
 		'changeProject',
 		'updateFilter',
@@ -197,6 +215,9 @@ require([
 	this.set('tasks:order', s[0].get('value'));
     },
 
+    refreshProjectUsers: function() {
+      App.userCollection.fetch({async: false});
+    },
 
     changeProject: function(newModel, oldModel) {
       this.set('filter', false);
@@ -237,6 +258,7 @@ require([
     routes: {
       ""                                        : "showProjects",
       "user/settings"                           : "showUserSettings",
+      "project/:projectId/team"                 : "showTeam",
       "project/:projectId/settings"             : "showSettings",
       "project/:projectId/timeline"             : "showTimeline",
       "project/:projectId/notes"                : "showNotes",
@@ -325,6 +347,26 @@ require([
       App.userSettingsView.render();
     },
 
+
+    showTeam: function(proj) {
+      this.cleanView();
+
+      App.globalController.set('projectId', proj);
+      App.globalController.trigger('navigate', 'team');
+
+      this.showTags();
+
+      App.projectUserCollection = App.globalController.get('project').get('project_users');//new App.ProjectUserCollection();
+
+      this.currentView = App.projectUserListView   = new App.ProjectUserListView({
+        el: $('<div></div>').appendTo('#main-pane'),
+        collection: App.projectUserCollection,
+	projectModel: App.globalController.get('project'),
+      });
+
+      App.projectUserListView.render();
+      //App.projectUserCollection.fetch();
+    },
 
 
     showSettings: function(proj) {

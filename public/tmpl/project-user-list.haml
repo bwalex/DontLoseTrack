@@ -1,0 +1,18 @@
+%script{ :type => "text/x-jsrender",:id => "project-user-list-tmpl"}
+  %table.projectuser-list
+    %tr
+      %th Avatar
+      %th Name
+      %th Alias
+      %th Email
+      {{if ~curUserIsOwner()}}
+      %th Actions
+      {{/if}}
+  {{if ~curUserIsOwner()}}
+  .projectuser-new
+    %p
+      Add a user by username/alias:
+    %input{ :type => "text" }
+    %button
+      Add
+  {{/if}}

@@ -863,18 +863,42 @@ $task_summary_height: 28px;
 }
 
 
+.boss {
+    font-size: 90%;
+    font-style: italic;
+}
 
 
+.projectuser-list {
+    th, td {
+	border-left: none;
+	border-right: none;
+    }
+}
+
+.projectuser-new {
+    button {
+	margin-left: 10px;
+    }
+}
 
 
+.actions {
+    button {
+	margin-right: 10px;
+    }
+}
 
 
+.buttons {
+    button {
+	margin-left: 20px;
+    }
+}
 
-
-
-
-
-
+.bold {
+    font-weight: bold;
+}
 
 
 

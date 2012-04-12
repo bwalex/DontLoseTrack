@@ -240,6 +240,9 @@ get '/markdown-cheatsheet' do
 end
 
 
+set(:is_owner) do |v|
+  return (defined? @project and not @project.nil? and (@project.owner == @user))
+end
 
 before '/api/*' do
   begin
@@ -312,7 +315,7 @@ get '/api/project/:project_id' do
   @project.to_json
 end
 
-put '/api/project/:project_id' do
+put '/api/project/:project_id', :is_owner => true do
   content_type :json
   JSON.parse(request.body.read).each { |k, v| @project.send(k + "=", v) }
   @project.save!
@@ -330,7 +333,7 @@ post '/api/project' do
   @project.to_json
 end
 
-delete '/api/project/:project_id' do
+delete '/api/project/:project_id', :is_owner => true do
   Project.destroy(@project)
 end
 
@@ -356,6 +359,29 @@ get '/api/project/:project_id/events' do
     q = q.limit(params[:limit]).offset(params[:offset])
   end
   q.to_json
+end
+
+
+
+
+get '/api/project/:project_id/projectuser' do
+  content_type :json
+  @project.project_users.to_json
+end
+
+post '/api/project/:project_id/projectuser', :is_owner => true do
+  content_type :json
+  data = JSON.parse(request.body.read)
+  user = User.where(:alias => data['user_alias']).first
+  halt 404 if user.nil?
+  pu = ProjectUser.create!(:project => @project, :user => user)
+  pu.to_json
+end
+
+
+delete '/api/project/:project_id/projectuser/:pu_id', :is_owner => true do
+  pu = @project.project_users.find(params[:pu_id])
+  ProjectUser.destroy(pu)
 end
 
 
@@ -557,18 +583,18 @@ end
 
 
 
-get '/api/project/:project_id/extresource' do
+get '/api/project/:project_id/extresource', :is_owner => true do
   @project.ext_resources.to_json
 end
 
-post '/api/project/:project_id/extresource' do
+post '/api/project/:project_id/extresource', :is_owner => true do
   content_type :json
   data = JSON.parse(request.body.read)
   e = @project.ext_resources.create!(:type => data['type'], :location => data['location'])
   e.to_json
 end
 
-delete '/api/project/:project_id/extresource/:extres_id' do
+delete '/api/project/:project_id/extresource/:extres_id', :is_owner => true do
   ExtResource.destroy(@extres)
 end
 

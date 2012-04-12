@@ -1,6 +1,142 @@
 define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender', 'jquery.tools'], function(App, $, _, Backbone) {
 
 
+
+  App.ProjectUserView = Backbone.View.extend({
+    tagName: 'tr',
+    className: 'projectUserView',
+
+    events: {
+      "click .actions > button.delete-user"           : "deleteUser",
+      "click .modal button.transfer-ownership"        : "transferOwnership"
+    },
+
+    transferOwnership: function(ev) {
+      alert('moo!');
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+    deleteUser: function(ev) {
+      this.model.destroy();
+    },
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'destroy', 'deleteUser', 'transferOwnership');
+
+      this.model.bind('change', this.render);
+      this.model.bind('destroy', this.destroy);
+    },
+
+    template: $.templates('#project-user-tmpl'),
+
+    render: function() {
+      console.log('model: %o', this.model.attributes);
+      var u = this.model.get('user_id');
+      console.log('u = ', u);
+      console.log('userColl: %o', App.userCollection);
+      u = App.userCollection.get(u);
+      console.log('u ==> ', u);
+      $(this.el).html(this.template.render(u.toJSON()));
+      $(this.el).find('.actions > button.transfer-ownership').overlay({
+	target: $(this.el).find('.transfer-ownership-modal'),
+	//load: true,
+
+	mask: {
+	  color: '#99173C',
+	  opacity: 0.8
+	},
+	closeOnClick: false
+      });
+      return $(this.el);
+    }
+  });
+
+
+  App.ProjectUserListView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'extProjectUserListView',
+
+    events: {
+      "click .projectuser-new button"            : "addNewUser"
+    },
+
+    addNewUser: function(ev) {
+      var self = this;
+
+      var e = new App.ProjectUser({
+	user_alias: $(this.el).find('.projectuser-new input').val()
+      });
+
+      e.save({},{
+	wait: true,
+	success: function(model, resp) {
+	  console.log("Success: ", model, resp);
+	  App.globalController.trigger('refresh:users');
+
+	  self.collection.add(e);
+	}
+      });
+    },
+
+    destroy: function() {
+      this.remove();
+      this.unbind();
+    },
+
+
+    initialize: function() {
+      _.bindAll(this, 'render', 'renderUser', 'addNewUser', 'destroy');
+
+      console.log("===> %o", this.collection);
+
+      this.collection.bind('add', this.renderUser);
+      this.collection.bind('reset', this.render);
+    },
+
+    template: $.templates('#project-user-list-tmpl'),
+
+    render: function() {
+      $(this.el).html(this.template.render({}));
+      this.collection.each(this.renderUser);
+
+      return $(this.el);
+    },
+
+    renderUser: function(m) {
+      var puView = new App.ProjectUserView({model: m});
+      $(this.el).find('.projectuser-list').append($(puView.render()));
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   App.ExtResourceView = Backbone.View.extend({
     tagName: 'div',
     className: 'extResourceView',
