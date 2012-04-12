@@ -13,7 +13,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
         dit.trigger('destroy:tag');
 
 	var task = dit.get('task');
-	if (typeof(task) !== 'undefined')
+	if (typeof(task) !== 'undefined' && task != null)
 	  task.trigger('destroy:tag', model);
       });
 
@@ -21,7 +21,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
         dit.trigger('change:tag');
 
 	var task = dit.get('task');
-	if (typeof(task) !== 'undefined')
+	if (typeof(task) !== 'undefined' && task != null)
           task.trigger('change:tag', model);
       });
     },
@@ -49,7 +49,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
         dit.trigger('destroy:tag');
 
 	var note = dit.get('note');
-	if (typeof(note) !== 'undefined')
+	if (typeof(note) !== 'undefined' && note != null)
 	  note.trigger('destroy:tag', model);
       });
 
@@ -57,7 +57,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
         dit.trigger('change:tag');
 
 	var note = dit.get('note');
-        if (typeof(note) !== 'undefined')
+        if (typeof(note) !== 'undefined' && note != null)
 	  note.trigger('change:tag', model);
       });
     },
@@ -87,7 +87,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
         dit.trigger('destroy:tag');
 
 	var wiki = dit.get('wiki');
-	if (typeof(wiki) !== 'undefined')
+	if (typeof(wiki) !== 'undefined' && wiki != null)
 	  wiki.trigger('destroy:tag', model);
       });
 
@@ -95,7 +95,7 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
 	var wiki = dit.get('wiki');
         dit.trigger('change:tag');
 
-        if (typeof(wiki) !== 'undefined')
+        if (typeof(wiki) !== 'undefined' && wiki != null)
 	  wiki.trigger('change:tag', model);
       });
     },

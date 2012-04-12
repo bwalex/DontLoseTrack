@@ -384,9 +384,9 @@ get '/api/project/:project_id/note' do
     Note.joins(:note_tags).where(
       :project_id => params[:project_id],
       :note_tags => { :tag_id => params[:filter][:tags] }
-    ).limit(params[:limit]).offset(params[:offset]).to_json
+    ).limit(params[:limit]).offset(params[:offset]).includes(:note_tags).to_json
   else
-    @project.notes.to_json
+    @project.notes.includes(:note_tags).to_json
   end
 end
 
@@ -443,12 +443,24 @@ get '/api/project/:project_id/wiki' do
     puts "Limit: " << params[:limit]
     puts "Offset: " << params[:offset]
 
-    Wiki.joins(:wiki_tags).where(
-      :project_id => params[:project_id],
-      :wiki_tags => { :tag_id => params[:filter][:tags] }
-    ).limit(params[:limit]).offset(params[:offset]).to_json
+#    Wiki.joins(:wiki_tags).where(
+#      :project_id => params[:project_id],
+#      :wiki_tags => { :tag_id => params[:filter][:tags] }
+#    ).limit(params[:limit]).offset(params[:offset]).includes(:wiki_tags, :wiki_contents).to_json
+
+#    Wiki.includes(:wiki_tags).where(
+#      Wiki.arel_table[:project_id].eq(params[:project_id]).and(
+#      WikiTag.arel_table[:tag_id].in([1,2]))#params[:filter][:tags])
+#    ).limit(params[:limit]).offset(params[:offset]).to_json
+
+     Wiki.includes(:wiki_tags)
+       .where('project_id = ?', params[:project_id])
+       .where(WikiTag.arel_table[:tag_id].in(params[:filter][:tags]))
+       .limit(params[:limit])
+       .offset(params[:offset])
+       .to_json
   else
-    @project.wikis.order("updated_at DESC").to_json
+    @project.wikis.order("updated_at DESC").includes(:wiki_tags, :wiki_contents).to_json
   end
 end
 
@@ -726,7 +738,7 @@ end
 
 get '/api/project/:project_id/task' do
   content_type :json
-  @project.tasks.find(:all, :include => [:task_deps, :dep_tasks, :task_tags]).to_json
+  @project.tasks.includes(:task_deps, :dep_tasks, :task_tags).to_json
 end
 
 get '/api/project/:project_id/task_non_eager' do

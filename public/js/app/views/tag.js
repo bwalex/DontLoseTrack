@@ -51,8 +51,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
     render: function() {
       var html = $(this.template.render(this.model.toJSON()));
-
-      console.log("app.TagView.render: %o", this.model);
       return $(this.el).html(html);
     }
   });
