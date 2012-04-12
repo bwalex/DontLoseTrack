@@ -33,6 +33,14 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
     url: function() {
       return '/api/project/'+ App.globalController.get('projectId') +'/note';
     },
+
+    comparator: function(a, b) {
+      var a_ud = a.get('raw_updated_at');
+      var b_ud = b.get('raw_updated_at');
+
+      return (b_ud - a_ud);
+    },
+
     model: App.Note
   });
 });

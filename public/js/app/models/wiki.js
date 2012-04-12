@@ -43,8 +43,16 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational', 'models/tag_li
     modelName: 'Wiki',
 
     url: function(models) {
-      return '/api/project/'+ App.globalController.get('projectId') + '/wikicontent' + ( models ? '/' + _.pluck( models, 'id' ).join(';') : '' );
+      return '/api/project/'+ App.globalController.get('projectId') + '/wiki/' + App.wikiModel.get('id') + '/wikicontent' + ( models ? '/' + _.pluck( models, 'id' ).join(';') : '' );
     },
+
+    comparator: function(a, b) {
+      var a_ud = a.get('raw_updated_at');
+      var b_ud = b.get('raw_updated_at');
+
+      return (b_ud - a_ud);
+    },
+
     model: App.WikiContent
   });
 

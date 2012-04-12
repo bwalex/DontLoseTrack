@@ -363,7 +363,9 @@ require([
         el: $('<div></div>').appendTo('#main-pane'),
         collection: App.eventCollection
       });
-      App.eventCollection.fetch({data: { limit: 100, offset: 0 }});
+
+      App.eventListView.forceRefetch();
+      //App.eventCollection.fetch({data: { limit: 50, offset: 0 }});
     },
 
 
@@ -381,7 +383,9 @@ require([
         el: $('<div></div>').appendTo('#main-pane'),
         collection: App.noteCollection
       });
-      App.noteCollection.fetch({data: { limit: 100, offset: 0, filter: { tags: App.globalController.get('filter:tag_ids') } }});
+
+      App.noteListView.forceRefetch();
+      //App.noteCollection.fetch({data: { limit: 15, offset: 0, filter: { tags: App.globalController.get('filter:tag_ids') } }});
     },
 
 
@@ -400,7 +404,7 @@ require([
         el: $('<div></div>').appendTo('#main-pane'),
         collection: App.wikiCollection
       });
-      App.wikiCollection.fetch({data: { limit: 100, offset: 0, filter: { tags: App.globalController.get('filter:tag_ids') } }});
+      App.wikiCollection.fetch({data: { limit: 10000, offset: 0, filter: { tags: App.globalController.get('filter:tag_ids') } }});
     },
 
 

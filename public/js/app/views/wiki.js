@@ -278,6 +278,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'wikiHistoryView',
 
     events: {
+      "click #wcfooter a"                    : "loadMore",
       "click .buttons a.diff-wiki"           : "diffWikis",
       "click .buttons a.restore-wiki"        : "restoreWiki"
     },
@@ -338,28 +339,92 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderHistoryEntry', 'destroy', 'error', 'diffWikis', 'restoreWiki');
+      _.bindAll(this, 'render', 'renderHistoryEntry', 'renderHistoryEntries', 'destroy', 'error', 'diffWikis', 'restoreWiki', 'forceRefetch', 'loadMore');
 
       this.model.bind('change', this.render);
       this.model.bind('destroy', this.destroy);
-      this.model.fetchRelated('wiki_contents');
+      //this.model.fetchRelated('wiki_contents');
     },
 
     template: $.templates('#wiki-history-tmpl'),
 
+    forceRefetch: function(ids, opts) {
+      if (typeof(ids) === 'undefined')
+	ids = App.globalController.get('filter:tag_ids');
+
+      var limit = App.globalController.get('wcs:nFetched', 5);
+      if (limit < 5)
+	limit = 5;
+      var offset = App.globalController.get('wcs:fetchOffset', 0);
+      App.globalController.set('wcs:nFetched', 0);
+
+      this.model.get('wiki_contents').fetch({data: { limit: limit, offset: offset, filter: { tags: ids } }});
+    },
+
+    loadMore: function(ev) {
+      var limit = 5;
+      var offset = App.globalController.get('wcs:nFetched', 0);
+      var ids = App.globalController.get('filter:tag_ids');
+
+      this.model.get('wiki_contents').fetch({
+	data: {
+	  limit: limit,
+	  offset: offset,
+	  filter: {
+	    tags: ids
+	  }
+	},
+	add: true
+      });
+    },
+
+    toggleLoadMoreBtn: function(ev) {
+      var n_wcs = this.model.get('wiki_contents').length;
+      var total_wcs = this.model.get('nwcs');
+      console.log('wcs/wcs', n_wcs, total_wcs);
+      if (n_wcs < total_wcs)
+	$(this.el).find('#wcfooter a').removeClass('hide');
+      else
+	$(this.el).find('#wcfooter a').addClass('hide');
+    },
+
     render: function() {
+      var n_wcs = this.model.get('wiki_contents').length;
       var self = this;
       var html = $(this.template.render(this.model.toJSON()));
+
+      this.model.get('wiki_contents').bind('add', this.renderHistoryEntry);
+      this.model.get('wiki_contents').bind('reset', this.renderHistoryEntries);
       $(this.el).html(html);
 
+      this.toggleLoadMoreBtn();
+
+      this.forceRefetch();
+      //this.model.get('wiki_contents').each(this.renderHistoryEntry);
+    },
+
+    renderHistoryEntries: function() {
       this.model.get('wiki_contents').each(this.renderHistoryEntry);
     },
 
-    renderHistoryEntry: function(m) {
-      m.fetch();
-      console.log('renderHistoryEntry: %o', m);
-      var hview = new App.WikiHistoryEntryView({model: m});
-      $(this.el).find('.history-entries').prepend($(hview.render()));
+    renderHistoryEntry: function(m, opt1, opt2) {
+      var n_wcs = this.model.get('wiki_contents').length;
+      App.globalController.set('wcs:nFetched', n_wcs);
+
+      console.log("renderHistoryEntry: %o, %o, %o", m, opt1, opt2);
+      var idx = (typeof(opt1) === 'number') ? opt1 : opt2.index;
+      var wclist = $(this.el).find('.history-entries');
+      var nelems = wclist.children().length;
+
+      var hView = new App.WikiHistoryEntryView({model: m});
+      var hHTML = $(hView.render());
+
+      if (idx >= nelems)
+	wclist.append(hHTML);
+      else
+	wclist.children().slice(idx).first().before(hHTML);
+
+      this.toggleLoadMoreBtn();
     }
   });
 

@@ -30,8 +30,9 @@ define(['underscore'], function(_) {
       });
     },
 
-    get: function(attr) {
-      return this.attributes[attr];
+    get: function(attr, def) {
+      var a = this.attributes[attr];
+      return (typeof(a) === 'undefined') ? def : a;
     },
 
     set: function(attr, val) {

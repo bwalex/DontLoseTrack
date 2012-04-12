@@ -156,12 +156,18 @@ class Event < ActiveRecord::Base
   validates_presence_of :project
   validates_associated  :project
 
+  def raw_occurred_at
+    return (self[:occurred_at] != nil)? self[:occurred_at].to_time.to_i : nil
+  end
+
+
   def occurred_at
     return (self[:occurred_at] != nil) ? self[:occurred_at].strftime("%d/%m/%Y - %H:%M") : nil
   end
 
   def as_json(options={})
     super(
+       :methods => :raw_occurred_at
 #      :include => { :user => { :only => [:email_hashed, :name] } }
     )
   end
@@ -256,11 +262,17 @@ class Project < ActiveRecord::Base
     }
   end
 
+  def event_stats
+    # total
+    return {
+      'total' => events.count
+    }
+  end
 
   def as_json(options={})
     super(
       :include => { :owner => { :only => [:id, :alias] } },
-      :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats ]
+      :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats, :event_stats ]
     )
   end
 end
@@ -278,6 +290,15 @@ class Note < ActiveRecord::Base
   validates :text, :length => { :minimum => 1 }
   validates_presence_of :project
   validates_associated  :project
+
+
+  def raw_updated_at
+    return (self[:updated_at] != nil)? self[:updated_at].to_time.to_i : nil
+  end
+
+  def raw_created_at
+    return (self[:created_at] != nil)? self[:created_at].to_time.to_i : nil
+  end
 
 
   def html_text
@@ -299,7 +320,7 @@ class Note < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :methods => :html_text,
+      :methods => [ :html_text, :raw_created_at, :raw_updated_at ],
       :include =>  { :note_tags => {} }#, :user => { :only => [:email_hashed, :name] } }
 
       #:include => [ :tags, :note_tags ]
@@ -335,10 +356,19 @@ class WikiContent < ActiveRecord::Base
     return (self[:updated_at] != nil) ? self[:updated_at].strftime("%d/%m/%Y - %H:%M") : nil
   end
 
+  def raw_updated_at
+    return (self[:updated_at] != nil)? self[:updated_at].to_time.to_i : nil
+  end
+
+  def raw_created_at
+    return (self[:created_at] != nil)? self[:created_at].to_time.to_i : nil
+  end
+
+
   def as_json(options={})
     super(
       #:include => { :user => { :only => [:email_hashed, :name] } },
-      :methods => :html_text
+      :methods => [ :html_text, :raw_updated_at, :raw_created_at ]
     )
   end
 end
@@ -373,6 +403,11 @@ class Wiki < ActiveRecord::Base
   end
 
 
+  def nwcs
+    return wiki_contents.count
+  end
+
+
   def html_text
     return $markdown.render(raw_text)
   end
@@ -385,8 +420,8 @@ class Wiki < ActiveRecord::Base
 
   def as_json(options={})
     super(
-      :methods => [ :html_text, :last_updated_at, :raw_text ],
-      :include => { :wiki_tags => {}, :wiki_contents => { :only => [:wiki, :id, :user_id] } }
+      :methods => [ :html_text, :last_updated_at, :raw_text, :nwcs ],
+      :include => { :wiki_tags => {} } #, :wiki_contents => { :only => [:wiki, :id, :user_id] } }
     )
   end
 end

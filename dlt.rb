@@ -345,7 +345,17 @@ get '/api/project/:project_id/events' do
   end
 
   filters = s[0].value.split(',')
-  @project.events.where(:type => filters).order('occurred_at DESC').to_json
+
+  puts "Moo: " << params.to_json
+
+  q = Event.where(
+    :project_id => @project.id
+  )
+  .order('occurred_at DESC')
+  if not params[:offset].nil? or not params[:limit].nil?
+    q = q.limit(params[:limit]).offset(params[:offset])
+  end
+  q.to_json
 end
 
 
@@ -377,14 +387,24 @@ end
 get '/api/project/:project_id/note' do
   content_type :json
 
-  if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
-    puts "Limit: " << params[:limit]
-    puts "Offset: " << params[:offset]
+  if not params[:filter].nil? or not params[:offset].nil? or not params[:limit].nil?
+    q = Note
 
-    Note.joins(:note_tags).where(
-      :project_id => params[:project_id],
-      :note_tags => { :tag_id => params[:filter][:tags] }
-    ).limit(params[:limit]).offset(params[:offset]).includes(:note_tags).to_json
+    if not params[:filter].nil? and not params[:filter][:tags].nil? and not params[:filter][:tags].empty?
+      q = q.joins(:note_tags)
+        .where(
+          :note_tags => { :tag_id => params[:filter][:tags] }
+        )
+    end
+
+    q = q.where(
+        :project_id => @project.id
+      )
+      .order('updated_at DESC')
+      .limit(params[:limit])
+      .offset(params[:offset])
+      .includes(:note_tags)
+      .to_json
   else
     @project.notes.includes(:note_tags).to_json
   end
@@ -670,8 +690,17 @@ end
 
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
-  @wiki.wiki_contents.to_json
+  # @wiki.wiki_contents.to_json
+  q = WikiContent.where(
+    :wiki_id => @wiki.id
+  )
+  .order('updated_at DESC')
+  if not params[:offset].nil? or not params[:limit].nil?
+    q = q.limit(params[:limit]).offset(params[:offset])
+  end
+  q.to_json
 end
+
 
 get '/api/project/:project_id/wiki/:wiki_id/wikicontent/:wc_id' do
   @wikicontent.to_json

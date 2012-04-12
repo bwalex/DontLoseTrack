@@ -89,6 +89,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'noteListView',
 
     events: {
+      "click #notefooter a"             : "loadMore",
       "click .tabmenu .btn_addtag"      : "addTagBtn",
       "focus #newnotetext"              : "newNoteFocus",
       "focusout #newnotetext"           : "newNoteFocusOut",
@@ -138,7 +139,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderNote', 'addTagBtn', 'destroy', 'tagbtn', 'filterChange', 'forceRefetch');
+      _.bindAll(this, 'render', 'renderNote', 'renderNoteAt', 'addTagBtn', 'destroy', 'tagbtn', 'filterChange', 'forceRefetch', 'loadMore', 'toggleLoadMoreBtn');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
       this.collection.bind('add', this.renderNote);
@@ -154,24 +155,78 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.forceRefetch(ids);
     },
 
-    forceRefetch: function(ids) {
-      if (typeof(ids) === undefined)
+    forceRefetch: function(ids, opts) {
+      if (typeof(ids) === 'undefined')
 	ids = App.globalController.get('filter:tag_ids');
 
-      this.collection.fetch({data: { limit: 100, offset: 0, filter: { tags: ids } }});
+      var limit = App.globalController.get('notes:nFetched', 15);
+      if (limit < 15)
+	limit = 15;
+      var offset = App.globalController.get('notes:fetchOffset', 0);
+      App.globalController.set('notes:nFetched', 0);
+
+      this.collection.fetch({data: { limit: limit, offset: offset, filter: { tags: ids } }});
+    },
+
+    loadMore: function(ev) {
+      var limit = 15;
+      var offset = App.globalController.get('notes:nFetched', 0);
+      var ids = App.globalController.get('filter:tag_ids');
+
+      this.collection.fetch({
+	data: {
+	  limit: limit,
+	  offset: offset,
+	  filter: {
+	    tags: ids
+	  }
+	},
+	add: true
+      });
+    },
+
+    toggleLoadMoreBtn: function(ev) {
+      var n_notes = this.collection.length;
+      var total_notes = App.globalController.get('project').get('note_stats').total;
+      console.log('notes/notes', n_notes, total_notes);
+      if (n_notes < total_notes)
+	$(this.el).find('#notefooter a').removeClass('hide');
+      else
+	$(this.el).find('#notefooter a').addClass('hide');
     },
 
     render: function() {
+      var n_notes = this.collection.length;
+      App.globalController.set('notes:nFetched');
+
       $(this.el).html(this.template.render({}));
       $(this.el).find('#newnotetext').elastic();
       $(this.el).find('a[rel]').customOverlay();
       this.collection.each(this.renderNote);
+      this.toggleLoadMoreBtn();
     },
 
-    renderNote: function(inote) {
-      console.log("renderNote: inote=%o", inote);
+    renderNote: function(inote, opt1, opt2) {
+      var n_notes = this.collection.length;
+      App.globalController.set('notes:nFetched', n_notes);
+
+      var idx = (typeof(opt1) === 'number') ? opt1 : opt2.index;
+      console.log("renderNote: idx=%o", idx);
+      this.renderNoteAt(inote, idx);
+      this.toggleLoadMoreBtn();
+    },
+
+    renderNoteAt: function(inote, idx) {
+      var notelist = $(this.el).find('#notelist');
+      var nelems = notelist.children().length;
+
       var noteView = new App.NoteView({model: inote});
-      $(this.el).find('#notelist').prepend($(noteView.render()));
+      var noteHTML = $(noteView.render());
+
+      if (idx >= nelems)
+	notelist.append(noteHTML);
+      else
+	notelist.children().slice(idx).first().before(noteHTML);
     }
   });
 

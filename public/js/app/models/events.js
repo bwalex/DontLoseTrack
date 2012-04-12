@@ -12,6 +12,15 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
     url: function() {
       return '/api/project/'+ App.globalController.get('projectId') +'/events';
     },
+
+    comparator: function(a, b) {
+      var a_ud = a.get('raw_occurred_at');
+      var b_ud = b.get('raw_occurred_at');
+
+      return (b_ud - a_ud);
+    },
+
+
     model: App.Event
   });
 });
