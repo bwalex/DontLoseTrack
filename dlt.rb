@@ -308,11 +308,11 @@ end
 
 
 get '/api/project' do
-  @user.projects.to_json
+  @user.projects.to_json(:user => @user)
 end
 
 get '/api/project/:project_id' do
-  @project.to_json
+  @project.to_json(:user => @user)
 end
 
 put '/api/project/:project_id', :is_owner => true do
@@ -352,11 +352,12 @@ get '/api/project/:project_id/events' do
   puts "Moo: " << params.to_json
 
   q = Event.where(
-    :project_id => @project.id
+    :project_id => @project.id,
+    :type => filters
   )
   .order('occurred_at DESC')
   if not params[:offset].nil? or not params[:limit].nil?
-    q = q.limit(params[:limit]).offset(params[:offset])
+    q = q.limit(params[:limit]).offset(params[:offset].to_i)
   end
   q.to_json
 end
@@ -379,8 +380,11 @@ post '/api/project/:project_id/projectuser', :is_owner => true do
 end
 
 
-delete '/api/project/:project_id/projectuser/:pu_id', :is_owner => true do
+delete '/api/project/:project_id/projectuser/:pu_id' do
   pu = @project.project_users.find(params[:pu_id])
+  # Normal users can only delete themselves from the project,
+  # the project owner cannot ever remove himself
+  halt 403 unless pu.user == @user or (pu.project.owner == @user and pu.user != @user)
   ProjectUser.destroy(pu)
 end
 
@@ -603,11 +607,11 @@ end
 
 
 get '/api/project/:project_id/tag' do
-  @project.tags.to_json
+  @project.tags.includes(:note_tags, :task_tags, :wiki_tags).to_json
 end
 
 get '/api/project/:project_id/tag/:tag_id' do
-  @tag.to_json
+  @tag.includes(:note_tags, :task_tags, :wiki_tags).to_json
 end
 
 put '/api/project/:project_id/tag/:tag_id' do

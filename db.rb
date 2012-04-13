@@ -206,6 +206,8 @@ end
 
 
 class Project < ActiveRecord::Base
+  attr_accessor :new_owner
+
   belongs_to :owner,      :class_name => "User",
                           :foreign_key => "owner_id"#,
                           #:include => :alias
@@ -226,8 +228,14 @@ class Project < ActiveRecord::Base
   has_many :users,        :through => :project_users,
                           :uniq => true
 
+  before_save :set_new_owner
+
   validates :name, :length => { :in => 1..50 }
   validates_uniqueness_of :name, :scope => :owner_id
+
+  def set_new_owner
+    self[:owner_id] = users.find(new_owner).id
+  end
 
   def path
     return "" + owner.alias + "/" + name
@@ -265,12 +273,22 @@ class Project < ActiveRecord::Base
 
   def event_stats
     # total
+    filters = []
+    if defined? @current_user and not @current_user.nil?
+      s = @current_user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
+      return { 'total' => 0 } if s.empty?
+
+      filters = s[0].value.split(',')
+    end
+
     return {
-      'total' => events.count
+      'total' => events.where(:type => filters).count
     }
   end
 
   def as_json(options={})
+    puts "as_json: " + options.to_json
+    @current_user = options.user if defined? options.user
     super(
       :include => { :project_users => {}, :owner => { :only => [:id, :alias] } },
       :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats, :event_stats ]

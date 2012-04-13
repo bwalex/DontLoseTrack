@@ -26,6 +26,7 @@ require([
   "views/note",
   "views/task",
   "views/wiki",
+  "views/team",
   "jquery.tools",
   "jquery-ui",
   "jquery.magicedit2",
