@@ -1,5 +1,5 @@
 all:
-	@echo "Targets: bundle, db, run, tmpl, css, cssd"
+	@echo "Targets: bundle, db, run, tmpl, css, cssd, optimize"
 
 bundle:
 	bundle install
@@ -18,5 +18,8 @@ css:
 
 cssd:
 	make -C public/css watch
+
+optimize:
+	make -C public all
 
 .PHONY: all bundle db run tmpl css cssd

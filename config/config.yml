@@ -1,3 +1,5 @@
+optimized     :  false
+
 openid :
 # store       :  filesystem
 # location    :  /tmp
