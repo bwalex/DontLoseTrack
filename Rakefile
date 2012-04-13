@@ -49,6 +49,11 @@ namespace :db do
       ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, f)
     end
   end
+end
 
-
+namespace :tasks do
+  desc "Run extres tasks"
+  task :extres do
+    require './extres_bzr.rb'
+  end
 end

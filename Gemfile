@@ -4,6 +4,7 @@ source "https://rubygems.org"
 gem "rake"
 
 gem "activerecord"
+gem "actionpack"
 gem "mysql2"
 gem "foreigner"
 

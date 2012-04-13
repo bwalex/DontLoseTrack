@@ -329,12 +329,11 @@ class Project < ActiveRecord::Base
 
   def event_stats
     # total
-    filters = []
+    filters = ["extres"]
+
     if defined? @current_user and not @current_user.nil?
       s = @current_user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
-      return { 'total' => 0 } if s.empty?
-
-      filters = s[0].value.split(',')
+      filters = filters | s[0].value.split(',')
     end
 
     return {

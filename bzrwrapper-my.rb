@@ -44,7 +44,10 @@ module BzrWrapper
     def log
       @log || create_log
     end
-    
+
+    def info
+      @info || create_info
+    end
     private 
     
     # wraps system-call 'bzr version-info'
@@ -63,7 +66,7 @@ module BzrWrapper
           end
         end
         ['date','revno','branch-nick','revision-id'].each { |x| raise BzrException.new("no such info-key:: #{x}")  unless hash.has_key?(x)  }
-        return Info.new(hash['date'], hash['revno'], hash['branch-nick'], hash['revision-id'])
+        @info = Info.new(hash['date'], hash['revno'], hash['branch-nick'], hash['revision-id'])
     end
     
     # wraps system-call 'bzr log --forward'

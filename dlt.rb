@@ -4,6 +4,7 @@ require 'bundler/setup'
 require 'dalli'
 
 require 'active_record'
+require 'action_dispatch'
 require 'foreigner'
 
 require 'redcarpet'
@@ -342,12 +343,11 @@ end
 get '/api/project/:project_id/events' do
   content_type :json
 
+  filters = [ "extres" ]
   s = @user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
-  if s.empty?
-    return [].to_json
+  if not s.empty?
+    filters = filters | s[0].value.split(',')
   end
-
-  filters = s[0].value.split(',')
 
   puts "Moo: " << params.to_json
 
