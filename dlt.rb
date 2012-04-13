@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'bundler/setup'
+require 'digest/sha1'
 
 require 'dalli'
 
@@ -22,7 +23,6 @@ require './db.rb'
 
 
 @config = YAML::load(File.open('config/config.yml'))
-puts @config.to_json
 
 
 class HTMLwithPygments < Redcarpet::Render::HTML
@@ -32,48 +32,11 @@ class HTMLwithPygments < Redcarpet::Render::HTML
 end
 
 
-
-##################################################################
-######## Rack::OpenID setup
-##################################################################
-
-enable :sessions
-
-require 'openid/store/memcache'
-require 'openid/store/filesystem'
-
-require 'openid/store/nonce'
-require 'openid/store/interface'
-module OpenID
-  module Store
-    class Memcache < Interface
-      def use_nonce(server_url, timestamp, salt)
-        return false if (timestamp - Time.now.to_i).abs > Nonce.skew
-        ts = timestamp.to_s # base 10 seconds since epoch
-        nonce_key = key_prefix + 'N' + server_url + '|' + ts + '|' + salt
-        result = @cache_client.add(nonce_key, '', expiry(Nonce.skew + 5))
-
-        return result
-      end
-    end
-  end
-end
-
-
-require 'rack/openid'
-
-if @config['openid']['store'] == 'memcache'
-  use Rack::OpenID, OpenID::Store::Memcache.new(Dalli::Client.new(@config['openid']['location']), key_prefix=@config['openid']['key_prefix'])
-elsif @config['openid']['store'] == 'filesystem'
-  use Rack::OpenID, OpenID::Store::Filesystem.new(@config['openid']['location'])
-end
-
-##################################################################
-######## end Rack::OpenID setup
-##################################################################
+set :static_cache_control, [:public, :max_age => 43200] # 12 hours
 
 
 configure do
+
   $markdown = Redcarpet::Markdown.new(
     HTMLwithPygments.new(:hard_wrap => true), {
       :autolink => true,
@@ -102,6 +65,7 @@ end
 
 
 get '/login*' do
+  cache_control :public, :max_age => 43200
   haml :login, :format => :html5
 end
 
@@ -232,11 +196,15 @@ get '/' do
   user = User.find(session[:user])
   redirect '/register/openid' if user.is_new_openid?
 
+  cache_control :public, :must_revalidate, :max_age => 43200
+
   haml :main, :format => :html5
 end
 
 
 get '/markdown-cheatsheet' do
+  cache_control :public, :max_age => 43200
+
   haml :markdown_cheat, :format => :html5
 end
 
@@ -257,6 +225,16 @@ end
 before '/api/project/:project_id*' do
   @project = @user.projects.find(params[:project_id])
   halt 404 unless @project != nil # not reached normally, as above raises RecordNotFound
+
+  expires 500, :public, :must_revalidate
+  last_modified @project.updated_at
+  #etag Digest::SHA1.hexdigest([@user, @project].to_json)
+end
+
+after '/api/project/:project_id*' do
+  if request.put? or request.delete? or request.post?
+    @project.touch unless @project.nil?
+  end
 end
 
 before '/api/project/:project_id/note/:note_id*' do
@@ -882,9 +860,9 @@ end
 
 
 
-
 set :raise_errors, false
 set :show_exceptions, false
+
 
 error do
   env['sinatra.error'].backtrace
