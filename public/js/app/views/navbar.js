@@ -63,7 +63,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
     template: $.templates('#navbar-tmpl'),
 
     renderUser: function(model) {
-      this.render();
+      this.render(App.globalController.get('project'));
     },
 
     render: function(project) {
