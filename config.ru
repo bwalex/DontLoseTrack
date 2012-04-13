@@ -44,7 +44,7 @@ module Rack::Cache
   end
 end
 
-if config['cache']['store'] == 'memcache'
+if defined? config['cache'] and config['cache']['store'] == 'memcache'
   puts "Using Rack::Cache"
   use Rack::Cache,
     :metastore   => 'memcached://' + config['cache']['location'] + '/' + config['cache']['key_prefix'] + ':meta',
