@@ -84,6 +84,8 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 	return;
 
       pu[0].destroy();
+
+      App.projectCollection.fetch();
       App.router.navigate("", { trigger: true });
     },
 
