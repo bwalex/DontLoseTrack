@@ -9,9 +9,11 @@
             .clearer
           .clearer
         .clearer
-      .user
+      .user.clearfix
         .profile-pic
-          %img{ :src => "{{: ~userAvatar(user_id, 48) }}", :alt => "{{: ~userName(user_id) }}", :title => "{{: ~userName(user_id) }}" }
+          %img{ :src => "{{: ~userAvatar(user_id, 48) }}", :alt => "{{: ~userName(user_id, fallback_username) }}", :title => "{{: ~userName(user_id, fallback_username) }}" }
+        .profile-name
+          {{: ~userName(user_id, fallback_username) }}
       .tags
         .tag.placeholder-tag
           &nbsp;

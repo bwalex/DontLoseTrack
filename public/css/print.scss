@@ -1,0 +1,104 @@
+div#navbar,
+.tabmenu,
+#newtask,
+#footer,
+.task body,
+.rm-icon,
+.rm-icon-2,
+.edit-icon,
+.edit-icon-2,
+#sidebar {
+    display: none !important;
+}
+
+
+#content > div {
+    width: 100%;
+}
+
+.task,
+#header {
+    border: none !important;
+}
+
+.tags .tag {
+    font-size: 8px !important;
+    padding-right: 5px;
+}
+
+.task .summary .summary {
+    font-size: 80% !important;
+    vertical-align: middle;
+}
+
+.task .summary .due-date {
+    vertical-align: middle;
+}
+
+.task .summary .check {
+    input {
+	visibility: hidden !important;
+    }
+
+    vertical-align:middle;
+
+    width: 1em;
+    height: 1em;
+    margin: 0.5em;
+    border: 1px solid black;
+}
+
+.projectList {
+    input {
+	display: none;
+    }
+
+    tr.top {
+	th.top {
+	    //border-right: 1px solid black !important;
+	}
+    }
+    
+    tr {
+	td {
+	    border-bottom: 1px solid black !important;
+	}
+
+	td.name {
+	    ////border-left: none !important;
+	}
+
+	th.visible {
+	    border-bottom: 1px solid black !important;
+	}
+    }
+}
+
+
+.projectuser-list {
+    width: 100%;
+
+    input {
+	display: none;
+    }
+
+    .actions {
+	display: none !important;
+    }
+}
+
+.projectuser-new {
+    display: none !important;
+}
+
+.projectuser-leave {
+    display: none !important;
+}
+
+.buttons {
+    display: none !important;
+}
+
+.wiki-content {
+    font-size: 80%;
+}

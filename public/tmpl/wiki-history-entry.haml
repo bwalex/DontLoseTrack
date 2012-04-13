@@ -5,9 +5,9 @@
   %td.date
     {{:updated_at}}
   %td.user
-    %img{ :src => "{{: ~userAvatar(user_id, 24) }}", :alt => "{{: ~userName(user_id) }}", :title => "{{: ~userName(user_id) }}" }
+    %img{ :src => "{{: ~userAvatar(user_id, 24) }}", :alt => "{{: ~userName(user_id, fallback_username) }}", :title => "{{: ~userName(user_id, fallback_username) }}" }
     %span.name
-      {{: ~userName(user_id) }}
+      {{: ~userName(user_id, fallback_username) }}
 
   %td.comment
     %a{ :href => "#project/{{:~projectId()}}/wikis/{{:wiki_id}}/history/{{:id}}" }

@@ -104,8 +104,17 @@ require([
 
       if (user_id == null)
 	baseUrl = "http://www.gravatar.com/avatar/00000000000000000000000000000000";
-      else
-	baseUrl = "http://www.gravatar.com/avatar/" + ((typeof(user_id) === 'number') ? App.userCollection.get(user_id).get('email_hashed') : user_id);
+      else {
+	var hash = "00000000000000000000000000000000";
+	if (typeof(user_id) === 'number') {
+	  var user = App.userCollection.get(user_id);
+	  if (typeof(user) !== 'undefined' && user != null)
+	    hash = user.get('email_hashed');
+	} else {
+	    hash = user_id;
+	}
+	baseUrl = "http://www.gravatar.com/avatar/" + hash;
+      }
 
       baseUrl += "?d=mm" + ((typeof(size) !== 'undefined') ? ("&s=" + size) : "");
 
@@ -113,13 +122,14 @@ require([
     },
 
 
-    userName: function(user_id) {
+    userName: function(user_id, fallback) {
       console.log('userName for user_id = ', user_id);
 
-      if (user_id == null)
-	return "Unknown user";
-
-      return App.userCollection.get(user_id).get('name');
+      var user = App.userCollection.get(user_id);
+      if (typeof(user) !== 'undefined' && user !== null)
+	return user.get('name');
+      else
+	return (typeof(fallback) === 'string') ? fallback : "Unknown user";
     },
 
     curUserName: function() {

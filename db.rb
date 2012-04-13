@@ -12,6 +12,7 @@ end
 
 class User < ActiveRecord::Base
   attr_accessor :new_password, :new_password_confirmation
+  attr_accessor :remove_password
 
   has_many :user_project_settings
 
@@ -24,10 +25,12 @@ class User < ActiveRecord::Base
   validates :name, :length => { :in => 2..40 }, :unless => :is_new_openid?
   validates_confirmation_of :new_password, :if=>:password_changed?
   validates :email, :presence => true, :uniqueness => true, :email => true, :unless => :is_new_openid?
+  validates :remove_password, :presence => false, :unless => :is_openid_user?
   validates_uniqueness_of :alias, :unless => :is_new_openid?
   validates_uniqueness_of :openid, :allow_nil => true, :allow_blank => true
 
-  before_save :hash_new_password, :if=>:password_changed?
+  before_save :hash_new_password, :if => :password_changed?
+  before_save :remove_password, :if => :password_removed?
   before_save :hash_mail, :unless => :is_new_openid?
 
 
@@ -39,24 +42,52 @@ class User < ActiveRecord::Base
     return ((defined? @new_openid and @new_openid) or self[:alias].nil? or self[:alias].empty?)
   end
 
+  def openid_only
+    return self[:password].blank?
+  end
 
   def email=(mail)
     self[:email] = mail.strip.downcase
+  end
+
+  def is_openid_user
+    !self[:openid].blank?
+  end
+
+  def is_openid_user?
+    is_openid_user
   end
 
   def password_changed?
     !@new_password.blank?
   end
 
+  def password_removed?
+    (@remove_password == true)
+  end
+
   def as_json(options={})
+    only = [
+            :id,
+            :alias,
+            :email,
+            :email_hashed,
+            :name
+           ]
+
+    methods = []
+
+    if defined? options[:user] and not options[:user].nil? and options[:user].id == self[:id]
+      methods << :openid_only << :is_openid_user
+    end
+
+    puts 'options: ' + options.to_json
+    puts 'only: ' + only.to_json
+    puts 'methods: ' + methods.to_json
+
     super(
-      :only => [
-                :id,
-                :alias,
-                :email,
-                :email_hashed,
-                :name
-               ]
+      :only => only,
+      :methods => methods
     )
   end
 
@@ -91,6 +122,10 @@ class User < ActiveRecord::Base
   def hash_new_password
     self[:password] = BCrypt::Password.create(@new_password)
   end
+
+  def remove_password
+    self[:password] = nil
+  end
 end
 
 
@@ -105,6 +140,27 @@ class ProjectUser < ActiveRecord::Base
   validates_presence_of :user
   validates_associated  :user
 
+  before_destroy :save_names
+
+  def save_names
+    project.events.where(:user_id => self[:user_id]).each do |ev|
+      ev.fallback_username = user.name
+      ev.save!
+    end
+
+    project.notes.where(:user_id => self[:user_id]).each do |n|
+      n.fallback_username = user.name
+      n.save!
+    end
+
+    WikiContent.includes(:wiki)
+      .where(:user_id => self[:user_id])
+      .where(:wikis => { :project_id => self[:project_id] })
+      .each do |wc|
+        wc.fallback_username = user.name
+        wc.save!
+      end
+  end
 end
 
 

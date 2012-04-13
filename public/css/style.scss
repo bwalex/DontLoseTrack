@@ -583,6 +583,10 @@ img.boring {
 
 $task_summary_height: 28px;
 
+.task .check {
+    display: inline-block;
+}
+
 .task .summary .imp {
     //width: 10px;
     //height: 1em;
@@ -1830,5 +1834,20 @@ a.signin.menu-open span.drop-icon {
 	    float: right;
 	    display: inline;
 	}
+    }
+}
+
+.meta .user {
+    .profile-pic {
+	display: inline;
+	float: left;
+    }
+
+    .profile-name {
+	font-size: 90%;
+	color: darken($light_grey, 20%);
+	margin-left: 10px;
+	display: inline;
+	float: left;
     }
 }

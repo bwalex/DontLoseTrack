@@ -1,16 +1,49 @@
 %script{ :type => "text/x-jsrender",:id => "user-settings-tmpl"}
   .options
-    .section
+    .section.openid-registration
       %h2 Personal settings
-      %div
-        :plain
-          <input type="text" value="{{> email}}">
-        %button.change-mail
-          Change email
+      %fieldset
+        %legend Basic Information
+        .row
+          %label{ :for => 'name' }
+            Name
+          %input{ :type => 'text', :id => 'name', :name => 'name', :value => '{{: name}}' }
+
+        .row
+          %label{ :for => 'alias' }
+            Alias/Nick
+          %input{ :type => 'text', :id => 'alias', :name => 'alias', :value => '{{: alias}}' }
+
+        .row
+          %label{ :for => 'email' }
+            Email
+          %input{ :type => 'text', :id => 'email', :name => 'email', :value => '{{: email}}' }
+
+      %fieldset
+        %legend Password
+        %p.info-text
+          {{if openid_only}}
+          If you want to be able to log in to Don't Lose Track directly
+          %strong &nbsp;without&nbsp;
+          your OpenID, choose a password.
+          {{else}}
+          Change your password by choosing a new one.
+          {{/if}}
+        .row
+          %label{ :for => 'password' }
+            Password
+          %input{ :type => 'password', :id => 'password', :name => 'password' }
+        .row
+          %label{ :for => 'password-confirmation' }
+            Password (again)
+          %input{ :type => 'password', :id => 'password-confirmation', :name => 'password_confirmation' }
           
+      .row
+        %input{ :type => 'submit', :value => 'Save changes' }
 
 
-            
+
+    
     .modal#delete-project-modal
       %h2
         Danger!

@@ -85,7 +85,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
 	      return false;
 	    },
 	    select: function(ev, ui) {
-	      App.router.navigate("project/"+ ui.item.value +"/notes", {trigger: true});
+	      App.router.navigate("project/"+ ui.item.value +"/timeline", {trigger: true});
 	      $(this).val('');
 	      $(this).blur();
 	      return false;

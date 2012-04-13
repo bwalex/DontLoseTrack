@@ -384,7 +384,8 @@ delete '/api/project/:project_id/projectuser/:pu_id' do
   pu = @project.project_users.find(params[:pu_id])
   # Normal users can only delete themselves from the project,
   # the project owner cannot ever remove himself
-  halt 403 unless pu.user == @user or (pu.project.owner == @user and pu.user != @user)
+  halt 403 unless (pu.project.owner != @user and pu.user == @user) or
+                  (pu.project.owner == @user and pu.user != @user)
   ProjectUser.destroy(pu)
 end
 
@@ -392,19 +393,18 @@ end
 
 
 get '/api/project/:project_id/user' do
-  @project.users.to_json
+  @project.users.to_json(:user => @user)
 end
 
 get '/api/user' do
-  @user.to_json
+  @user.to_json(:user => @user)
 end
 
 put '/api/user' do
   content_type :json
   JSON.parse(request.body.read).each { |k, v| @user.send(k + "=", v) }
   @user.save!
-  @user.to_json
-
+  @user.to_json(:user => @user)
 end
 
 delete '/api/user' do
