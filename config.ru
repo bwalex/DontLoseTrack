@@ -47,7 +47,7 @@ end
 if defined? config['cache'] and config['cache']['store'] == 'memcache'
   puts "Using Rack::Cache"
   use Rack::Cache,
-    allow_revalidate => true,
+    :allow_revalidate => true,
     :verbose     => !config['silent'],
     :metastore   => 'memcached://' + config['cache']['location'] + '/' + config['cache']['key_prefix'] + ':meta',
     :entitystore => 'memcached://' + config['cache']['location'] + '/' + config['cache']['key_prefix'] + ':body'
