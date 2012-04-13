@@ -253,8 +253,13 @@ before '/api/project/:project_id*' do
 end
 
 after '/api/project/:project_id*' do
+  puts "after."
   if request.put? or request.delete? or request.post?
-    @project.touch unless @project.nil?
+    puts "touching project"
+    unless @project.nil?
+      puts "really touching"
+      @project.touch
+    end
   end
 end
 
