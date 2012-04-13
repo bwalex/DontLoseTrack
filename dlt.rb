@@ -247,16 +247,14 @@ before '/api/project/:project_id*' do
   @project = @user.projects.find(params[:project_id])
   halt 404 unless @project != nil # not reached normally, as above raises RecordNotFound
 
-  expires 500, :public, :must_revalidate
+  # Force revalidation of every single request
+  expires 0, :public, :must_revalidate
   last_modified @project.updated_at
-  #etag Digest::SHA1.hexdigest([@user, @project].to_json)
 end
 
 after '/api/project/:project_id*' do
   if request.put? or request.delete? or request.post?
-    unless @project.nil?
-      @project.touch
-    end
+    @project.touch unless @project.nil?
   end
 end
 
