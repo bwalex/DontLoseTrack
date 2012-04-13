@@ -124,6 +124,7 @@ To update, you should run:
 
     git pull
     make db
+    make tmpl css
 
 
 If you are using optimization, you should also run:

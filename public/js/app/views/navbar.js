@@ -52,6 +52,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
 
       this.bind('change:project', this.render);
       this.bind('navigate', this.nav);
+      App.currentUser.bind('change', this.render);
 
       App.globalController.register(this);
 
