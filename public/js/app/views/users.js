@@ -6,6 +6,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     submitChanges: function(ev) {
+      var self = this;
       console.log('submitChanges!');
       this.model.save(
 	{
@@ -17,7 +18,11 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 	},
 	{
 	  partialUpdate: true,
-	  wait: true
+	  wait: true,
+	  success: function() {
+	    App.currentUser.fetch();
+	    $(self.el).find('#changes-saved-modal').data('overlay').load();
+	  }
 	}
       );
     },
@@ -36,7 +41,17 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     template: $.templates('#user-settings-tmpl'),
 
     render: function() {
-      return $(this.el).html($(this.template.render(this.model.toJSON())));
+      var ret = $(this.el).html($(this.template.render(this.model.toJSON())));
+
+      $(this.el).find('#changes-saved-modal').overlay({
+	mask: {
+	  color: 'white',
+	  opacity: 0.6
+	},
+	closeOnClick: true
+      });
+
+      return ret;
     }
   });
 });
