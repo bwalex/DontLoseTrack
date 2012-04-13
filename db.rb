@@ -280,10 +280,14 @@ class Project < ActiveRecord::Base
   has_many :users,        :through => :project_users,
                           :uniq => true
 
-  before_save :set_new_owner
+  before_save :set_new_owner, :if => :new_owner?
 
   validates :name, :length => { :in => 1..50 }
   validates_uniqueness_of :name, :scope => :owner_id
+
+  def new_owner?
+    !@new_owner.blank?
+  end
 
   def set_new_owner
     self[:owner_id] = users.find(new_owner).id
