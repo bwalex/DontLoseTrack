@@ -2,6 +2,7 @@
 source "https://rubygems.org"
 
 gem "rake", "~> 0.9.2"
+gem "unicorn", "~> 4.2.1"
 
 gem "activerecord", "~> 3.2.0"
 gem "actionpack", "~> 3.2.0"
