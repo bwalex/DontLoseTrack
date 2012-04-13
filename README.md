@@ -114,3 +114,18 @@ The commands that have to be run are:
 
     bundle exec rake tasks:extres
 
+
+
+
+Updating:
+---------------
+
+To update, you should run:
+
+    git pull
+    make db
+
+
+If you are using optimization, you should also run:
+
+    make optimize
