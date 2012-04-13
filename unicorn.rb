@@ -24,6 +24,13 @@ end
 after_fork do |server, worker|
 # Here we are establishing the connection after forking worker
 # processes
-  defined?(ActiveRecord::Base) and
-    ActiveRecord::Base.establish_connection(YAML::load(File.open('config/database.yml'))) and    ActiveRecord::Base.logger = Logger.new(STDOUT)
+  config = YAML::load(File.open('config/config.yml'))
+
+  ActiveRecord::Base.establish_connection(YAML::load(File.open('config/database.yml')))
+
+  if defined? config['silent'] and config['silent']
+    ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'w'))
+  else
+    ActiveRecord::Base.logger = Logger.new(STDOUT)
+  end
 end

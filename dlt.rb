@@ -33,11 +33,30 @@ end
 
 
 set :static_cache_control, [:public, :max_age => 43200] # 12 hours
+
+
 if defined? @config['optimized'] and @config['optimized']
   puts "Using optimized static files"
   set :public, File.dirname(__FILE__) + '/public/build'
   set :public_folder, File.dirname(__FILE__) + '/public/build'
 end
+
+
+if defined? @config['silent'] and @config['silent']
+  set :logging, false
+# Disable useless rack logger completely! Yay, yay!
+  module Rack
+    class CommonLogger
+      def call(env)
+        # do nothing
+        @app.call(env)
+      end
+    end
+  end
+
+  disable :logging
+end
+
 
 configure do
 
@@ -92,8 +111,6 @@ end
 post '/login/openid' do
   resp = request.env["rack.openid.response"]
   if resp
-    puts resp.to_json
-    puts resp.status
 
     if resp.status == :success
       u = User.auth_by_openid(resp.identity_url)
@@ -331,8 +348,6 @@ get '/api/project/:project_id/events' do
     filters = filters | s[0].value.split(',')
   end
 
-  puts "Moo: " << params.to_json
-
   q = Event.where(
     :project_id => @project.id,
     :type => filters
@@ -472,8 +487,6 @@ get '/api/project/:project_id/wiki' do
   content_type :json
 
   if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
-    puts "Limit: " << params[:limit]
-    puts "Offset: " << params[:offset]
 
 #    Wiki.joins(:wiki_tags).where(
 #      :project_id => params[:project_id],

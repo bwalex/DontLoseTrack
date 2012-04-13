@@ -81,10 +81,6 @@ class User < ActiveRecord::Base
       methods << :openid_only << :is_openid_user
     end
 
-    puts 'options: ' + options.to_json
-    puts 'only: ' + only.to_json
-    puts 'methods: ' + methods.to_json
-
     super(
       :only => only,
       :methods => methods
@@ -342,7 +338,6 @@ class Project < ActiveRecord::Base
   end
 
   def as_json(options={})
-    puts "as_json: " + options.to_json
     @current_user = options.user if defined? options.user
     super(
       :include => { :project_users => {}, :owner => { :only => [:id, :alias] } },
