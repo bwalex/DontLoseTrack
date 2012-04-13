@@ -40,8 +40,12 @@ Grab the required ruby gems by running:
 Basic configuration:
 -----------------------
 
-Now look at config/config.yml and adjust to your liking; openid can use both memcache
-or filesystem stores - an example for each is provided.
+Now look at config/config.yml and adjust to your liking. The ’optimized’ option
+should only be enabled if you follow the optimization section below. The ’silent’
+setting silences the output of Rack, Sinatra, Rack::Cache and ActiveRecord
+(ActiveRecord is actually logged into database.log if ’silent’ is true).
+
+OpenID can use both memcache and filesystem stores - an example for each is provided.
 
 Caching requires memcache, but you can disable it by commenting out the whole cache:
 section.
