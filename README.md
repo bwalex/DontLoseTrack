@@ -101,3 +101,16 @@ that establishes and cleans the ActiveRecord connections (see unicorn.rb).
 To run, type:
 
     bundle exec unicorn -c unicorn.rb
+
+
+
+Scheduled tasks:
+---------------
+
+DontLoseTrack! has some scheduled tasks (currently the external resource
+handling) that should be run from cron or similar.
+
+The commands that have to be run are:
+
+    bundle exec rake tasks:extres
+
