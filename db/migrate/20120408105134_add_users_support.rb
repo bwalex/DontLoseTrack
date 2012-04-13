@@ -30,18 +30,13 @@ class AddUsersSupport < ActiveRecord::Migration
     add_index :project_users, [:project_id, :user_id], :unique => true
 
 
-    user = User.create!(
-      :name => 'Alex',
-      :email => 'ahornung@gmail.com',
-      :email_hashed => '2c43830740ae6439e6842cbe65eb9210',
-      :password => '',
-      :salt => ''
-    )
-
-    Project.all.each do |p|
-      p.users << user
-      p.save
-    end
+    #user = User.create!(
+    #  :name => 'Alex',
+    #  :email => 'ahornung@gmail.com',
+    #  :email_hashed => '2c43830740ae6439e6842cbe65eb9210',
+    #  :password => '',
+    #  :salt => ''
+    #)
 
 
     change_table :events do |t|
@@ -49,7 +44,7 @@ class AddUsersSupport < ActiveRecord::Migration
     end
 
     add_foreign_key(:events, :users, :dependent => :nullify)
-    Event.update_all ["user_id = ?", user.id]
+    #Event.update_all ["user_id = ?", user.id]
 
 
     change_table :notes do |t|
@@ -57,7 +52,7 @@ class AddUsersSupport < ActiveRecord::Migration
     end
 
     add_foreign_key(:notes, :users, :dependent => :nullify)
-    Note.update_all ["user_id = ?", user.id]
+    #Note.update_all ["user_id = ?", user.id]
 
 
     change_table :wiki_contents do |t|
@@ -65,7 +60,7 @@ class AddUsersSupport < ActiveRecord::Migration
     end
 
     add_foreign_key(:wiki_contents, :users, :dependent => :nullify)
-    WikiContent.update_all ["user_id = ?", user.id]
+    #WikiContent.update_all ["user_id = ?", user.id]
   end
 
 
