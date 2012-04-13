@@ -111,7 +111,7 @@ class Setup < ActiveRecord::Migration
     create_table :wiki_contents, :force => true do |t|
       t.references    :wiki
       t.text          :comment
-      t.longtext      :text
+      t.text          :text
       t.timestamps
     end
 
