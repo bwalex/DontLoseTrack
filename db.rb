@@ -25,7 +25,7 @@ class User < ActiveRecord::Base
   validates :name, :length => { :in => 2..40 }, :unless => :is_new_openid?
   validates_confirmation_of :new_password, :if=>:password_changed?
   validates :email, :presence => true, :uniqueness => true, :email => true, :unless => :is_new_openid?
-  validates :remove_password, :presence => false, :unless => :is_openid_user?
+  #validates :remove_password, :presence => false, :unless => :is_openid_user?
   validates_uniqueness_of :alias, :unless => :is_new_openid?
   validates_uniqueness_of :openid, :allow_nil => true, :allow_blank => true
 
