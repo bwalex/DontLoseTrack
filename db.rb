@@ -259,6 +259,7 @@ end
 
 class Project < ActiveRecord::Base
   attr_accessor :new_owner
+  attr_accessor :current_user
 
   belongs_to :owner,      :class_name => "User",
                           :foreign_key => "owner_id"#,
@@ -332,8 +333,8 @@ class Project < ActiveRecord::Base
     filters = ["extres"]
 
     if defined? @current_user and not @current_user.nil?
-      s = @current_user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
-      filters = filters | s[0].value.split(',')
+      s = @current_user.user_project_settings.where(:project_id => self[:id], :key => 'timeline:events')
+      filters = filters | s[0].value.split(',') unless s.empty?
     end
 
     return {
@@ -342,7 +343,7 @@ class Project < ActiveRecord::Base
   end
 
   def as_json(options={})
-    @current_user = options.user if defined? options.user
+    @current_user = options[:user] if defined? options[:user]
     super(
       :include => { :project_users => {}, :owner => { :only => [:id, :alias] } },
       :methods => [ :path, :task_stats, :note_stats, :wiki_stats, :user_stats, :event_stats ]
