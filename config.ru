@@ -44,7 +44,7 @@ module Rack::Cache
   end
 end
 
-if defined? config['cache'] and config['cache']['store'] == 'memcache'
+if not config['cache'].nil? and config['cache']['store'] == 'memcache'
   puts "Using Rack::Cache"
   use Rack::Cache,
     :allow_reload     => false,
