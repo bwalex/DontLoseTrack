@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender', 'jquery.tools'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jquery.autoclear', 'jsrender', 'jquery.tools'], function(App, $, _, Backbone) {
 
   App.ProjectUserView = Backbone.View.extend({
     tagName: 'tr',
@@ -72,8 +72,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'extProjectUserListView',
 
     events: {
-      "focus #newprojectuser"             : "newUserFocus",
-      "focusout #newprojectuser"          : "newUserFocusOut",
       "keypress #newprojectuser"          : "newUserKeypress",
       "click .projectuser-leave button"   : "leaveProject"
     },
@@ -87,16 +85,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
       App.projectCollection.fetch();
       App.router.navigate("", { trigger: true });
-    },
-
-    newUserFocus: function(ev) {
-      if ($(ev.currentTarget).val() == 'Add new user...')
-	$(ev.currentTarget).val('');
-    },
-
-    newUserFocusOut: function(ev) {
-      if ($(ev.currentTarget).val() == '')
-	$(ev.currentTarget).val('Add new user...');
     },
 
     newUserKeypress: function(ev) {
@@ -128,7 +116,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderUser', 'leaveProject', 'newUserFocus', 'newUserFocusOut', 'newUserKeypress', 'destroy');
+      _.bindAll(this, 'render', 'renderUser', 'leaveProject', 'newUserKeypress', 'destroy');
 
       console.log("===> %o", this.collection);
 
@@ -140,6 +128,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
     render: function() {
       $(this.el).html(this.template.render({}));
+      $(this.el).find('.autoclear').autoclear();
       this.collection.each(this.renderUser);
 
       return $(this.el);

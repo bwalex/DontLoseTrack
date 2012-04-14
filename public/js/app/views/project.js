@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jquery.autoclear', 'jsrender'], function(App, $, _, Backbone) {
 
   App.ProjectNameView = Backbone.View.extend({
     initialize: function() {
@@ -50,22 +50,10 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
   App.ProjectListView = Backbone.View.extend({
     events: {
-      "focus #newprojectname"          : "newProjFocus",
-      "focusout #newprojectname"       : "newProjFocusOut",
       "keypress #newprojectname"       : "newProjKeypress"
     },
 
     renderCount: 0,
-
-    newProjFocus: function(ev) {
-      if ($(ev.currentTarget).val() == 'Add Project...')
-	$(ev.currentTarget).val('');
-    },
-
-    newProjFocusOut: function(ev) {
-      if ($(ev.currentTarget).val() == '')
-	$(ev.currentTarget).val('Add Project...');
-    },
 
     newProjKeypress: function(ev) {
       var self = this;
@@ -101,6 +89,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     render: function() {
       this.renderCount = 0;
       $(this.el).html(this.template.render({}));
+      $(this.el).find('.autoclear').autoclear();
       this.collection.each(this.renderProject);
     },
 

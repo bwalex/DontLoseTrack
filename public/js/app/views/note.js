@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jsrender'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.elastic', 'jquery.magicedit2', 'jquery.autoclear', 'jsrender'], function(App, $, _, Backbone) {
 
   App.NoteView = Backbone.View.extend({
     tagName: 'div',
@@ -91,8 +91,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     events: {
       "click #notefooter a"             : "loadMore",
       "click .tabmenu .btn_addtag"      : "addTagBtn",
-      "focus #newnotetext"              : "newNoteFocus",
-      "focusout #newnotetext"           : "newNoteFocusOut",
       "click #newnote button"           : "newNoteSubmit"
     },
 
@@ -112,16 +110,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.unbind();
     },
 
-    newNoteFocus: function(ev) {
-      if ($(ev.currentTarget).val() == 'Add Note...')
-	$(ev.currentTarget).val('');
-    },
-
-    newNoteFocusOut: function(ev) {
-      if ($(ev.currentTarget).val() == '')
-	$(ev.currentTarget).val('Add Note...');
-    },
-
     newNoteSubmit: function(ev) {
       var self = this;
 
@@ -139,7 +127,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     initialize: function() {
-      _.bindAll(this, 'render', 'renderNote', 'renderNoteAt', 'addTagBtn', 'destroy', 'tagbtn', 'filterChange', 'forceRefetch', 'loadMore', 'toggleLoadMoreBtn');
+      _.bindAll(this, 'render', 'renderNote', 'renderNoteAt', 'addTagBtn', 'destroy', 'tagbtn', 'filterChange', 'forceRefetch', 'loadMore', 'newNoteSubmit', 'toggleLoadMoreBtn');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
       this.collection.bind('add', this.renderNote);
@@ -202,6 +190,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       $(this.el).html(this.template.render({}));
       $(this.el).find('#newnotetext').elastic();
       $(this.el).find('a[rel]').customOverlay();
+      $(this.el).find('.autoclear').autoclear();
       this.collection.each(this.renderNote);
       this.toggleLoadMoreBtn();
     },

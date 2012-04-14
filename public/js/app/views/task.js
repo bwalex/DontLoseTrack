@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.magicedit2', 'jsrender'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.magicedit2', 'jquery.autoclear', 'jsrender'], function(App, $, _, Backbone) {
   App.TaskDepView = Backbone.View.extend({
     tagName: 'div',
     className: 'taskdep',
@@ -171,14 +171,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       $('<div class="input-dep"><input type="text" value="Add Dependency..."/></div>')
 	  .appendTo(depc)
 	  .children('input')
-	  .on('focus', function() {
-            if ($(this).val() == 'Add Dependency...')
-              $(this).val('');
-	  })
-	  .on('focusout', function() {
-            if ($(this).val() == '')
-              $(this).val('Add Dependency...');
-	  })
+          .autoclear()
 	  .autocomplete({
 	    source: function(req, cb) {
 	      cb(App.taskCollection
@@ -415,8 +408,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       "click .sorter .sort-duedate"       : "sortDueDate",
       "click .tabmenu .btn_showcompleted" : "showCompletedBtn",
       "click .tabmenu .btn_addtag"        : "addTagBtn",
-      "focus #newtasksummary"             : "newTaskFocus",
-      "focusout #newtasksummary"          : "newTaskFocusOut",
       "keypress #newtasksummary"          : "newTaskKeypress"
     },
 
@@ -473,16 +464,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.unbind();
     },
 
-    newTaskFocus: function(ev) {
-      if ($(ev.currentTarget).val() == 'Add Task...')
-	$(ev.currentTarget).val('');
-    },
-
-    newTaskFocusOut: function(ev) {
-      if ($(ev.currentTarget).val() == '')
-	$(ev.currentTarget).val('Add Task...');
-    },
-
     newTaskKeypress: function(ev) {
       var self = this;
 
@@ -515,8 +496,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 		'destroy',
 		'tagbtn',
 		'refetch',
-		'newTaskFocus',
-		'newTaskFocusOut',
 		'showCompletedBtn',
 		'refreshSort',
 		'sortDueDate',
@@ -540,6 +519,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       sc = (typeof(sc) === 'undefined') ? false : sc;
 
       $(this.el).html(this.template.render({showCompleted: sc}));
+      $(this.el).find('.autoclear').autoclear();
       this.collection.each(this.renderTask);
     },
 

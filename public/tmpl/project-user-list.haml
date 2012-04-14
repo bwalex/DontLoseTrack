@@ -12,7 +12,7 @@
   .projectuser-new
     %p
       Add a user by username/alias:
-    %input#newprojectuser{ :type => "text", :value => "Add new user..." }
+    %input.autoclear#newprojectuser{ :type => "text", :value => "Add new user..." }
   {{else}}
   .projectuser-leave
     %button

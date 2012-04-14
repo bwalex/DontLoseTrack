@@ -20,6 +20,7 @@ var config = {
     'jquery.tools'        : 'contrib-mod/jquery.tools.custom',
     'jquery-ui'           : 'contrib-mod/jquery-ui-1.8.18.custom',
     'jquery.elastic'      : 'contrib-mod/jquery.elastic',
+    'jquery.autoclear'    : 'contrib-mod/jquery.autoclear',
     'jquery.colorpicker'  : 'contrib-mod/jquery.colorpicker',
     'jsrender'            : 'contrib-mod/jsrender',
     'jquery.magicedit2'   : 'modules/jquery.magicedit2',
