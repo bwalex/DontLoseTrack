@@ -265,6 +265,10 @@ require([
 
 
 
+
+
+
+
   App.Router = Backbone.Router.extend({
     routes: {
       ""                                        : "showProjects",
@@ -584,6 +588,26 @@ require([
 
   App.router = new App.Router;
   Backbone.history.start();
+
+  $('#ajax-load-overlay')
+      .hide()
+      .overlay({
+	speed: 0,
+	/*mask: {
+	  loadspeed: 0,
+	  closeSpeed: 0,
+	  color: 'white',
+	  startOpacity: 0.6,
+	  opacity: 0.6
+	},*/
+	closeOnClick: true
+      })
+      .ajaxStart(function() {
+	$(this).data('overlay').load();
+      })
+      .ajaxStop(function() {
+	$(this).data('overlay').close();
+      });
 
 });
 
