@@ -20,6 +20,6 @@ cssd:
 	make -C public/css watch
 
 optimize:
-	make -C public all
+	make -C tools optimize
 
 .PHONY: all bundle db run tmpl css cssd

@@ -37,8 +37,8 @@ set :static_cache_control, [:public, :max_age => 43200] # 12 hours
 
 if defined? @config['optimized'] and @config['optimized']
   puts "Using optimized static files"
-  set :public, File.dirname(__FILE__) + '/public/build'
-  set :public_folder, File.dirname(__FILE__) + '/public/build'
+  set :public, File.dirname(__FILE__) + '/public_opt'
+  set :public_folder, File.dirname(__FILE__) + '/public_opt'
 end
 
 

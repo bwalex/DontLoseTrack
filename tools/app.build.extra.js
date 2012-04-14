@@ -1,7 +1,10 @@
-({
-  appDir: './',
+var requirejs = require( 'requirejs' );
+
+var config = {
+  logLevel: 0,
+  appDir: '../public/',
   baseUrl: 'js',
-  dir: 'build',
+  dir: '../public_opt',
   modules: [
     {
       name: "app"
@@ -25,5 +28,25 @@
     'backbone-relational' : 'contrib-mod/backbone-relational',
     'models'              : 'app/models',
     'views'               : 'app/views'
+  },
+
+  optimizeCss: "standard.keepLines",
+
+  fileExclusionRegExp: /(^\.|^node_modules|\.haml$|\.tmpl$)/,
+
+  onBuildWrite : function( name, path, contents ) {
+    function endsWith(str, suffix) {
+      return str.toLowerCase().indexOf(suffix.toLowerCase(), str.length - suffix.length) !== -1;
+    }
+
+    if (endsWith(path, '.js')) {
+      console.log('Pre-processing JS: ' + name);
+      contents = contents.replace(/console.(log|debug|info|count)\((.*)\);?/g, '');
+    }
+
+    return contents;
   }
-})
+};
+
+
+requirejs.optimize(config);
