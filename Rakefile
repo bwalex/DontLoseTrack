@@ -54,6 +54,7 @@ end
 namespace :tasks do
   desc "Run extres tasks"
   task :extres do
-    require './extres_bzr.rb'
+    f = File.new('./extres_bzr.rb')
+    require './extres_bzr.rb' unless f.flock(File::LOCK_EX | File::LOCK_NB) == false
   end
 end
