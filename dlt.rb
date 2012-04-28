@@ -332,12 +332,6 @@ post '/api/project' do
   pu = ProjectUser.where(:project_id => @project.id, :user_id => @user.id).first
   pu.is_owner = true
   pu.save!
-  default_settings = UserProjectSetting.create!(
-    :project => @project,
-    :user => @user,
-    :key => 'timeline:events',
-    :value => 'notes,tasks,wikis'
-  )
   @project.to_json
 end
 
@@ -381,13 +375,6 @@ post '/api/project/:project_id/projectuser', :is_owner => true do
   user = User.where(:alias => data['user_alias']).first
   halt 404 if user.nil?
   pu = ProjectUser.create!(:project => @project, :user => user)
-  default_settings = UserProjectSetting.create!(
-    :project => @project,
-    :user => user,
-    :key => 'timeline:events',
-    :value => 'notes,tasks,wikis'
-  )
-  
   pu.to_json
 end
 

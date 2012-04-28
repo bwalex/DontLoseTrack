@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   attr_accessor :new_password, :new_password_confirmation
   attr_accessor :remove_password
 
+
   has_many :user_project_settings
 
   has_many :project_users
@@ -141,6 +142,24 @@ class ProjectUser < ActiveRecord::Base
   validates_associated  :user
 
   before_destroy :save_names
+  after_create :set_default_settings
+
+  def set_default_settings
+    default_settings = {
+      'timeline:events' => 'notes,tasks,wikis',
+      'tasks:default_sort' => 'intelligent'
+    }
+
+    default_settings.each do |k, v|
+      ds = UserProjectSetting.create!(
+        :project => project,
+        :user => user,
+        :key => k,
+        :value => v
+      )
+    end
+  end
+
 
   def save_names
     project.events.where(:user_id => self[:user_id]).each do |ev|
