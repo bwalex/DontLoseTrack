@@ -40,9 +40,9 @@ Grab the required ruby gems by running:
 Basic configuration:
 -----------------------
 
-Now look at config/config.yml and adjust to your liking. The ’optimized’ option
-should only be enabled if you follow the optimization section below. The ’silent’
-setting silences the output of Rack, Sinatra, Rack::Cache and ActiveRecord
+Now copy over config/config.yml.example to config/config.yml and adjust to your liking.
+The ’optimized’ option should only be enabled if you follow the optimization section
+below. The ’silent’ setting silences the output of Rack, Sinatra, Rack::Cache and ActiveRecord
 (ActiveRecord is actually logged into database.log if ’silent’ is true).
 
 OpenID can use both memcache and filesystem stores - an example for each is provided.
@@ -51,8 +51,9 @@ Caching requires memcache, but you can disable it by commenting out the whole ca
 section.
 
 
-For the database configuration, open config/database.yml. It's a regular ActiveRecord
-style configuration file. Adjust adapter, user, password, host, database to match
+For the database configuration, copy config/database.yml.example to config/database.yml
+and edit to match your configuration. It's a regular ActiveRecord style
+configuration file. Adjust adapter, user, password, host, database to match
 your configuration.
 
 
