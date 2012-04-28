@@ -33,7 +33,11 @@ Grab a copy of DontLoseTrack
 
 Grab the required ruby gems by running:
 
-    bundle install
+    bundle install --without postgresql
+
+if you plan on using mysql; or alternatively if you will be using postgresql:
+
+    bundle install --without mysql
 
 
 

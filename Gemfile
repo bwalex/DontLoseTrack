@@ -6,7 +6,15 @@ gem "unicorn", "~> 4.2.1"
 
 gem "activerecord", "~> 3.2.0"
 gem "actionpack", "~> 3.2.0"
-gem "mysql2", "~> 0.3.11"
+
+group :mysql do
+  gem "mysql2", "~> 0.3.11"
+end
+
+group :postgresql do
+  gem "pg", "~> 0.13.2"
+end
+
 gem "foreigner", "~> 1.1.5"
 
 gem "sinatra", "~> 1.3.2"
