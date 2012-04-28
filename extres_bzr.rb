@@ -66,6 +66,9 @@ ExtResource.where(:type => 'bazaar').each do |e|
         :occurred_at        => entry.time,
         :data               => data.to_json
       )
+
+      # 'Touch' the project so that it looks updated to the caching mechanisms
+      e.project.touch unless e.project.nil?
     end
   end
 
