@@ -1,0 +1,17 @@
+<div class="summary">
+  Wiki
+  <span class="timeline-wiki">
+    <a href="#project/<%= project.id %>/wikis/<%= pdata['id']%>" > <%= pdata['title'] %> </a>
+  </span>
+  <% if pdata['type'] == 'add' %>
+    added
+  <% elsif pdata['type'] == 'delete' %>
+    deleted
+  <% elsif pdata['type'] == 'update' %>
+    updated
+  <% elsif pdata['type'] == 'title_change' %>
+    title changed, was <i> <%= pdata['old_title'] %> </i>
+    <% end %>
+  by <%= user.to_s %>
+</div>
+

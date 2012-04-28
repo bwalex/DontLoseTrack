@@ -1,0 +1,17 @@
+<div class="summary">
+  Task
+  <span class="timeline-task">
+    <a href="#project/<%= project.id %>/tasks"> <%= pdata['summary']%> </a>
+  </span>
+
+  <% if pdata['type'] == 'add' %>
+    added
+  <% elsif pdata['type'] == 'delete' %>
+    deleted
+  <% elsif pdata['type'] == 'completed' %>
+    completed
+  <% elsif pdata['type'] == 'back' %>
+    is back in the game
+  <% end %>
+  by <%= user.to_s %>
+</div>
