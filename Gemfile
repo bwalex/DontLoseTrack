@@ -1,5 +1,5 @@
 # A sample Gemfile
-source "https://rubygems.org"
+source "http://rubygems.org"
 
 gem "rake", "~> 0.9.2"
 gem "unicorn", "~> 4.2.1"

@@ -1,6 +1,7 @@
 require 'digest/md5'
 require 'bcrypt'
 
+
 class EmailValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, value)
     unless value =~ /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i
@@ -33,6 +34,9 @@ class User < ActiveRecord::Base
   before_save :remove_password, :if => :password_removed?
   before_save :hash_mail, :unless => :is_new_openid?
 
+  def to_s
+    self[:name]
+  end
 
   def is_new_openid=(val)
     @new_openid = val
@@ -205,9 +209,15 @@ class Event < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
 
   validates :type, :length => { :in => 1..200 }
-  validates :summary, :length => { :minimum => 1 }
   validates_presence_of :project
   validates_associated  :project
+
+  def body
+    pdata = JSON.parse(data)
+    erb = ERB.new(File.read('templates/events/' + type.gsub(":", "_") + '.rhtml'))
+    erb.result(binding)
+  end
+
 
   def raw_occurred_at
     return (self[:occurred_at] != nil)? self[:occurred_at].to_time.to_i : nil
@@ -220,7 +230,7 @@ class Event < ActiveRecord::Base
 
   def as_json(options={})
     super(
-       :methods => :raw_occurred_at
+       :methods => [ :raw_occurred_at, :body ]
 #      :include => { :user => { :only => [:email_hashed, :name] } }
     )
   end
@@ -330,7 +340,7 @@ class Project < ActiveRecord::Base
 
   def event_stats
     # total
-    filters = ["extres"]
+    filters = ["extres:bzr"]
 
     if defined? @current_user and not @current_user.nil?
       s = @current_user.user_project_settings.where(:project_id => self[:id], :key => 'timeline:events')
