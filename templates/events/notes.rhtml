@@ -1,0 +1,17 @@
+<div class="summary">
+  Note
+  <% if pdata['type'] == 'add' %>
+    added
+  <% elsif pdata['type'] == 'delete' %>
+    deleted
+  <% end %>
+  by <%= user.to_s %>
+</div>
+
+<div class="body">
+  <span class="timeline-note">
+    <blockquote>
+      <%= $markdown.render(pdata['text']) %>
+    </blockquote>
+  </span>
+</div>

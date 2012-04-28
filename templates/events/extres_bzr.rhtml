@@ -1,0 +1,24 @@
+<div class="summary">
+  Commit revision
+  <%
+    url = ''
+    is_lp = (pdata['location'][0..2].casecmp('lp:'))
+    if is_lp
+      priv = JSON.parse(ext_resource.data)
+      url = 'http://bazaar.launchpad.net/' + priv['lp_info']['unique_name'] + '/revision/' + pdata['revision']
+    end
+  %>
+  <a href="<%= url %>">
+    <%= pdata['revision'] %>
+  </a>
+  to <span class='timeline-bzr-location'><%= pdata['location'] %></span>
+  by <span class="name"><%=h pdata['committer'] %> </span>
+</div>
+
+<div class="body">
+  <span class="timeline-bzr">
+    <blockquote>
+      <%= pdata['message'] %>
+    </blockquote>
+  </span>
+</div>

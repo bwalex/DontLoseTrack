@@ -1,4 +1,22 @@
 require './bzrwrapper-my.rb'
+require 'net/http'
+require 'net/https'
+
+def get_lp_info(location)
+  uri = URI('https://api.launchpad.net/1.0/branches')
+  params = { 'ws.op' => 'getByUrl', :url => location }
+  uri.query = URI.encode_www_form(params)
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  res = http.request_get(uri.path + '?' + uri.query)
+
+  if res.is_a?(Net::HTTPSuccess)
+    return JSON.parse(res.body)
+  else
+    return {}
+  end
+end
 
 ExtResource.where(:type => 'bazaar').each do |e|
   cfg = {}
@@ -6,7 +24,7 @@ ExtResource.where(:type => 'bazaar').each do |e|
     cfg = JSON.parse(e.data)
   end
 
-  unless not cfg['last_commit_id'].nil?
+  if cfg['last_commit_id'].nil?
     cfg['last_commit_id'] = 0
   end
 
@@ -21,38 +39,38 @@ ExtResource.where(:type => 'bazaar').each do |e|
     next
   end
 
+  cfg['lp_info'] = get_lp_info(e.location)
+
   branch.log.each_entry do |entry|
-    # entry.time
-    # entry.revno
-    # entry.message
-    # entry.committer
+    # Relevant information:
+    #  entry.time
+    #  entry.revno
+    #  entry.message
+    #  entry.committer
     if entry.time > e.created_at and entry.revno.to_i > cfg['last_commit_id']
       committer_mail = entry.committer.scan(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i).uniq
       users = User.where(:email => committer_mail)
+      data = {
+        'id'        => e.id,
+        'location'  => e.location,
+        'revision'  => entry.revno,
+        'message'   => entry.message,
+        'committer' => entry.committer,
+        'time'      => entry.time
+      }
       e.project.events.create!(
-      #moo = {
-        :user => (users.length > 0 ) ? users.first : nil,
-        :fallback_username => entry.committer,
-        :type => 'extres',
-        :ext_resource => e,
-        :occurred_at => entry.time,
-        :summary => "Commit revision <a href='http://bazaar.launchpad.net/" + e.location[3..-1] + "/revision/" + entry.revno + "'>" + entry.revno + "</a> to <span class='timeline-bzr-location'>" + e.location + "</span>",
-        :body => "<span class='timeline-bzr'><blockquote>" + entry.message  + "</blockquote></span>"
+        :user               => (users.length > 0 ) ? users.first : nil,
+        :fallback_username  => entry.committer,
+        :type               => 'extres:bzr',
+        :ext_resource       => e,
+        :occurred_at        => entry.time,
+        :data               => data.to_json
       )
-      #}
-      #puts moo.to_json
-      #puts '---------------------'
     end
   end
 
   cfg['last_commit_id'] = branch.info.revno.to_i;
-  # e.project
-  # e.location
-  # e.data
-  # e.updated_at
-  #
 
   e.data = cfg.to_json
   e.save!
-  #puts cfg.to_json
 end
