@@ -461,8 +461,6 @@ post '/api/project/:project_id/note' do
       :type         => 'notes',
       :occurred_at  => DateTime.now,
       :data         => event_data.to_json
-#      :summary => "Note added",
-#      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(n.text)) + "</blockquote></span>"
   );
   n.to_json
 end
@@ -478,8 +476,6 @@ delete '/api/project/:project_id/note/:note_id' do
       :type         => 'notes',
       :occurred_at  => DateTime.now,
       :data         => event_data.to_json
-#      :summary => "Note deleted",
-#      :body => "<span class='timeline-note'><blockquote>" + $markdown.render(snippet(@note.text)) + "</blockquote></span>"
   );
   Note.destroy(@note)
 end
@@ -534,7 +530,6 @@ put '/api/project/:project_id/wiki/:wiki_id' do
         :type         => 'wikis',
         :occurred_at  => DateTime.now,
         :data         => data.to_json
-#        :summary => "Wiki <span class='timeline-wiki'>" + old_title + "</span> renamed to <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span>"
     );
 
   end
@@ -556,7 +551,6 @@ post '/api/project/:project_id/wiki' do
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :data => wiki_data.to_json
-#      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{w.id}'>" + w.title + "</a></span> added"
   );
   w.to_json
 end
@@ -573,7 +567,6 @@ delete '/api/project/:project_id/wiki/:wiki_id' do
       :type => 'wikis',
       :occurred_at => DateTime.now,
       :data => data.to_json
-#      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> deleted"
   );
   Wiki.destroy(@wiki)
 end
@@ -737,7 +730,6 @@ post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
       :type          => 'wikis',
       :occurred_at   => DateTime.now,
       :data          => wiki_data
-#      :summary => "Wiki <span class='timeline-wiki'><a href='#project/#{params[:project_id]}/wikis/#{@wiki.id}'>" + @wiki.title + "</a></span> updated"
   );
   wc.to_json
 end
@@ -868,7 +860,6 @@ post '/api/project/:project_id/task' do
       :type         => 'tasks',
       :occurred_at  => DateTime.now,
       :data         => task_data.to_json
-#       :summary => "Task <span class='timeline-task'>" + t.summary + "</span> added"
   );
   t.to_json
 end
@@ -890,7 +881,6 @@ put '/api/project/:project_id/task/:task_id' do
         :type         => 'tasks',
         :occurred_at  => DateTime.now,
         :data         => task_data.to_json
-#        :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> completed"
     );
   elsif not @task.completed and completed
     task_data = {
@@ -903,7 +893,6 @@ put '/api/project/:project_id/task/:task_id' do
         :type         => 'tasks',
         :occurred_at  => DateTime.now,
         :data         => task_data.to_json
-#        :summary      => "Task <span class='timeline-task'>" + @task.summary + "</span> back in the game"
     );
   end
 
@@ -921,7 +910,6 @@ delete '/api/project/:project_id/task/:task_id' do
       :type         => 'tasks',
       :occurred_at  => DateTime.now,
       :data         => task_data.to_json
-#      :summary => "Task <span class='timeline-task'>" + @task.summary + "</span> deleted"
   );
 
   Task.destroy(@task)
