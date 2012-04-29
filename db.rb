@@ -1,6 +1,14 @@
 require 'digest/md5'
 require 'bcrypt'
 
+$template_cache = nil
+@config = YAML::load(File.open('config/config.yml'))
+if not @config['cache'].nil? and @config['cache']['store'] == 'memcache'
+  $template_cache = {
+    :key_prefix => @config['cache']['key_prefix'],
+    :dc         => Dalli::Client.new(@config['cache']['location'])
+  }
+end
 
 class EmailValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, value)
@@ -232,9 +240,25 @@ class Event < ActiveRecord::Base
   validates_associated  :project
 
   def body
+    if not $template_cache.nil?
+      h = $template_cache[:dc].get(
+        "#{$template_cache[:key_prefix]}:events:#{self[:id].to_s}"
+      )
+      return h unless h.nil?
+    end
+
     pdata = JSON.parse(data)
     erb = ERB.new(File.read('templates/events/' + type.gsub(":", "_") + '.rhtml'))
-    erb.result(binding)
+    h = erb.result(binding)
+
+    if not $template_cache.nil?
+      $template_cache[:dc].set(
+        "#{$template_cache[:key_prefix]}:events:#{self[:id].to_s}",
+        h
+      )
+    end
+
+    return h
   end
 
 
