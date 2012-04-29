@@ -9,7 +9,7 @@
         -#%input{ :type => "checkbox", :checked => "{{: (completed) ? 'checked' : ''}}" } 
       %span.imp{ :class => '{{:"importance-"+importance}}' }
         &nbsp;&nbsp;
-      %span.summary {{:summary}}
+      %span.summary {{> summary}}
       .tags
         .tag.placeholder-tag
           &nbsp;
