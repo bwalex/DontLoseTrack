@@ -207,7 +207,7 @@ end
 
 get '/logout' do
   session[:user] = nil
-  redirect '/'
+  redirect '/login'
 end
 
 
