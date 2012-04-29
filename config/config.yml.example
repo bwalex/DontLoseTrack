@@ -13,4 +13,4 @@ openid :
 #cache :
 #  store       :  memcache
 #  location    :  127.0.0.1:11211
-#  key_prefix  :  dlt-openid
+#  key_prefix  :  dlt
