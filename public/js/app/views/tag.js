@@ -1,4 +1,4 @@
-define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.magicedit2', 'jsrender'], function(App, $, _, Backbone) {
+define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jquery.magicedit2', 'jquery.autoclear', 'jsrender'], function(App, $, _, Backbone) {
   App.TagView = Backbone.View.extend({
     tagName: 'div',
     className: 'tagView',
@@ -61,8 +61,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'tagListView',
 
     events: {
-      "focus #newtagname"          : "newTagFocus",
-      "focusout #newtagname"       : "newTagFocusOut",
       "keypress #newtagname"       : "newTagKeypress"
     },
 
@@ -70,16 +68,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       App.globalController.unregister(this);
       this.remove();
       this.unbind();
-    },
-
-    newTagFocus: function(ev) {
-      if ($(ev.currentTarget).val() == 'Add Tag...')
-	$(ev.currentTarget).val('');
-    },
-
-    newTagFocusOut: function(ev) {
-      if ($(ev.currentTarget).val() == '')
-	$(ev.currentTarget).val('Add Tag...');
     },
 
     newTagKeypress: function(ev) {
@@ -105,8 +93,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 		'render',
 		'renderTag',
 		'renderTagTop',
-		'newTagFocus',
-		'newTagFocusOut',
 		'newTagKeypress',
 		'destroy');
 
@@ -120,6 +106,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
     render: function() {
       $(this.el).html(this.template.render({}));
+      $(this.el).find('.autoclear').autoclear();
       this.collection.each(this.renderTag);
     },
 
