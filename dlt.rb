@@ -557,7 +557,7 @@ end
 
 delete '/api/project/:project_id/wiki/:wiki_id' do
   data = {
-    'id' => w.id,
+    'id' => @wiki.id,
     'type' => 'delete',
     'title' => @wiki.title
   }
@@ -729,7 +729,7 @@ post '/api/project/:project_id/wiki/:wiki_id/wikicontent' do
       :user          => @user,
       :type          => 'wikis',
       :occurred_at   => DateTime.now,
-      :data          => wiki_data
+      :data          => wiki_data.to_json
   );
   wc.to_json
 end
