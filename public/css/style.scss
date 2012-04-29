@@ -610,6 +610,10 @@ $task_summary_height: 28px;
     background-color: #359AFF;
 }
 
+.task .summary-edit input {
+    width: 60%;
+}
+
 .task {
     //background-color: #FCFCFC;
     background-color: white;
