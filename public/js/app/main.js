@@ -239,6 +239,7 @@ require([
 	App.settingsCollection.fetch({async: false});
 	App.tagCollection.fetch({async: false});
 
+	$(document).find('head > title').text(newModel.get('path'));
 	this.trigger('reload:settings');
       }
     }
