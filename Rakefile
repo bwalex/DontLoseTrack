@@ -56,5 +56,7 @@ namespace :tasks do
   task :extres do
     f = File.new('./extres_bzr.rb')
     require './extres_bzr.rb' unless f.flock(File::LOCK_EX | File::LOCK_NB) == false
+    f = File.new('./extres_github_events.rb')
+    require './extres_github_events.rb' unless f.flock(File::LOCK_EX | File::LOCK_NB) == false
   end
 end

@@ -344,7 +344,7 @@ end
 get '/api/project/:project_id/events' do
   content_type :json
 
-  filters = [ "extres:bzr" ]
+  filters = [ "extres:bzr", "extres:github:events:commit", "extres:github:events:pullrequest" ]
   s = @user.user_project_settings.where(:project_id => @project.id, :key => 'timeline:events')
   if not s.empty?
     filters = filters | s[0].value.split(',')

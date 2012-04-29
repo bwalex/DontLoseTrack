@@ -1,0 +1,17 @@
+<div class="summary">
+  Pull Request
+  <a href="<%= pdata['html_url'] %>">
+    <%= pdata['number'] %>
+  </a>
+  to <span class='timeline-bzr-location'><%= ext_resource.location %></span>
+  <%= pdata['action'] %>
+  by <span class="name"><%=h pdata['actor']['login'] %> </span>
+</div>
+
+<div class="body">
+  <span class="timeline-bzr">
+    <blockquote>
+      <%=h pdata['title'] %>
+    </blockquote>
+  </span>
+</div>

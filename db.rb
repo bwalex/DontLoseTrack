@@ -359,7 +359,7 @@ class Project < ActiveRecord::Base
 
   def event_stats
     # total
-    filters = ["extres:bzr"]
+    filters = ["extres:bzr", "extres:github:events:commit", "extres:github:events:pullrequest"]
 
     if defined? @current_user and not @current_user.nil?
       s = @current_user.user_project_settings.where(:project_id => self[:id], :key => 'timeline:events')

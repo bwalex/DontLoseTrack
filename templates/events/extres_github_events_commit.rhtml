@@ -1,0 +1,16 @@
+<div class="summary">
+  Commit revision
+  <a href="<%= "https://github.com/#{ext_resource.location}/commit/#{pdata['sha']}" %>">
+    <%= pdata['sha'] %>
+  </a>
+  to <span class='timeline-bzr-location'><%= ext_resource.location %></span>
+  by <span class="name"><%=h pdata['author'] %> </span>
+</div>
+
+<div class="body">
+  <span class="timeline-bzr">
+    <blockquote>
+      <%=h pdata['message'] %>
+    </blockquote>
+  </span>
+</div>

@@ -1,22 +1,15 @@
 require './bzrwrapper-my.rb'
-require 'net/http'
-require 'net/https'
+require './extres_common.rb'
 
 def get_lp_info(location)
-  uri = URI('https://api.launchpad.net/1.0/branches')
-  params = { 'ws.op' => 'getByUrl', :url => location }
-  uri.query = URI.encode_www_form(params)
+  j = http_json_request(
+    'https://api.launchpad.net/1.0/branches',
+    { 'ws.op' => 'getByUrl', :url => location }
+  )
 
-  http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
-  res = http.request_get(uri.path + '?' + uri.query)
-
-  if res.is_a?(Net::HTTPSuccess)
-    return JSON.parse(res.body)
-  else
-    return {}
-  end
+  return (j.nil?) ? { } : j
 end
+
 
 ExtResource.where(:type => 'bazaar').each do |e|
   cfg = {}
