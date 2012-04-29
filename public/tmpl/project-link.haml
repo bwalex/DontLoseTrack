@@ -5,12 +5,12 @@
   %td
     {{:task_stats.overdue}}
   %td
-    {{:task_stats.pending}}
+    %a{ :href => "#project/{{:id}}/tasks" }
+      {{:task_stats.pending}}
   %td
     {{:task_stats.completed}}
   %td
-    %a{ :href => "#project/{{:id}}/tasks" }
-      {{:task_stats.total}}
+    {{:task_stats.total}}
   %td
     %a{ :href => "#project/{{:id}}/notes" }
       {{:note_stats.total}}
