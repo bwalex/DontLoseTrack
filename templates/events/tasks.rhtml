@@ -1,7 +1,7 @@
 <div class="summary">
   Task
   <span class="timeline-task">
-    <a href="#project/<%= project.id %>/tasks"> <%= pdata['summary']%> </a>
+    <a href="#project/<%= project.id %>/tasks"> <%=h pdata['summary'] %> </a>
   </span>
 
   <% if pdata['type'] == 'add' %>
@@ -13,5 +13,5 @@
   <% elsif pdata['type'] == 'back' %>
     is back in the game
   <% end %>
-  by <%= user.to_s %>
+  by <%=h user.to_s %>
 </div>

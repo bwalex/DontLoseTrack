@@ -5,7 +5,7 @@
   <% elsif pdata['type'] == 'delete' %>
     deleted
   <% end %>
-  by <%= user.to_s %>
+  by <%=h user.to_s %>
 </div>
 
 <div class="body">

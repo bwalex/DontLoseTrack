@@ -1,7 +1,7 @@
 <div class="summary">
   Wiki
   <span class="timeline-wiki">
-    <a href="#project/<%= project.id %>/wikis/<%= pdata['id']%>" > <%= pdata['title'] %> </a>
+    <a href="#project/<%= project.id %>/wikis/<%= pdata['id']%>" > <%=h pdata['title'] %> </a>
   </span>
   <% if pdata['type'] == 'add' %>
     added
@@ -10,8 +10,8 @@
   <% elsif pdata['type'] == 'update' %>
     updated
   <% elsif pdata['type'] == 'title_change' %>
-    title changed, was <i> <%= pdata['old_title'] %> </i>
+    title changed, was <i> <%=h pdata['old_title'] %> </i>
     <% end %>
-  by <%= user.to_s %>
+  by <%=h user.to_s %>
 </div>
 
