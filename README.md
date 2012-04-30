@@ -128,6 +128,7 @@ Updating:
 To update, you should run:
 
     git pull
+    bundle install --without (postgresql or mysql, see above)
     make db
     make tmpl css
 
