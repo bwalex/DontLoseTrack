@@ -13,6 +13,12 @@ define(['appns', 'underscore', 'backbone', 'backbone-relational'], function(App,
     url: function() {
       return '/api/project/'+ App.globalController.get('projectId') +'/user';
     },
-    model: App.User
+    model: App.User,
+
+    initialize: function() {
+      this.comparator = function(user) {
+        return user.get('name');
+      };
+    }
   });
 });
