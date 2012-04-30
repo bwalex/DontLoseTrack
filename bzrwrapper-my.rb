@@ -57,7 +57,9 @@ module BzrWrapper
         arr = []
         hash = {}
         cmd = 'bzr version-info ' << @path
-        IO.popen(cmd) do |io|
+        Open3.popen3(cmd) do |stdin, io, stderr, waitth|
+          return nil if (waitth.value != 0)
+
           unless io.eof?
             io.readlines.each do |line|
                 k , v = line.split(':',2)
@@ -76,7 +78,13 @@ module BzrWrapper
       @entries = []
       cmd = "bzr log " << @path
         offsets = []
-        arr = IO.popen(cmd).readlines
+        #arr = IO.popen(cmd).readlines
+        arr = []
+        Open3.popen3(cmd) do |stdin, io, stderr, waitth|
+          return nil if (waitth.value != 0)
+
+          arr = io.readlines
+        end
         arr.each_index { |x| offsets.push(x) if arr[x].strip.chomp == Log::SEPARATOR  }
         while not offsets.empty?
           hash = {}
