@@ -2,10 +2,9 @@ require './bzrwrapper-my.rb'
 require './extres_common.rb'
 
 def get_lp_info(location)
-  j = http_json_request(
-    'https://api.launchpad.net/1.0/branches',
-    { 'ws.op' => 'getByUrl', :url => location }
-  )
+  s = SimpleHTTPRequest.new('https://api.launchpad.net/1.0/branches')
+  s.form_data = { 'ws.op' => 'getByUrl', :url => location }
+  j = s.result
 
   return (j.nil?) ? { } : j
 end
@@ -21,14 +20,14 @@ ExtResource.where(:type => 'bazaar').each do |e|
     cfg['last_commit_id'] = 0
   end
 
-  puts "Location: " + e.location
-
+  #puts "Location: " + e.location
   branch = BzrWrapper::Branch.new(e.location)
-  puts branch.info.to_s
+  if branch.info.nil? or branch.log.nil?
+    warn "Invalid bazaar external resource: " << e.location
+    next
+  end
 
-  puts 'last_commit_id: ' +  cfg['last_commit_id'].to_s
   if (cfg['last_commit_id'] >= branch.info.revno.to_i)
-    puts "Already up to date at rev: " + branch.info.revno;
     next
   end
 

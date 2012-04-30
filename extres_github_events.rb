@@ -1,10 +1,9 @@
 require './extres_common.rb'
 
 def get_github_events(repo, page)
-  j = http_json_request(
-    "https://api.github.com/repos/#{repo}/events",
-    { 'per_page' => '100', 'page' => page }
-  )
+  s = SimpleHTTPRequest.new("https://api.github.com/repos/#{repo}/events")
+  s.form_data = { 'per_page' => '100', 'page' => page }
+  s.result
 end
 
 def get_github_events_since(repo, last_id, last_date)
@@ -29,8 +28,12 @@ ExtResource.where(:type => 'github').each do |e|
     cfg['last_id'] = 0
   end
 
-  puts "Location: " + e.location
-  puts "Last ID: " + cfg['last_id'].to_s
+  #puts "Location: " + e.location
+  #puts "Last ID: " + cfg['last_id'].to_s
+  if get_github_events(e.location, 1).nil?
+    warn "Invalid github external resource: " << e.location
+    next
+  end
 
   events = get_github_events_since(e.location, cfg['last_id'], e.created_at)
 
