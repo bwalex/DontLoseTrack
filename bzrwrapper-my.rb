@@ -89,9 +89,13 @@ module BzrWrapper
                  end
           _arr = arr[start..stop]
           _arr.each_index { |x| _arr.delete_at(x) if _arr[x].strip.chomp == Log::SEPARATOR }
-          _arr.each_with_index do |line,i| 
-            if line.match('message:') 
+          message_mode = false
+          _arr.each_with_index do |line,i|
+            if line.match('message:')
+              message_mode = true
               hash['message'] = _arr[i+1].chomp.strip unless _arr[i+1].nil?
+            elsif message_mode
+              hash['message'] = hash['message'] + "\n" +  _arr[i+1].chomp.strip unless _arr[i+1].nil?
             else
               line.gsub!('branch nick:', 'branch_nick:') if line.match('branch nick:') 
               ['revno:','committer:','branch_nick:','timestamp:','merged:'].each do |thing|
