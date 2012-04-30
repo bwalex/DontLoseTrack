@@ -10,7 +10,7 @@
 <div class="body">
   <span class="timeline-bzr">
     <blockquote>
-      <%=h pdata['message'] %>
+      <%= $markdown.render(pdata['message']) %>
     </blockquote>
   </span>
 </div>
