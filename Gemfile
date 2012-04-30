@@ -26,6 +26,7 @@ gem "haml", "~> 3.1.4"
 gem "sass", "~> 3.1.15"
 
 gem "json", "~> 1.6.6"
+gem "oauth", "~> 0.4.6"
 gem "bcrypt-ruby", "~> 3.0.1"
 
 gem "ruby-openid", "~> 2.1.8"
