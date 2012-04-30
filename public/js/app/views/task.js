@@ -449,12 +449,16 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     },
 
     addTagBtn: function(ev) {
-      App.globalController.trigger('btn:addTags');
+      selected = !$(this.el).find('.tabmenu .btn_addtag').hasClass('btn-selected');
+
+      App.globalController.set('tagdrag_visible', selected);
     },
 
-    tagbtn: function() {
-      $(this.el).find('.tabmenu .btn_addtag')
-	  .toggleClass('btn-selected');
+    tagbtn: function(sel) {
+      if (sel)
+        $(this.el).find('.tabmenu .btn_addtag').addClass('btn-selected');
+      else
+        $(this.el).find('.tabmenu .btn_addtag').removeClass('btn-selected');
     },
 
     destroy: function() {
@@ -506,7 +510,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       this.collection.bind('add', this.renderTaskTop);
       this.collection.bind('reset', this.render);
 
-      this.bind('btn:addTags', this.tagbtn);
+      this.bind('change:tagdrag_visible', this.tagbtn);
       this.bind('btn:task:showCompleted', this.refetch);
       this.bind('tasks:sort', this.refreshSort);
       App.globalController.register(this);
@@ -520,6 +524,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
       $(this.el).html(this.template.render({showCompleted: sc}));
       $(this.el).find('.autoclear').autoclear();
+      this.tagbtn(App.globalController.get('tagdrag_visible'));
       this.collection.each(this.renderTask);
     },
 

@@ -34,23 +34,21 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     tagName: 'div',
     className: 'tagDragListView',
     initialize: function() {
-      _.bindAll(this, 'render', 'renderTag', 'toggleVisibility', 'removeVisibility', 'destroy');
+      _.bindAll(this, 'render', 'renderTag', 'toggleVisibility', 'destroy');
       //this.model.bind('change', this.render);
       this.collection.bind('reset', this.render);
       this.collection.bind('add', this.renderTag);
 
-      this.bind('btn:addTags', this.toggleVisibility);
-      this.bind('clean:addTags', this.removeVisibility);
+      this.bind('change:tagdrag_visible', this.toggleVisibility);
 
       App.globalController.register(this);
     },
 
-    toggleVisibility: function() {
-      $(this.el).toggleClass('hide');
-    },
-
-    removeVisibility: function() {
-      $(this.el).addClass('hide');
+    toggleVisibility: function(show) {
+      if (show)
+        $(this.el).removeClass('hide');
+      else
+        $(this.el).addClass('hide');
     },
 
     destroy: function() {
@@ -63,9 +61,9 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
     render: function() {
       $(this.el).html(this.template.render({}));
-      this.removeVisibility();
       console.log("render in TagDragListView: %o", this);
       this.collection.each(this.renderTag);
+      this.toggleVisibility(App.globalController.get('tagdrag_visible'));
       console.log(this);
     },
 
