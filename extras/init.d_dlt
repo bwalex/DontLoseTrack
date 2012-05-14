@@ -4,14 +4,14 @@ BUNDLE=/usr/local/bin/bundle
 UNICORN=/usr/local/bin/unicorn
 APP_ROOT=/home/ubuntu/DontLoseTrack
 USER=ubuntu
-PID_FILE=/var/run/dlt.pid
+PID_FILE=$APP_ROOT/unicorn.pid
 #GEM_HOME=/var/lib/gems/1.9.1/gems/
 
 case "$1" in
         start)
                 echo "Starting unicorn..."
                 # cd $APP_ROOT
-		start-stop-daemon -S -d $APP_ROOT -c $USER -p $PID_FILE -m -a $BUNDLE -- exec $UNICORN -c unicorn.rb -D
+		start-stop-daemon -S -d $APP_ROOT -c $USER -p $PID_FILE -a $BUNDLE -- exec $UNICORN -c unicorn.rb -D
                 ;;
         stop)
 		start-stop-daemon -K -p $PID_FILE
