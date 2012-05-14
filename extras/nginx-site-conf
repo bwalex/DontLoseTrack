@@ -1,0 +1,16 @@
+upstream dltapp {
+        server 127.0.0.1:4567 fail_timeout=0;
+}
+
+server {
+	listen 80;
+
+	root /home/ubuntu/DontLoseTrack/public_opt;
+
+	if (-f $request_filename) {
+		add_header Cache-Control public;
+		expires 1w;
+	}
+
+	try_files $uri $uri/ @dltapp;
+}
