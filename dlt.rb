@@ -416,6 +416,7 @@ put '/api/user' do
   content_type :json
   JSON.parse(request.body.read).each { |k, v| @user.send(k + "=", v) }
   @user.save!
+  @user.projects.each { |p| p.touch }
   @user.to_json(:user => @user)
 end
 
