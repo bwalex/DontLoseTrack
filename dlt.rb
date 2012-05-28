@@ -24,6 +24,19 @@ require './db.rb'
 
 
 
+$version = nil
+
+begin
+  f = IO.popen('git describe --always')
+  $version = f.readlines.first.chomp
+  f.close
+  $version = "(unknown)" if $? != 0
+rescue Errno::ENOENT
+  $version = "(unknown)"
+end
+
+
+
 @config = YAML::load(File.open('config/config.yml'))
 
 
