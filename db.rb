@@ -1,5 +1,6 @@
 require 'digest/md5'
 require 'bcrypt'
+require './db_helpers.rb'
 
 $template_cache = nil
 @config = YAML::load(File.open('config/config.yml'))
@@ -10,19 +11,12 @@ if not @config['cache'].nil? and @config['cache']['store'] == 'memcache'
   }
 end
 
-class EmailValidator < ActiveModel::EachValidator
-  def validate_each(record, attribute, value)
-    unless value =~ /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i
-      record.errors[attribute] << (options[:message] || "is not an email")
-    end
-  end
-end
-
 
 class User < ActiveRecord::Base
   attr_accessor :new_password, :new_password_confirmation
   attr_accessor :remove_password
 
+  strip :name, :alias
 
   has_many :user_project_settings
 
@@ -192,6 +186,8 @@ end
 
 
 class UserProjectSetting < ActiveRecord::Base
+  strip :key, :value
+
   belongs_to :project
   belongs_to :user,     :inverse_of => :user_project_settings
 
@@ -206,6 +202,8 @@ end
 
 
 class Setting < ActiveRecord::Base
+  strip :key, :value
+
   belongs_to :project,  :inverse_of => :settings
 
   validates :key, :length => { :in => 1..200 }
@@ -216,6 +214,8 @@ end
 
 
 class ExtResource < ActiveRecord::Base
+  strip :type, :location
+
   self.inheritance_column = :inheritance_type
 
   belongs_to :project,  :inverse_of => :settings
@@ -229,6 +229,8 @@ end
 
 
 class Event < ActiveRecord::Base
+  strip :type
+
   self.inheritance_column = :inheritance_type
 
   belongs_to :ext_resource #, :optional
@@ -282,6 +284,7 @@ end
 
 class Mail < ActiveRecord::Base
   belongs_to :project,  :inverse_of => :settings
+  strip :from, :to, :cc, :subject
 
   has_many :mail_tags
   has_many :tags,       :through => :mail_tags,
@@ -296,6 +299,8 @@ end
 
 class Document < ActiveRecord::Base
   self.inheritance_column = :inheritance_type
+
+  strip :name, :mimetype, :path
 
   belongs_to :project,  :inverse_of => :settings
 
@@ -313,6 +318,8 @@ end
 class Project < ActiveRecord::Base
   attr_accessor :new_owner
   attr_accessor :current_user
+
+  strip :name
 
   belongs_to :owner,      :class_name => "User",
                           :foreign_key => "owner_id"#,
@@ -337,7 +344,7 @@ class Project < ActiveRecord::Base
   before_save :set_new_owner, :if => :new_owner?
 
   validates :name, :length => { :in => 1..50 }
-  validates_uniqueness_of :name, :scope => :owner_id
+  validates_uniqueness_of :name, :scope => :owner_id, :case_sensitive => false
 
   def new_owner?
     !@new_owner.blank?
@@ -458,6 +465,8 @@ end
 
 
 class WikiContent < ActiveRecord::Base
+  strip :comment
+
   belongs_to :wiki,     :inverse_of => :wiki_contents
 
   belongs_to :user
@@ -502,6 +511,8 @@ end
 
 
 class Wiki < ActiveRecord::Base
+  strip :title
+
   belongs_to :project,  :inverse_of => :wikis
 
   has_many :wiki_tags
@@ -616,6 +627,8 @@ end
 
 
 class Tag < ActiveRecord::Base
+  strip :name, :color
+
   belongs_to :project,    :inverse_of => :tags
   has_many :note_tags
   has_many :notes,        :through => :note_tags
@@ -664,6 +677,8 @@ class Task < ActiveRecord::Base
   IMPORTANCE_LOW    = 1
   IMPORTANCE_MEDIUM = 2
   IMPORTANCE_HIGH   = 3
+
+  strip :summary
 
   belongs_to :project,  :inverse_of => :tasks
 
@@ -787,20 +802,3 @@ class Task < ActiveRecord::Base
     )
   end
 end
-
-class ActiveRecord::RecordInvalid
-  def errors_to_a
-    a = []
-
-    record.errors.each do |k, v|
-      a.push(k.to_s.split("_").each{|w| w.capitalize!}.join(" ") + " " + v);
-    end
-
-    return a
-  end
-
-  def errors_to_json
-    { "errors" => errors_to_a }.to_json
-  end
-end
-
