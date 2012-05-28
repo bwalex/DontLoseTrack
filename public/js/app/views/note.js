@@ -6,9 +6,30 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
     events: {
       "click .delnote .rm-button"     : "deleteNote",
+      "dblclick .text"                : "editText",
       "drop .meta"                    : "dropTag"
     },
 
+    editText: function(ev) {
+      var self = this;
+
+      $(ev.currentTarget).magicedit2(
+	'text', 'textarea',
+	{
+	  val: this.model.get('text')
+	},
+	function(val) {
+	  self.model.save({ 'text': val },
+			  {
+			    wait: true,
+			    partialUpdate: true,
+			    success: function(model, resp) {
+			      console.log('Response: ', resp);
+			      self.model.set('html_text', resp.html_text);
+			    }
+			  });
+	});
+    },
 
     dropTag: function(ev, ui) {
       var tagModel = ui.draggable.data('tagModel');
@@ -39,6 +60,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 		'render',
 		'renderTags',
 		'dropTag',
+		'editText',
 		'destroy',
 		'deleteNote');
       this.model.bind('change', this.render);

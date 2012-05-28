@@ -347,7 +347,6 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 	  val: this.model.get('text')
 	},
 	function(val) {
-	  console.log('mIAUUUUUUUUUUUUUUUUU!');
 	  console.log("editText!: %o, %o - ", self, self.model, self, self.model);
 	  self.model.save({ 'text': val },
 			  {

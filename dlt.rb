@@ -435,7 +435,7 @@ get '/api/project/:project_id/note' do
       .includes(:note_tags)
       .to_json
   else
-    @project.notes.includes(:note_tags).to_json
+    @project.notes.order('updated_at DESC').includes(:note_tags).to_json
   end
 end
 
@@ -444,7 +444,23 @@ get '/api/project/:project_id/note/:note_id' do
 end
 
 put '/api/project/:project_id/note/:note_id' do
-  status 500
+  content_type :json
+  JSON.parse(request.body.read).each { |p, v| @note.send(p + "=", v) }
+  @note.save!
+
+  event_data = {
+    'id'   => @note.id,
+    'text' => snippet(@note.text),
+    'type' => 'update'
+  }
+  e = @project.events.create!(
+      :user         => @user,
+      :type         => 'notes',
+      :occurred_at  => DateTime.now,
+      :data         => event_data.to_json
+  );
+
+  @note.to_json
 end
 
 post '/api/project/:project_id/note' do

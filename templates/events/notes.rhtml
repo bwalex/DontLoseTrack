@@ -4,6 +4,8 @@
     added
   <% elsif pdata['type'] == 'delete' %>
     deleted
+  <% elsif pdata['type'] == 'update' %>
+    updated
   <% end %>
   by <%=h user.to_s %>
 </div>
