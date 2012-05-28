@@ -21,6 +21,9 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
         errors.push(resp.responseText);
       }
 
+      if (resp.status == 0 || resp.readyState <= 1)
+	errors.push("Please check your connectivity.");
+
       var obj = {
 	statusCode: resp.status,
 	statusText: resp.statusText,
