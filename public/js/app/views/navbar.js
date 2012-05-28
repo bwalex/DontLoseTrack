@@ -15,6 +15,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
     projSelFocus: function(ev) {
       if ($(ev.currentTarget).val() == 'Switch Project...')
 	$(ev.currentTarget).val('');
+      $(ev.currentTarget).autocomplete("search");
     },
 
     projSelFocusOut: function(ev) {
