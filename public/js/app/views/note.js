@@ -89,14 +89,15 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
       if (App.globalController.get('filter') === true) {
 	var seltags = App.globalController.get('filter:tags');
+	if ((typeof(seltags) !== 'undefined') && seltags.length > 0) {
+	  var notetag = this.model.get('note_tags').detect(function(nt) {
+	    var tag = nt.get('tag');
+	    return (_.indexOf(seltags, tag) >= 0) ? true : false;
+	  });
 
-	var notetag = this.model.get('note_tags').detect(function(nt) {
-	  var tag = nt.get('tag');
-	  return (_.indexOf(seltags, tag) >= 0) ? true : false;
-	});
-
-	if (typeof(notetag) === 'undefined')
-	  $(this.el).addClass('contracted');
+	  if (typeof(notetag) === 'undefined')
+	    $(this.el).addClass('contracted');
+	}
       }
 
       return $(this.el).html(html);
@@ -173,13 +174,15 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       if (typeof(ids) === 'undefined')
 	ids = App.globalController.get('filter:tag_ids');
 
+      var search_text =  App.globalController.get('filter:text');
+
       var limit = App.globalController.get('notes:nFetched', 15);
       if (limit < 15)
 	limit = 15;
       var offset = App.globalController.get('notes:fetchOffset', 0);
       App.globalController.set('notes:nFetched', 0);
 
-      this.collection.fetch({data: { limit: limit, offset: offset, filter: { tags: ids } }});
+      this.collection.fetch({data: { limit: limit, offset: offset, filter: { tags: ids, text: search_text } }});
     },
 
     loadMore: function(ev) {

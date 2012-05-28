@@ -173,6 +173,7 @@ require([
       "change:project"      : "changeProject",
       "navigate"            : "navigate",
       "select:tag"          : "updateFilter",
+      "change:filter:text"  : "updateFilter",
       "register"            : "registered",
       "refresh:users"       : "refreshProjectUsers",
       "reload:settings"     : "loadKnownSettings"
@@ -199,12 +200,16 @@ require([
     updateFilter: function(tag) {
       var selTags = App.tagCollection.where({selected: true});
       var selTagIds = _.pluck(selTags, "id");
+      var search_text = this.get("filter:text");
 
       console.log(selTagIds);
 
       this.set('filter:tags', selTags);
       this.set('filter:tag_ids', selTagIds);
-      this.set('filter', (selTags.length > 0) ? true : false);
+      this.set('filter',
+	       ((selTags.length > 0) || 
+		((typeof(search_text) === "string") &&
+		 (search_text !== ''))) ? true : false);
     },
 
     navigate: function(item) {
@@ -327,11 +332,6 @@ require([
 
       this.currentSidebarView.render();
       this.currentTagDragView.render();
-
-      // XXX: Kludge; for some reason the tag collection needs
-      //      to be fetched synchronously (and first), otherwise
-      //      the relationships won't work as expected.
-      //App.tagCollection.fetch({async: false});
     },
 
 

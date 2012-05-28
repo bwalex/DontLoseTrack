@@ -1,4 +1,7 @@
 %script{ :type => "text/x-jsrender", :id => "tag-list-tmpl" }
+  %h3 Filter by Content
+  #content-filter
+    %input#search-string.autoclear{ :type => "text", :value => "Search..." }
   %h3 Filter by Tag
   #newtag
     %span.sidein

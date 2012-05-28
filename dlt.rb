@@ -264,7 +264,8 @@ before '/api/project/:project_id*' do
 
   # Force revalidation of every single request
   expires 0, :public, :must_revalidate
-  last_modified @project.updated_at
+  etag "#{@project.updated_at.to_s}-#{request.query_string}"
+  #last_modified @project.updated_at
 end
 
 after '/api/project/:project_id*' do
@@ -433,11 +434,13 @@ get '/api/project/:project_id/note' do
   if not params[:filter].nil? or not params[:offset].nil? or not params[:limit].nil?
     q = Note
 
-    if not params[:filter].nil? and not params[:filter][:tags].nil? and not params[:filter][:tags].empty?
-      q = q.joins(:note_tags)
-        .where(
-          :note_tags => { :tag_id => params[:filter][:tags] }
-        )
+    if not params[:filter].nil?
+      if not params[:filter][:tags].nil? and not params[:filter][:tags].empty?
+        q = q.where(NoteTag.arel_table[:tag_id].in(params[:filter][:tags]))
+      end
+      unless params[:filter][:text].nil?
+        q = q.where(Note.arel_table[:text].matches("%#{params[:filter][:text]}%"))
+      end
     end
 
     q = q.where(
@@ -445,7 +448,7 @@ get '/api/project/:project_id/note' do
       )
       .order('updated_at DESC')
       .limit(params[:limit])
-      .offset(params[:offset])
+      .offset(params[:offset].to_i)
       .includes(:note_tags)
       .to_json
   else
@@ -525,14 +528,26 @@ end
 get '/api/project/:project_id/wiki' do
   content_type :json
 
-  if params[:filter] != nil and params[:filter][:tags] != nil and not params[:filter][:tags].empty?
+  if not params[:filter].nil? or not params[:offset].nil? or not params[:limit].nil?
+    q = Wiki
 
-     Wiki.includes(:wiki_tags)
-       .where('project_id = ?', params[:project_id])
-       .where(WikiTag.arel_table[:tag_id].in(params[:filter][:tags]))
-       .limit(params[:limit])
-       .offset(params[:offset])
-       .to_json
+    if not params[:filter].nil?
+      if not params[:filter][:tags].nil? and not params[:filter][:tags].empty?
+        q = q.where(WikiTag.arel_table[:tag_id].in(params[:filter][:tags]))
+      end
+      unless params[:filter][:text].nil?
+        q = q.where(Wiki.arel_table[:text].matches("%#{params[:filter][:text]}%"))
+      end
+    end
+
+    q = q.where(
+        :project_id => @project.id
+      )
+      .order('updated_at DESC')
+      .limit(params[:limit])
+      .offset(params[:offset].to_i)
+      .includes(:wiki_tags)
+      .to_json
   else
     @project.wikis.order("updated_at DESC").includes(:wiki_tags, :wiki_contents).to_json
   end

@@ -105,15 +105,26 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 	return;
       }
 
+      var search_text = App.globalController.get('filter:text');
+      if ((typeof(search_text) === 'string') && search_text !== '') {
+	this.filteredOut = (this.model.get('summary').indexOf(search_text) < 0);
+	this.actOnHide();
+	if (this.filteredOut)
+	  return;
+      }
+
+
       var seltags = App.globalController.get('filter:tags');
 
-      var tasktag = this.model.get('task_tags').detect(function(tt) {
-	var tag = tt.get('tag');
-	return (_.indexOf(seltags, tag) >= 0) ? true : false;
-      });
+      if ((typeof(seltags) !== 'undefined') && seltags.length > 0) {
+	var tasktag = this.model.get('task_tags').detect(function(tt) {
+	  var tag = tt.get('tag');
+	  return (_.indexOf(seltags, tag) >= 0) ? true : false;
+	});
 
-      this.filteredOut = (typeof(tasktag) === 'undefined') ? true : false;
-      this.actOnHide();
+	this.filteredOut = (typeof(tasktag) === 'undefined') ? true : false;
+	this.actOnHide();
+      }
     },
 
     refreshFilterCompleted: function(showCompleted) {

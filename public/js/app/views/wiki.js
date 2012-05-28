@@ -509,13 +509,16 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       if (App.globalController.get('filter') === true) {
 	var seltags = App.globalController.get('filter:tags');
 
-	var wikitag = this.model.get('wiki_tags').detect(function(wt) {
-	  var tag = wt.get('tag');
-	  return (_.indexOf(seltags, tag) >= 0) ? true : false;
-	});
+	if ((typeof(seltags) !== 'undefined') && seltags.length > 0) {
 
-	if (typeof(wikitag) === 'undefined')
-	  $(this.el).addClass('contracted');
+	  var wikitag = this.model.get('wiki_tags').detect(function(wt) {
+	    var tag = wt.get('tag');
+	    return (_.indexOf(seltags, tag) >= 0) ? true : false;
+	  });
+
+	  if (typeof(wikitag) === 'undefined')
+	    $(this.el).addClass('contracted');
+	}
       }
 
       return $(this.el).html(html);

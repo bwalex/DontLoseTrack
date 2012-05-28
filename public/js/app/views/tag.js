@@ -61,6 +61,8 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     className: 'tagListView',
 
     events: {
+      //"keyup #search-string"       : "changeSearchString",
+      "change #search-string"      : "changeSearchString",
       "keypress #newtagname"       : "newTagKeypress"
     },
 
@@ -68,6 +70,11 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
       App.globalController.unregister(this);
       this.remove();
       this.unbind();
+    },
+
+    changeSearchString: function(ev) {
+      var self = this;
+      App.globalController.set('filter:text', $(this.el).find('#search-string').val());
     },
 
     newTagKeypress: function(ev) {
@@ -94,6 +101,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 		'renderTag',
 		'renderTagTop',
 		'newTagKeypress',
+		'changeSearchString',
 		'destroy');
 
       //this.model.bind('change', this.render);
@@ -107,6 +115,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
     render: function() {
       $(this.el).html(this.template.render({}));
       $(this.el).find('.autoclear').autoclear();
+      $(this.el).find('#search-string').val(App.globalController.get('filter:text'));
       this.collection.each(this.renderTag);
     },
 
