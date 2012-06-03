@@ -107,7 +107,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jqu
 
       var search_text = App.globalController.get('filter:text');
       if ((typeof(search_text) === 'string') && search_text !== '') {
-	this.filteredOut = (this.model.get('summary').indexOf(search_text) < 0);
+	this.filteredOut = (this.model.get('summary').toLowerCase().indexOf(search_text.toLowerCase()) < 0);
 	this.actOnHide();
 	if (this.filteredOut)
 	  return;
