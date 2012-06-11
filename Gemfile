@@ -15,6 +15,15 @@ group :postgresql do
   gem "pg", "~> 0.13.2"
 end
 
+group :test do
+  gem "sqlite3"
+  gem "cucumber"
+  gem "rspec"
+  gem "capybara"
+  gem "json_spec"
+  gem "factory_girl"
+end
+
 gem "foreigner", "~> 1.1.5"
 
 gem "sinatra", "~> 1.3.2"

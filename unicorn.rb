@@ -10,6 +10,10 @@ listen "127.0.0.1:4567"
 
 pid "unicorn.pid"
 
+
+puts "RACK ENV: #{ENV["RACK_ENV"]}"
+
+
 # Set the path of the log files inside the log folder of the testapp
 #stderr_path "/var/rails/testapp/log/unicorn.stderr.log"
 #stdout_path "/var/rails/testapp/log/unicorn.stdout.log"
@@ -27,11 +31,12 @@ after_fork do |server, worker|
 # processes
   config = YAML::load(File.open('config/config.yml'))
 
-  ActiveRecord::Base.establish_connection(YAML::load(File.open('config/database.yml')))
+  dbconfig = YAML::load(File.open('config/database.yml'))
+  ActiveRecord::Base.establish_connection(dbconfig[ENV["RACK_ENV"]])
 
-  if defined? config['silent'] and config['silent']
-    ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'w'))
-  else
+  if ENV["RACK_ENV"] == "development"
     ActiveRecord::Base.logger = Logger.new(STDOUT)
+  else
+    ActiveRecord::Base.logger = Logger.new(File.open('database.log', 'w'))
   end
 end
