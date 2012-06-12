@@ -9,6 +9,12 @@ require app_file
 
 set :environment, :test
 
+env = ENV['RACK_ENV'] || 'test'
+dbconfig = YAML::load(File.open('config/database.yml'))
+ActiveRecord::Base.establish_connection(dbconfig[env])
+ActiveRecord::Base.logger = Logger.new(File.open('database.rakefile.log', 'w'))
+
+
 RSpec.configure do |conf|
   conf.include Rack::Test::Methods
   #conf.include FactoryGirl::Syntax::Methods

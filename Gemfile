@@ -16,13 +16,14 @@ group :postgresql do
 end
 
 group :test do
-  gem "sqlite3"
-  gem "cucumber"
-  gem "rspec"
-  gem "capybara"
-  gem "capybara-webkit"
-  gem "json_spec"
-  gem "factory_girl"
+  gem "sqlite3", "~> 1.3.6"
+  gem "cucumber", "~> 1.2.1"
+  gem "rspec", "~> 2.10.0"
+  gem "capybara", "~> 1.1.2"
+  gem "capybara-webkit", "~> 0.12.1"
+  gem "json_spec", "~> 1.0.3"
+  gem "factory_girl", "~> 3.4.0"
+  gem "database_cleaner", "~> 0.8.0"
 end
 
 gem "foreigner", "~> 1.1.5"

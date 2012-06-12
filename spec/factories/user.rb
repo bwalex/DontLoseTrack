@@ -5,8 +5,9 @@ FactoryGirl.define do
   factory :user do
     sequence(:name) { |n| "John Doe #{n}" }
     email
-    alias
-    password "moo"
+    :alias
+    new_password "moo"
+    new_password_confirmation "moo"
   end
 
   factory :project do
