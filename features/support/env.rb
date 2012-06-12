@@ -2,6 +2,7 @@ ENV['RACK_ENV'] = 'test'
 
 require 'capybara'
 require 'capybara/cucumber'
+require 'capybara/webkit'
 require 'rspec'
 #require 'rspec/expectations'
 require 'json_spec/cucumber'
@@ -12,6 +13,8 @@ require app_file
 
 
 Capybara.app = Sinatra::Application
+Capybara.default_driver = :rack_test
+Capybara.javascript_driver = :webkit
 
 
 class DltWorld

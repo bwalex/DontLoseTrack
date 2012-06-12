@@ -12,5 +12,8 @@ feature "Login", %q{
     visit '/api/user'
     page.should have_content "Not authenticated"
   end
-
+  scenario "Login with invalid credentials", :js => true do
+    visit '/api/user'
+    page.should have_content "Not authenticated"
+  end
 end

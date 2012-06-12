@@ -20,6 +20,7 @@ group :test do
   gem "cucumber"
   gem "rspec"
   gem "capybara"
+  gem "capybara-webkit"
   gem "json_spec"
   gem "factory_girl"
 end
