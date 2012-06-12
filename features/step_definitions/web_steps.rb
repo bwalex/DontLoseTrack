@@ -30,6 +30,10 @@ When /^(?:|I )press "([^\"]*)"(?: within "([^\"]*)")?$/ do |button, selector|
   end
 end
 
+When /^(?:I )wait for (ajax|AJAX) to load$/ do |unused|
+  wait_for_ajax
+end
+
 When /^(?:|I )follow "([^\"]*)"(?: within "([^\"]*)")?$/ do |link, selector|
   with_scope(selector) do
     click_link(link)

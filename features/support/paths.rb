@@ -10,6 +10,8 @@ module NavigationHelpers
   def path_to(page_name)
     case page_name
 
+    when /logout/
+      '/logout'
     when /the home\s?page/
       '/'
 

@@ -1,17 +1,33 @@
 Feature: Login
-  In order to be able to access the API
+  In order to be able to access Don't Lose Track
   users need to be able to login.
 	
   Background:
-    Given a user exists with an alias of "testuser"
-    And  I am logged out
+    Given the following user exists:
+    | email          | alias | name      | new_password |
+    | test@dlt.io    | test1 | Test User | moo          |
+    And  I go to logout
+    And  I am on the home page
 
-  Scenario: Un-authenticated API accesses
-    When I go to /api/user
-    Then I should see "Not authenticated"
+  Scenario: Incorrect Password
+    When I fill in "Email" with "test@dlt.io"
+    And  I fill in "Password" with "incorrect"
+    And  I press "Login" within ".login"
+    Then I should see "Invalid username or password"
 
-    When I go to /api/project
-    Then I should see "Not authenticated"
 
-    When I go to /api/project/1
-    Then I should see "Not authenticated"
+  Scenario: Incorrect username
+    When I fill in "Email" with "incorrect"
+    And  I fill in "Password" with "moo"
+    And  I press "Login" within ".login"
+    Then I should see "Invalid username or password"
+
+
+  @javascript
+  Scenario: Correct login
+    When I fill in "Email" with "test@dlt.io"
+    And  I fill in "Password" with "moo"
+    And  I press "Login" within ".login"
+    And  I wait for AJAX to load
+    Then I should see "Test User"
+    And  I should see "Logout"

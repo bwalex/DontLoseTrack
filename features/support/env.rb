@@ -22,6 +22,9 @@ require app_file
 
 DatabaseCleaner.strategy = :truncation
 
+Capybara.register_driver :webkit do |app|
+  Capybara::Driver::Webkit.new(app, :stdout => nil)
+end
 
 Capybara.app = Sinatra::Application
 Capybara.default_driver = :rack_test
