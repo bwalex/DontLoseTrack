@@ -36,6 +36,7 @@ rescue Errno::ENOENT
 end
 
 
+enable :sessions if ENV['RACK_ENV'] == 'test'
 
 @config = YAML::load(File.open('config/config.yml'))
 

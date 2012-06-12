@@ -6,14 +6,19 @@ require 'capybara/dsl'
 require 'capybara/webkit'
 require 'json_spec'
 require 'factory_girl'
+require 'database_cleaner'
 
 Capybara.app = Sinatra::Application
 Capybara.default_driver = :rack_test
 Capybara.javascript_driver = :webkit
 
 
+Dir[File.join(File.dirname(__FILE__), "../spec/factories/*.rb")].each { |file| require_relative file }
+
+
 RSpec.configure do |config|
   config.include JsonSpec::Helpers
+  config.include FactoryGirl::Syntax::Methods
 
   config.before :suite do
     DatabaseCleaner.clean_with :truncation

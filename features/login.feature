@@ -3,7 +3,7 @@ Feature: Login
   users need to be able to login.
 	
   Background:
-    Given the user "foobar" with password "moo" exists
+    Given a user exists with an alias of "testuser"
     And  I am logged out
 
   Scenario: Un-authenticated API accesses
