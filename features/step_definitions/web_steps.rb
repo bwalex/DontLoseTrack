@@ -30,6 +30,10 @@ When /^(?:|I )press "([^\"]*)"(?: within "([^\"]*)")?$/ do |button, selector|
   end
 end
 
+When /^(?:|I )double[-\s]?click "([^\"]*)" (?: within "([^\"]*)")?$/ do |field, selector|
+  page.evaluate_script(%Q|$("#{selector}").find("#{field}").dblclick()|)
+end
+
 When /^(?:I )wait for (ajax|AJAX) to load$/ do |unused|
   wait_for_ajax
 end
@@ -51,6 +55,13 @@ When /^(?:|I )fill in "([^\"]*)" with "([^\"]*)"(?: within "([^\"]*)")? and pres
     value = value << "\r"
     fill_in(field, :with => value)
     #find(field).set(value)
+  end
+end
+
+When /^(?:|I )fill in xpath "([^\"]*)" with "([^\"]*)"(?: within "([^\"]*)")? and press (?:E|e)nter$/ do |field, value, selector|
+  with_scope(selector) do
+    value = value << "\r"
+    find(field).set(value)
   end
 end
 
@@ -228,4 +239,8 @@ end
 
 Then /^show me the page$/ do
   save_and_open_page
+end
+
+Then /^(?:|I )should see "(.*)" as computed style "(.*)" of xpath "(.*)"$/ do |exp, style, xpath|
+  assert_equal exp, find(xpath).get_computed_style(style)
 end

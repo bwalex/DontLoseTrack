@@ -29,6 +29,17 @@ end
 Capybara.app = Sinatra::Application
 Capybara.default_driver = :rack_test
 Capybara.javascript_driver = :webkit
+Capybara.default_wait_time = 10
+
+class Capybara::Node::Element # < Capybara::Node::Base
+  def get_computed_style(name)
+    wait_until { base.get_computed_style(name) }
+  end
+
+  def dblclick
+    wait_until { base.dblclick }
+  end
+end
 
 
 class DltWorld
@@ -71,3 +82,20 @@ end
 Dir[File.join(File.dirname(__FILE__), "../../spec/factories/*.rb")].each { |file| puts "Loading Factory file: #{file}"; require_relative file }
 
 require 'factory_girl/step_definitions'
+
+
+Transform /^table:(?:.*,)?users(?:,.*)?$/ do |table|
+  table.map_column!("users") do |users|
+    user_objs = users.split(',').map {|user| user.strip }
+    User.where(:alias => user_objs)
+  end
+  table
+end
+
+Transform /^table:(?:.*,)?tags(?:,.*)?$/ do |table|
+  table.map_column!("tags") do |tags|
+    tag_objs = tags.split(',').map {|tag| tag.strip }
+    Tag.where(:name => tag_objs)
+  end
+  table
+end
