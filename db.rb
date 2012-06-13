@@ -368,9 +368,9 @@ class Project < ActiveRecord::Base
     # total, tasks completed, pending, overdue
     return {
       'total' => tasks.count,
-      'completed' => tasks.count(:conditions => "completed = true"),
-      'pending' => tasks.count(:conditions => "completed != true"),
-      'overdue' => tasks.count(:conditions => "completed != true AND due_date < NOW()")
+      'completed' => tasks.count(:conditions => ["completed = ?", true]),
+      'pending' => tasks.count(:conditions => ["completed != ?", true]),
+      'overdue' => tasks.count(:conditions => ["completed != ? AND due_date < DATE(?)", true, Time.now])
     }
   end
 
@@ -767,7 +767,7 @@ class Task < ActiveRecord::Base
       return "completed"
     elsif blocked
       return "blocked"
-    elsif deps.count(:conditions => "completed != true") > 0
+    elsif deps.count(:conditions => ["completed != ?", true]) > 0
       return "depends"
     else
       return "active"
