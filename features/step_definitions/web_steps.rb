@@ -46,6 +46,14 @@ When /^(?:|I )fill in "([^\"]*)" with "([^\"]*)"(?: within "([^\"]*)")?$/ do |fi
   end
 end
 
+When /^(?:|I )fill in "([^\"]*)" with "([^\"]*)"(?: within "([^\"]*)")? and press (?:E|e)nter$/ do |field, value, selector|
+  with_scope(selector) do
+    value = value << "\r"
+    fill_in(field, :with => value)
+    #find(field).set(value)
+  end
+end
+
 When /^(?:|I )fill in "([^\"]*)" for "([^\"]*)"(?: within "([^\"]*)")?$/ do |value, field, selector|
   with_scope(selector) do
     fill_in(field, :with => value)
