@@ -16,6 +16,11 @@ FactoryGirl.define do
     association :owner, factory: :user
   end
 
+  factory :tag do
+    sequence(:name) { |n| "Tag #{n}" }
+    color
+  end
+
   factory :task do
     sequence(:summary) { |n| "Task #{n}" }
     association :project

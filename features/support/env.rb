@@ -12,6 +12,8 @@ require 'factory_girl'
 require 'database_cleaner'
 require 'database_cleaner/cucumber'
 
+require 'headless'
+
 #Dir["../../spec/factories/*.rb"].each {|file| require_relative file }
 
 
@@ -70,12 +72,16 @@ World do
 end
 
 
+headless = Headless.new
+
 Before do
+  headless.start
   DatabaseCleaner.start
 end
 
 After do |scenario|
   DatabaseCleaner.clean
+  headless.stop
 end
 
 

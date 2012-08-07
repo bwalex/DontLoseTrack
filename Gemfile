@@ -20,12 +20,13 @@ group :test do
   gem "cucumber", "~> 1.2.1"
   gem "rspec", "~> 2.10.0"
   gem "capybara", "~> 1.1.2"
-  #gem "capybara-webkit", "~> 0.12.1"
-  gem "capybara-webkit", :git => "git://github.com/bwalex/capybara-webkit.git", :branch => "dblclick-cstyle"
+  gem "capybara-webkit", "~> 0.12.1"
+  #gem "capybara-webkit", :git => "git://github.com/bwalex/capybara-webkit.git", :branch => "dblclick-cstyle"
   gem "json_spec", "~> 1.0.3"
   gem "factory_girl", "~> 3.4.0"
   gem "database_cleaner", "~> 0.8.0"
   gem "lorem", "~> 0.1.2"
+  gem "headless", "~> 0.3.1"
 end
 
 gem "foreigner", "~> 1.1.5"
