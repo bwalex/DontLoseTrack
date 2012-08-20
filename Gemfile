@@ -4,6 +4,10 @@ source "http://rubygems.org"
 gem "rake", "~> 0.9.2"
 gem "unicorn", "~> 4.2.1"
 
+group :development do
+  gem "shotgun", "~> 0.9"
+end
+
 gem "activerecord", "~> 3.2.0"
 gem "actionpack", "~> 3.2.0"
 
@@ -38,6 +42,7 @@ gem "pygments.rb", "~> 0.2.7"
 gem "diffy", "~> 2.0.6"
 gem "haml", "~> 3.1.4"
 gem "sass", "~> 3.1.15"
+gem "bourbon", "~> 2.1.1"
 
 gem "json", "~> 1.6.6"
 gem "oauth", "~> 0.4.6"
