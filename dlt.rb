@@ -37,7 +37,9 @@ end
 
 
 enable :sessions if ENV['RACK_ENV'] == 'test'
-use ActiveRecord::ConnectionAdapters::ConnectionManagement if ENV['RACK_ENV'] == 'test'
+use ActiveRecord::ConnectionAdapters::ConnectionManagement if ENV['RACK_ENV'] == 'test' || ENV['RACK_ENV'] == 'development'
+
+puts "ENV: #{ENV['RACK_ENV']}"
 
 @config = YAML::load(File.open('config/config.yml'))
 
@@ -231,8 +233,8 @@ end
 get '/' do
   redirect '/login' unless session[:user]
 
-  user = User.find(session[:user])
-  redirect '/register/openid' if user.is_new_openid?
+  @user = User.find(session[:user])
+  redirect '/register/openid' if @user.is_new_openid?
 
   cache_control :public, :must_revalidate, :max_age => 43200
 
@@ -970,7 +972,9 @@ set :show_exceptions, false
 
 
 error do
-  env['sinatra.error'].backtrace
+  e = [env['sinatra.error'].inspect, env['sinatra.error'].backtrace].join('\n')
+
+  CGI::escapeHTML(e).gsub(/\\n/, '<br>')
 end
 
 

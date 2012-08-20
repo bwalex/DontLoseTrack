@@ -1,49 +1,38 @@
 %script{ :type => "text/x-jsrender", :id => "navbar-tmpl" }
-  #nav-left
+  %div
     {{if id}}
-    %ul.menu.tabs
+    %h2 Project
+    %ul.menu
       %li
-        %a{ :title => 'timeline', :href => "#project/{{:id}}/timeline" } Timeline
+        %a{ :title => 'timeline', :href => "#project/{{:id}}/timeline" }
+          %h3 Timeline
       %li
-        %a{ :title => 'notes', :href => "#project/{{:id}}/notes" } Notes
+        %a{ :title => 'notes', :href => "#project/{{:id}}/notes" }
+          %h3 Notes
       %li
-        %a{ :title => 'tasks', :href => "#project/{{:id}}/tasks" } Tasks
+        %a{ :title => 'tasks', :href => "#project/{{:id}}/tasks" }
+          %h3 Tasks
       %li
-        %a{ :title => 'wikis', :href => "#project/{{:id}}/wikis" } Wikis
+        %a{ :title => 'wikis', :href => "#project/{{:id}}/wikis" }
+          %h3 Wikis
       -#%li
         -#%a{ :title => 'emails', :href => "#project/{{:id}}/emails" } Emails
       -#%li
         -#%a{ :title => 'files', :href => "#project/{{:id}}/files" } Files
       %li
-        %a{ :title => 'team', :href => "#project/{{:id}}/team" } Team
+        %a{ :title => 'team', :href => "#project/{{:id}}/team" }
+          %h3 Team
       %li
-        %a{ :title => 'settings', :href => "#project/{{:id}}/settings" } Settings
+        %a{ :title => 'settings', :href => "#project/{{:id}}/settings" }
+          %h3 Settings
     {{/if}}
-  #nav-right
-    #nav-user
-      %div
-        #topnav.topnav
-          %a.signin
-            %span.user-name
-              {{: ~curUserName() }}&nbsp;
-              %span.alias ({{: ~curUserAlias()}})
-            %span.drop-icon
-        .drop-nav
-          .rel
-            .left
-              %img{ :src => "{{: ~curUserAvatar(48) }}" }
-            .right
-              .row
-                %a{ :href => "#user/settings" }
-                  Settings
-              .row
-                %a{ :href => "/logout" }
-                  Logout
-            .clearer
-      .clearer
 
-          
-    #nav-projsel
+    -#%h2 Personal
+    -#%ul.menu
+      %li
+        %a{ :href => "#" }
+          %h3 Daily Planner
+    -#%div
       %input#projectSelector{ :type => "text", :value => "Switch Project..." }
       .clearer
     -#.clearer

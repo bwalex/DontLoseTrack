@@ -6,9 +6,7 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
 
     events: {
       "focus #projectSelector"          : "projSelFocus",
-      "focusout #projectSelector"       : "projSelFocusOut",
-      "click .signin"                   : "showDrop",
-      "mouseup .drop-nav"               : "preventAction"
+      "focusout #projectSelector"       : "projSelFocusOut"
     },
 
 
@@ -23,33 +21,12 @@ define(['appns', 'jquery', 'underscore', 'backbone', 'backbone-relational', 'jsr
 	$(ev.currentTarget).val('Switch Project...');
     },
 
-    preventAction: function(ev) {
-      return false;
-    },
-
-    showDrop: function(ev) {
-      var self = this;
-
-      ev.preventDefault();
-      console.log('moo. %o', $(document));
-      $(this.el).find('.drop-nav').toggle();
-      $(this.el).find('a.signin').toggleClass("menu-open");
-      $(document).one('mouseup', function(e) {
-	if ($(e.target).parent('a.signin').length == 0) {
-	  $(self.el).find('.drop-nav').hide();
-	  $(self.el).find('a.signin').removeClass('menu-open');
-	}
-      });
-    },
-
     initialize: function() {
       _.bindAll(this,
 		'render',
 		'renderUser',
 		'nav',
 		'projSelFocus',
-		'showDrop',
-		'preventAction',
 		'projSelFocusOut');
 
       this.bind('change:project', this.render);

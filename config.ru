@@ -65,17 +65,15 @@ require 'openid/store/filesystem'
 require 'openid/store/nonce'
 require 'openid/store/interface'
 
-module OpenID
-  module Store
-    class Memcache < Interface
-      def use_nonce(server_url, timestamp, salt)
-        return false if (timestamp - Time.now.to_i).abs > Nonce.skew
-        ts = timestamp.to_s # base 10 seconds since epoch
-        nonce_key = key_prefix + 'N' + server_url + '|' + ts + '|' + salt
-        result = @cache_client.add(nonce_key, '', expiry(Nonce.skew + 5))
+module OpenID::Store
+  class Memcache < Interface
+    def use_nonce(server_url, timestamp, salt)
+      return false if (timestamp - Time.now.to_i).abs > Nonce.skew
+      ts = timestamp.to_s # base 10 seconds since epoch
+      nonce_key = key_prefix + 'N' + server_url + '|' + ts + '|' + salt
+      result = @cache_client.add(nonce_key, '', expiry(Nonce.skew + 5))
 
-        return result
-      end
+      return result
     end
   end
 end

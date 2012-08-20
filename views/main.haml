@@ -8,7 +8,6 @@
     %link{ :rel => "icon", :type => "image/png", :href => "/favicon.png" }
     -#%link{ :type => "text/css", :href => "http://fonts.googleapis.com/css?family=Nunito", :rel => "stylesheet" }
 
-    %link{ :type => "text/css", :href => "/css/fluid_grid.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/dateinput.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/colorpicker.css", :rel => "stylesheet" }
     %link{ :type => "text/css", :href => "/css/style.css", :rel => "stylesheet" }
@@ -20,37 +19,51 @@
       require(['app']);
 
   %body
-    .container_16
-      .grid_16#logo
-        .project-name
+    #header.topbar.clearfix
+      #logo
         .logo
           %h3.logo
             %a{ :href => "/" }
               Don't Lose Track!
-        .clearer
+        .project-name
+        .topnav#topnav
+          %a.signin
+            %span.user-name
+              = "#{@user.name}"
+            %span.alias
+              = "(#{@user.alias})"
+            %span.drop-icon
+        .drop-nav
+          .rel
+            .left
+              %img{ :src => "http://www.gravatar.com/avatar/#{@user.email_hashed}?d=mm&s=48" }
+            .right
+              .row
+                %a{ :href => "#user/settings" }
+                  Settings
+              .row
+                %a{ :href => "/logout" }
+                  Logout
+            .clearer
 
-    .container_16#header
-      .container_16#navbar.clearfix
+      -#navbar.clearfix
         .grid_16
 
-    .container_16.spacer.clearfix
 
-    .container_16.clearfix#content
-      .grid_12
-        .errors.hide
+    .container
+      .main.center.column
+        #errors.hide
         .panes
           #main-pane
-          -# timeline
-          -# notes
-          -# tasks
-          -# wikis
-          -# emails
           &nbsp;
 
+      .sidebar.left.column#sidebar-left
+        #navbar
 
-      .grid_4.clearfix
+      .sidebar.right.column
         #sidebar
 
+      
     #ajax-load-overlay
       %img{ :src => "/img/ajax_load.gif", :alt => "Loading..." }
 
@@ -59,9 +72,7 @@
       .content-wrap
     #mask
 
-    .container_16.spacer.clearfix
-
-    .container_16.clearfix#footer
+    #footer
       .grid_16
         &copy 2012 Alex Hornung, Gema Gomez
         •

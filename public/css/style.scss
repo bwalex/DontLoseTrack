@@ -1,4 +1,7 @@
+@import 'bourbon/bourbon';
+
 $light_grey: #999999;
+$lighter_grey: #CCCCCC;
 $dark_grey:  #2E2633;
 $redish:     #99173C;
 $greyish:    #555555;
@@ -8,16 +11,19 @@ $blueish:    #0055AA;
 $dark_blue:  #002B55;
 $light_red:  #EE8CA7;
 $yellowish:  #FFFFD5;
+$sidebar_bg: #FFFFFF; //lighten($redish, 64%);//#F3F3F3;
+$outlook_blue: #0072C6;
 
 $link_color:  $redish;//$blueish;
 $link_hover_color:  black;//$dark_blue;
 $h2_color:  $dark_blue;
 
 body {
-    font-family: Helvetica,Verdana,Arial,Clean,sans-serif;
-    font-size: 100%;
-    text-align: center;
+    font-family: "Bitstream Vera","Helvetica Neue","BBAlpha Sans","S60 Sans",Helvetica,Arial,"sans-serif";
+    font-size: 89%;
+    text-align: left;
     line-height: 24px;
+    margin: 0px;
 }
 
 hr {
@@ -31,28 +37,41 @@ hr {
     width: 100%;
 }
 
-div#header {
-    border-bottom: 1px dotted #999999;
-}
 
-.logo h3 {
-    //font: bold 1em helvetica,arial,verdana,sans-serif;
-    font-weight: bold;
-    //font-family: 'Ubuntu', sans-serif;
-    font-family: helvetica,arial,verdana,sans-serif;
-    color: $dark_grey;
-    margin: 0px;
-    //padding-top: 24px;
-    //padding-bottom: 24px;
-    padding-top: 3px;
-    letter-spacing: -1px;
-    text-align: right;
-    font-size: 1.2em;
-    line-height: 1;
+div#header {
+    width: 100%;
+    background-color: $redish;
+    color: white;
+
+    h2 {
+	color: white;
+    }
+
     a {
+	color: white;
+    }
+
+    .drop-nav a {
 	color: black;
 	&:hover {
 	    color: $redish;
+	}
+    }
+}
+
+
+.logo h3 {
+
+    margin: 0px;
+    padding-left: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    letter-spacing: -1px;
+    font-size: 1.2em;
+    a {
+	color: white;
+	&:hover {
+	    color: white;
 	}
     }
 }
@@ -62,54 +81,106 @@ div#logo {
 }
 
 .project-name h2 {
-    //font: bold 1em helvetica,arial,verdana,sans-serif;
-    font-family: helvetica,arial,verdana,sans-serif;
-    font-weight: bold;
-    color: $redish;
     font-size: 1.5em;
     text-align: left;
     margin-bottom: 5px;
-    padding-top: 5px;
+    padding-top: 10px;
     margin-top: 0px;
 }
 
 div.project-name {
-    display: inline;
+    //display: inline;
     float: left;
 }
 
-div.logo {
-    display: inline;
-    float: right;
+
+div.container {
+    //margin-top: -7px;
+    padding-left: 160px; /* LC full width */
+    padding-right: 240px; /* RC full width + CC padding */
+    overflow: hidden;
+    text-align: left;
+
+    .column {
+	position: relative;
+	float: left;
+	margin-bottom: -32767px;
+	padding-bottom: 32767px;
+    }
+
+    .left {
+	width: 130px; /* LC width */
+	right: 190px; /* LC full width (width + padding_left + padding_right) + CC padding */
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-left: -100%;
+    }
+
+    .right {
+	width: 180px; /* RC width */
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-right: -240px; /* RC full width + CC padding */
+    }
+
+    .center {
+	padding-left: 15px;
+	padding-right: 15px;
+	width: 100%;
+    }
 }
 
 
 
+div.logo {
+    //display: inline;
+    float: left;
+    width: 160px;
+    text-align: left;
+}
+
+div.fullwidth {
+    width: 100%;
+}
+
+
+div.sidebar {
+    background-color: $sidebar_bg;
+}
+
+div.sidebar {
+    width: 160px;
+}
+
+div.left {
+    float: left;
+}
+
+div.right {
+    float: right;
+}
+
 div#content {
     background: none repeat scroll 0 0 #FFFFFF;
-    margin-left: auto;
-    margin-right: auto;
     min-height: 1px;
-    padding: 0px 20px;
     padding-bottom: 20px;
     position: relative;
     text-align: left;
+    width: 100%;
 
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
 }
 
 #footer {
     background: none repeat scroll 0 0 white;
-    border-top: 1px dotted $light_grey;
+    border-top: 1px solid $lighter_grey;
     margin-left: auto;
     margin-right: auto;
 
     min-height: 1px;
-    padding: 10px 20px 20px;
     position: relative;
     text-align: right;
     font-size: 75%;
+    padding: 5px 15px;
 }
 
 
@@ -121,6 +192,7 @@ div#content {
     padding: 0 20px;
     width: 100%;
 
+
     .grid_16 {
 	width: 100%;
     }
@@ -131,11 +203,9 @@ div#content {
 
     ul {
 	vertical-align: bottom;
-        float: left;
 	margin: 0;
 	padding-left: 0px;
 	li {
-            float: left;
 	    list-style: none outside none;
 	    margin: 0 0;
         }
@@ -144,13 +214,15 @@ div#content {
     .menu a {
 	color: black;
 	display: block;
-	font-size: 90%;
-	font-weight: bold;
-	padding: 15px 15px 0px;
+	font-size: 100%;
+
 	text-decoration: none;
 
         &.current, &:hover {
-            color: #99173C;    
+            color: #99173C;
+	    h3 {
+		color: #99173C;
+	    }
 	}
     }
 
@@ -290,9 +362,18 @@ div#sidebar {
     text-decoration: none;
 }
 
-#sidebar h3 {
-    border-bottom: 1px solid #666666;
-    margin-bottom: 5px;
+.sidebar h3 {
+    //border-bottom: 1px solid #666666;
+    margin: 5px;
+    font-weight: normal;
+    color: #666666;
+}
+
+.sidebar h2 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-weight: normal;
+    color: #666666;
 }
 
 #sidebar a.indented {
@@ -436,10 +517,7 @@ img.boring {
 /* .task .summary */ .tags .tag,
 .tags .tag-edit {
     padding-left: 5px;
-    margin-left: 10px;
-    //margin-right: 5px;
-    //margin-top: 5px;
-    //margin-bottom: 2px;
+
     font-size: 11px;
     font-family:	"lucida grande",tahoma,verdana,arial,sans-serif;
     font-weight: 400;
@@ -621,9 +699,10 @@ $task_summary_height: 28px;
     padding-right: 5px;
     //padding-bottom: 2px;
     //padding-top: 2px;
-    margin-top: -1px;
+    //margin-top: -1px;
     min-height: $task_summary_height;
-    border: 1px solid #AAAAAA;
+    //border: 1px solid #AAAAAA;
+    border-bottom: 1px dotted #999999;
 }
 
 .task .summary:hover {
@@ -1434,7 +1513,7 @@ div#mask {
 }
 
 
-.errors {
+#errors {
     font-size: 90%;
     color: $redish;
     background-color: $yellowish;
@@ -1756,7 +1835,7 @@ a img {
     border-width:0;
 }
 #topnav {
-    padding:10px 0px 12px;
+    padding:10px 10px 10px;
     line-height:23px;
     text-align:right;
 }
@@ -1791,7 +1870,6 @@ a.signin span.drop-icon {
     //background-position:100% 50%;
 }
 #topnav a.menu-open {
-    background: white; //lighten($redish,50%)!important;
     outline:none;
 }
 #small_signup {
@@ -1831,6 +1909,7 @@ a.signin.menu-open span.drop-icon {
     *margin-right: -1px;
     color:#789;
     visibility: visible;
+
 
     .rel {
 	position: relative;

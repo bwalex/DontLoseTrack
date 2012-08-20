@@ -48,6 +48,18 @@ require([
     return  toLong ? s_ +'...' : s_;
   };
 
+  $("#topnav .signin").click(function(ev) {
+    var self = this;
+    ev.preventDefault();
+    $("#header .drop-nav").toggle();
+    $("#header a.signin").toggleClass("menu-open");
+    $(document).one('mouseup',  function(e) {
+      if ($(e.target).parent('a.signin').length == 0) {
+	$("#header .drop-nav").hide();
+	$("#header a.signin").removeClass('menu-open');
+      }
+    });
+  });
 
   $.views.helpers({
     projectId: function() {
@@ -565,7 +577,7 @@ require([
   App.globalController = new App.GlobalController();
 
   App.errorView = new App.ErrorView({
-    el: $('#content .errors')
+    el: $('#errors')
   });
 
   App.currentUser = new App.User();
@@ -579,7 +591,7 @@ require([
 
   
   App.navbarView = new App.NavbarView({
-    el: $('#navbar .grid_16')
+    el: $('.sidebar > #navbar')
   });
 
 
