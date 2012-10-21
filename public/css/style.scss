@@ -38,6 +38,14 @@ hr {
 }
 
 
+div.ruler {
+    border-bottom: 1px solid #CCCCCC;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    clear: both;
+}
+
+
 div#header {
     width: 100%;
     background-color: $redish;
