@@ -48,15 +48,16 @@ div.ruler {
 
 div#header {
     width: 100%;
-    background-color: $redish;
-    color: white;
+    //background-color: $redish;
+    color: black;
 
     h2 {
-	color: white;
+	color: black;
     }
 
     a {
-	color: white;
+	color: black;
+	font-weight: bold;
     }
 
     .drop-nav a {
@@ -68,7 +69,7 @@ div#header {
 }
 
 
-.logo h3 {
+#logo h3 {
 
     margin: 0px;
     padding-left: 5px;
@@ -76,10 +77,11 @@ div#header {
     padding-bottom: 10px;
     letter-spacing: -1px;
     font-size: 1.2em;
+    color: $redish;
     a {
-	color: white;
+	color: $redish;
 	&:hover {
-	    color: white;
+	    color: black;
 	}
     }
 }
@@ -94,6 +96,7 @@ div#logo {
     margin-bottom: 5px;
     padding-top: 10px;
     margin-top: 0px;
+    margin-left: 10px;
 }
 
 div.project-name {
@@ -180,13 +183,13 @@ div#content {
 
 #footer {
     background: none repeat scroll 0 0 white;
-    border-top: 1px solid $lighter_grey;
+    //border-top: 1px solid $lighter_grey;
     margin-left: auto;
     margin-right: auto;
 
     min-height: 1px;
     position: relative;
-    text-align: right;
+    text-align: center;
     font-size: 75%;
     padding: 5px 15px;
 }
